@@ -1,8 +1,20 @@
-import java.io.File;
+// mov da bi özelliði implemente ederken önce ax'e ediyorum.
+// deðiþik inputlarla testen sonra baþarýlý 
+// olursa diðerlierine copy paste basit zaten
+//**
+//immeadite, register yapýldý gibi
+//register indirect ve memory yapýyorum
+//stack addresssing tam ne bilmiyoum, öðreniyim bakýcam
+// mov dl,"*" diye biþi varmýþ, asciiden hexaya çevirip yazýyo. yeni öðrendim bakýcam
+//**
 
 public class Hyp86 {
 
-	byte[] memory = new byte[64 * 1024]; // hexa tutalým
+	// byte arrayi yapýnca charý koyamayýz o yüzden array boyutunu yarýya düþürdüm.
+	// bu 2^15 yapýyo. hoca da bu uzunlukta tutmuþtu zaten
+	// ama fffe 65534 yapýyo
+	//bence biz arrayi yine 64k tutmalýyýz
+	char[] memory = new char[32768*2]; // hexa tutalým
 
 	// bu 4 ü ne ise yarýyo bilmiyorum henuz
 	char[] di = new char[4];
@@ -20,16 +32,24 @@ public class Hyp86 {
 	boolean CF = false;
 	boolean OF = false;
 
+	int numberOfInstructions;
 	String SF = "FFFE"; // stack pointer , memoryye erisirken hexadan decimale cevircez
-	int MP = 0; // memory Pointer
+	int MP = 0; // memory Pointer, instructionlarý okuduktan sonra 6*n' e kadar -1 falan yapýp
+				// eriþilmez kýlmamýz lazým. (n=number of instructions)
 
 	Hyp86(String s) { // constructor
-
+		numberOfInstructions = 0; // bunu initialize edip ona göre memory ayýrcaz
 	}
 
 	public static void add(String first, String second) {
 
 	}
+
+	// !!!!!!!!!!!!! mov:
+	// second offset içerebilir veya var içeribilir
+	// When using variable names offset variable-name accesses the address,
+	// just the variable-name accesses the value.
+	// !!!!!!!!!!!!!
 
 	// firstin memorydei adresine secondýn deðerini taþý
 	// second pointer olabilir ex: [454]
@@ -44,6 +64,82 @@ public class Hyp86 {
 
 	public void mov_ax_unknown(String second) {
 		if (second.contains("[") && second.contains("]")) { // second is memory
+			// w[xxxx] ya da b[xxxx] olabilir
+			// [bx] olabilir
+			// w[xxxxh] ya da b[0xxxxh] olabilir. fuck uzun sürücek!!!
+
+			if (second.charAt(0) == 'b') { // tek byte
+				second = second.substring(2, second.length() - 1); // got rid of b[ and ]
+
+			} else if (second.contains("ax") || second.contains("cx") || second.contains("bx") || second.contains("dx")
+					|| second.contains("al") || second.contains("ah") || second.contains("bl") || second.contains("bh")
+					|| second.contains("cl") || second.contains("ch") || second.contains("dl")
+					|| second.contains("dh")) { // register indirect : mov ax,[bx] -> burda bazen bad index register
+												// yiyebiliyoruz nedennii çözemedim.
+												// belki memoryde öyle bi adres olmadýðý içindir.
+				second = second.substring(1, second.length() - 1); // got rid of [ and ]
+				String num = "";
+				if (second.equals("ax")) {
+					for (int i = 0; i <= 3; i++)
+						num += ax[i];
+				} else if (second.equals("bx")) {
+					for (int i = 0; i <= 3; i++)
+						num += bx[i];
+				} else if (second.equals("cx")) {
+					for (int i = 0; i <= 3; i++)
+						num += cx[i];
+				} else if (second.equals("dx")) {
+					for (int i = 0; i <= 3; i++)
+						num += dx[i];
+				} else if (second.equals("al")) {
+					for (int i = 0; i <= 1; i++)
+						num += ax[i + 2];
+				} else if (second.equals("ah")) {
+					for (int i = 0; i <= 1; i++)
+						num += ax[i];
+				} else if (second.equals("bl")) {
+					for (int i = 0; i <= 1; i++)
+						num += bx[i + 2];
+				} else if (second.equals("bh")) {
+					for (int i = 0; i <= 1; i++)
+						num += bx[i];
+				} else if (second.equals("cl")) {
+					for (int i = 0; i <= 1; i++)
+						num += cx[i + 2];
+				} else if (second.equals("ch")) {
+					for (int i = 0; i <= 1; i++)
+						num += cx[i];
+				} else if (second.equals("dl")) {
+					for (int i = 0; i <= 1; i++)
+						num += dx[i + 2];
+				} else if (second.equals("dh")) {
+					for (int i = 0; i <= 1; i++)
+						num += dx[i];
+				}
+
+				// [register] adresi alýndý þimdi memory sýnýrlarý içinde mi ona bakýcaz
+				// öyleyse memorydeki o adresi kopyala deðilse hata ver kapat
+				if (Integer.parseInt(num, 16) >= 32768 && Integer.parseInt(num, 16) <= numberOfInstructions * 6) {
+					System.err.println("Bad memory address");
+					System.exit(0);
+				}else {
+					
+					//!??!!?!?!?!??!?!
+					for(int i=0;i<=3;i++) { // memoryde de 1er 1er artýrcaz mý?? yoksa direk o indisin içindeki sayýyý mý atýcaz??
+						ax[3-i]=memory[Integer.parseInt(num, 16)+i];
+					}
+				}
+			} else {// w kabul et: mov ax, w[xxxx] ya da mov ax, [xxxx] ya da mov ax,[xxxxh] ya da
+					// mov ax,[0xxxxh]
+				if (second.charAt(0) == 'w') {
+					second = second.substring(2, second.length() - 1); // got rid of w[ and ]
+
+				} else {
+					second = second.substring(1, second.length() - 1); // got rid of [ and ]
+
+				}
+
+			}
 
 		} else if (second.equals("bx")) {
 			for (int i = 3; i >= 0; i--) {
@@ -57,12 +153,36 @@ public class Hyp86 {
 			for (int i = 3; i >= 0; i--) {
 				ax[i] = dx[i];
 			}
-		} else if (second.contains("l") || second.contains("h")) {// error
+		} else if (second.contains("al") || second.contains("ah") || second.contains("bl") || second.contains("bh")
+				|| second.contains("cl") || second.contains("ch") || second.contains("dl") || second.contains("dh")) {// error
 			System.out.println("Error: Byte/Word Combination Not Allowed");
 			System.exit(0);
-		} else {// number hexa olabilir (sonunda h ile veya baþýnda 0), decimal olabilir
-
 		}
+		// bu kýsým ok gibi ama deðiþik inputlarla test etmek lazým pek emin deðilim
+		else {// var olanilir, "offset var" olabilir
+
+			// 01h olabilir -> h yi atýp yerleþtir +, 5d olabilir -> dyi atýp hexaya çevir
+			// +,
+			// 132 olabilir->hexaya çevir+, 0'la baþlýyosa hexa alýyo direk
+
+			// !!!! 0534d yi decimal okumuyo 534d diye hexa okuyo +.
+			if (second.charAt(second.length() - 1) == 'd' && second.charAt(0) != '0') {
+				second = second.substring(0, second.length() - 1); // got rid of d
+				second = Integer.toHexString(Integer.valueOf(second));// decimal turned to hexa
+			} else {
+				if (second.charAt(second.length() - 1) == 'h') {
+					second = second.substring(0, second.length() - 1); // got rid of h
+				}
+			}
+			// finally second is hexa and ready to be inserted into register
+			// reset register
+			for (int i = 0; i < 3; i++)
+				ax[i] = 0;
+			for (int i = 0; i <= 3 && i < second.length(); i++) {
+				ax[3 - i] = second.charAt(second.length() - i - 1);
+			}
+		}
+
 	}
 
 	public void mov_bx_unknown(String second) {
@@ -80,7 +200,8 @@ public class Hyp86 {
 			for (int i = 3; i >= 0; i--) {
 				bx[i] = dx[i];
 			}
-		} else if (second.contains("l") || second.contains("h")) {// error
+		} else if (second.contains("al") || second.contains("ah") || second.contains("bl") || second.contains("bh")
+				|| second.contains("cl") || second.contains("ch") || second.contains("dl") || second.contains("dh")) {// error
 			System.out.println("Error: Byte/Word Combination Not Allowed");
 			System.exit(0);
 		} else {// number
@@ -104,7 +225,8 @@ public class Hyp86 {
 			for (int i = 3; i >= 0; i--) {
 				cx[i] = dx[i];
 			}
-		} else if (second.contains("l") || second.contains("h")) {// error
+		} else if (second.contains("al") || second.contains("ah") || second.contains("bl") || second.contains("bh")
+				|| second.contains("cl") || second.contains("ch") || second.contains("dl") || second.contains("dh")) {// error
 			System.out.println("Error: Byte/Word Combination Not Allowed");
 			System.exit(0);
 		} else {// number
@@ -128,7 +250,8 @@ public class Hyp86 {
 			for (int i = 3; i >= 0; i--) {
 				dx[i] = cx[i];
 			}
-		} else if (second.contains("l") || second.contains("h")) {// error
+		} else if (second.contains("al") || second.contains("ah") || second.contains("bl") || second.contains("bh")
+				|| second.contains("cl") || second.contains("ch") || second.contains("dl") || second.contains("dh")) {// error
 			System.out.println("Error: Byte/Word Combination Not Allowed");
 			System.exit(0);
 		} else {// number
@@ -397,7 +520,7 @@ public class Hyp86 {
 
 	public void mov_reg_unknown(String first, String second) {
 
-		if (first.equalsIgnoreCase("ax")) { // mov *x,*l ya da *x, *h hatasý yapýldý , mov *x,*x yapýldý,
+		if (first.equalsIgnoreCase("ax")) { // mov *x,*l ya da *x, *h hatasý yapýldý
 			mov_ax_unknown(second);
 		} else if (first.equalsIgnoreCase("bx")) {
 			mov_bx_unknown(second);
@@ -443,12 +566,12 @@ public class Hyp86 {
 
 	}
 
-	public int hexaToDecimal(int a) {
-		return Integer.parseInt("+a+");
+	public int hexaToDecimal(String s) {
+		return Integer.parseInt(s, 16);
 	}
 
-	public int DecimalToHexa(int a) {
-		return Integer.valueOf(Integer.toHexString(a).substring(0, Integer.toHexString(a).length()));
+	public String DecimalToHexa(int a) {
+		return Integer.toHexString(a);
 	}
 
 	public int binaryToDecimal(int a) {
