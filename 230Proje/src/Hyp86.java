@@ -13,8 +13,8 @@ public class Hyp86 {
 	// byte arrayi yapınca charı koyamayız o yüzden array boyutunu yarıya düşürdüm.
 	// bu 2^15 yapıyo. hoca da bu uzunlukta tutmuştu zaten
 	// ama fffe 65534 yapıyo
-	//bence biz arrayi yine 64k tutmalıyız
-	char[] memory = new char[32768*2]; // hexa tutalım
+	// bence biz arrayi yine 64k tutmalıyız
+	char[] memory = new char[32768 * 2]; // hexa tutalım
 
 	// bu 4 ü ne ise yarıyo bilmiyorum henuz
 	char[] di = new char[4];
@@ -33,7 +33,7 @@ public class Hyp86 {
 	boolean OF = false;
 
 	int numberOfInstructions;
-	String SF = "FFFE"; // stack pointer , memoryye erisirken hexadan decimale cevircez
+	String SP = "FFFE"; // stack pointer , memoryye erisirken hexadan decimale cevircez
 	int MP = 0; // memory Pointer, instructionları okuduktan sonra 6*n' e kadar -1 falan yapıp
 				// erişilmez kılmamız lazım. (n=number of instructions)
 
@@ -122,21 +122,22 @@ public class Hyp86 {
 				if (Integer.parseInt(num, 16) >= 32768 && Integer.parseInt(num, 16) <= numberOfInstructions * 6) {
 					System.err.println("Bad memory address");
 					System.exit(0);
-				}else {
-					
-					//!??!!?!?!?!??!?!
-					for(int i=0;i<=3;i++) { // memoryde de 1er 1er artırcaz mı?? yoksa direk o indisin içindeki sayıyı mı atıcaz??
-						ax[3-i]=memory[Integer.parseInt(num, 16)+i];
+				} else {
+
+					// !??!!?!?!?!??!?!
+					for (int i = 0; i <= 3; i++) { // memoryde de 1er 1er artırcaz mı?? yoksa direk o indisin içindeki
+													// sayıyı mı atıcaz??
+						// ax[3-i]=memory[Integer.parseInt(num, 16)+i];
 					}
 				}
 			} else {// w kabul et: mov ax, w[xxxx] ya da mov ax, [xxxx] ya da mov ax,[xxxxh] ya da
 					// mov ax,[0xxxxh]
 				if (second.charAt(0) == 'w') {
 					second = second.substring(2, second.length() - 1); // got rid of w[ and ]
-
+					// to be continued
 				} else {
 					second = second.substring(1, second.length() - 1); // got rid of [ and ]
-
+					// to be continued
 				}
 
 			}
