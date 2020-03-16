@@ -14,22 +14,7 @@ public class main {
 		String fileAsString;// can be the parameter of the Hyp86 object !!
 		fileAsString = parser(segments);//whole code as a string
 		
-		System.out.println(fileAsString);
-		
-		System.out.println("------------------");
-		
-		System.out.println(segments.get("segment"));
-		System.out.println("------------------");
-		
-		System.out.println(segments.get("segment2"));		
-		
-		System.out.println("------------------");
-		
-		System.out.println(segments.get("segment3"));
-		
-		System.out.println("------------------");
-		
-		System.out.println(segments.get("segment4"));
+
 		
 		
 		Hyp86 assembly=new Hyp86("");
