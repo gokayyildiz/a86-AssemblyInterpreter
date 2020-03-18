@@ -14,14 +14,21 @@ public class main {
 		String fileAsString;// can be the parameter of the Hyp86 object !!
 		fileAsString = parser(segments);// whole code as a string
 		Hyp86 assembly = new Hyp86(fileAsString);
-		assembly.NumberToFourByteHexa("12412d");
-		assembly.NumberToFourByteHexa("5h");
-		assembly.NumberToFourByteHexa("05d");
-		assembly.NumberToFourByteHexa("21");
+		assembly.bx[0]='0';
+		assembly.bx[1]='3';
+		assembly.bx[2]='e';
+		assembly.bx[3]='8';
 		// registerda ters tutuluyo aray tarzýna göre
 		// yani sað taraf 0 sol taraf 15 regde
 		// biz ax=ah:al yapalým
 		// al indexi daha yüksek olucak ama yapcak biþi yok
+assembly.memory[2000]='b';
+assembly.memory[2001]='e';
+assembly.memory[2002]='w';
+assembly.memory[2003]='s';
+assembly.mov("ax", "[bx]");
+		assembly.NumberToFourByteHexa("213");
+	
 	}
 
 	/**

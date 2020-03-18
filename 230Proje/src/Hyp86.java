@@ -43,6 +43,7 @@ public class Hyp86 {
 
 	Hyp86(String FileAsString) { // constructor
 		numberOfInstructions = 0; // bunu initialize edip ona göre memory ayýrcaz
+
 	}
 
 	public static void add(String first, String second) {
@@ -62,22 +63,22 @@ public class Hyp86 {
 	// first reg veya memory
 	// boyut uyumsuzluğunda hata ver
 
-	public void mov_mem_xx(String first, String second) {
+	public void mov_mem_xx(String first, String second) { // gökay yeni mmeory yaptıktan sonra yazıcam
 
 	}
 
 	public void mov_ax_unknown(String second) {
-
+/*
 		if (second.contains("[") && second.contains("]")) { // indirect adrressing
 			// w[xxxx] ya da b[xxxx] olabilir
-			/*
+			*
 			 * Bad Index Register:
 			 * 
 			 * This is reported when you attempt to use a register other than SI, DI, BX, or
 			 * BP for indexing. Those are the only registers that the 86 architecture allows
 			 * you to place inside brackets, to address memory.
-			 */
-
+			 *
+/*
 			if (second.charAt(0) == 'b') { // 1 byte
 				System.out.println("Byte/Word Combination Not Allowed");
 				System.exit(0);
@@ -92,22 +93,20 @@ public class Hyp86 {
 				String num = "";
 				if (second.contains("si") || second.contains("di") || second.contains("bx") || second.contains("bp")) { // register
 					// indirect
-					second = second.substring(1, second.length() - 1); // got rid of [ and ]
-
 					if (second.equals("si")) {
-						for (int i = 3; i >= 0; i--) {
+						for (int i = 0; i <= 3; i++) {
 							num += si[i];
 						}
 					} else if (second.equals("di")) {
-						for (int i = 3; i >= 0; i--) {
+						for (int i = 0; i <= 3; i++) {
 							num += di[i];
 						}
 					} else if (second.equals("bp")) {
-						for (int i = 3; i >= 0; i--) {
+						for (int i = 0; i <= 3; i++) {
 							num += bp[i];
 						}
 					} else if (second.equals("bx")) {
-						for (int i = 3; i >= 0; i--) {
+						for (int i = 0; i <= 3; i++) {
 							num += bx[i];
 						}
 					}
@@ -118,11 +117,24 @@ public class Hyp86 {
 				}
 
 				for (int i = 0; i <= 3; i++) {
-					ax[3 - i] = memory[Integer.parseInt(num, 16) * 2 + i];
+					ax[ i] = memory[Integer.parseInt(num, 16) * 2 + i];
 				}
 
 			}
-		} else if (second.equals("bx")) {
+		}
+		
+		
+		 burası değişecek çünkü memory şekli değişti
+		*/
+		
+
+		
+		
+		
+		
+		
+		//else
+		if (second.equals("bx")) {
 			for (int i = 3; i >= 0; i--) {
 				ax[i] = bx[i];
 			}
@@ -142,21 +154,7 @@ public class Hyp86 {
 		// bu kýsým ok gibi ama deðiþik inputlarla test etmek lazým pek emin deðilim
 		else {// var olanilir, "offset var" olabilir
 
-			// 01h olabilir -> h yi atýp yerleþtir +, 5d olabilir -> dyi atýp hexaya çevir
-			// +,
-			// 132 olabilir->hexaya çevir+, 0'la baþlýyosa hexa alýyo direk
-
-			// !!!! 0534d yi decimal okumuyo 534d diye hexa okuyo +.
-			if (second.charAt(second.length() - 1) == 'd' && second.charAt(0) != '0') {
-				second = second.substring(0, second.length() - 1); // got rid of d
-				second = Integer.toHexString(Integer.valueOf(second));// decimal turned to hexa
-			} else {
-				if (second.charAt(second.length() - 1) == 'h') {
-					second = second.substring(0, second.length() - 1); // got rid of h
-				}
-			}
-			// finally second is hexa and ready to be inserted into register
-			// reset register
+			second = NumberToFourByteHexa(second);
 			for (int i = 0; i < 3; i++)
 				ax[i] = 0;
 			for (int i = 0; i <= 3 && i < second.length(); i++) {
