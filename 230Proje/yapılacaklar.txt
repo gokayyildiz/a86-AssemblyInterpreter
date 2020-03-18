@@ -1,0 +1,8 @@
+numberOfInstructiıns lazım parametre olarak Hyp86ya.
+ PArse ederken o da tuutlabilir veya FileAsStringin bidaha üzerinden geçip hesplanabilir.
+ Ya da constructorda hesaplanabilir. birini yapalım işte.
+ 
+ 
+ Faydalı link: https://www.skynet.ie/~darkstar/assembler/manual
+ 
+ 
