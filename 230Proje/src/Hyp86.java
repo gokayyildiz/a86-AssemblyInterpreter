@@ -1,22 +1,25 @@
-// mov da bi özelliği implemente ederken önce ax'e ediyorum.
-// değişik inputlarla testen sonra başarılı 
-// olursa diğerlierine copy paste basit zaten
+// mov da bi Ã¶zelliÃ°i implemente ederken Ã¶nce ax'e ediyorum.
+// deÃ°iÃ¾ik inputlarla testen sonra baÃ¾arÃ½lÃ½ 
+// olursa diÃ°erlierine copy paste basit zaten
 //**
-//immeadite, register yapıldı gibi
-//register indirect ve memory yapıyorum
-//stack addresssing tam ne bilmiyoum, öğreniyim bakıcam
-// mov dl,"*" diye bişi varmış, asciiden hexaya çevirip yazıyo. yeni öğrendim bakıcam
+//immeadite, register yapÃ½ldÃ½ gibi
+//register indirect ve memory yapÃ½yorum
+//stack addresssing tam ne bilmiyoum, Ã¶Ã°reniyim bakÃ½cam
+// mov dl,"*" diye biÃ¾i varmÃ½Ã¾, asciiden hexaya Ã§evirip yazÃ½yo. yeni Ã¶Ã°rendim bakÃ½cam
 //**
 
 public class Hyp86 {
 
-	// byte arrayi yapınca charı koyamayız o yüzden array boyutunu yarıya düşürdüm.
-	// bu 2^15 yapıyo. hoca da bu uzunlukta tutmuştu zaten
-	// ama fffe 65534 yapıyo
-	// bence biz arrayi yine 64k tutmalıyız
-	char[] memory = new char[32768 * 2]; // hexa tutalım
-
-	// bu 4 ü ne ise yarıyo bilmiyorum henuz
+	// byte arrayi yapÃ½nca charÃ½ koyamayÃ½z o yÃ¼zden array boyutunu yarÃ½ya dÃ¼Ã¾Ã¼rdÃ¼m.
+	// bu 2^15 yapÃ½yo. hoca da bu uzunlukta tutmuÃ¾tu zaten
+	// ama fffe 65534 yapÃ½yo
+	// bence biz arrayi yine 64k tutmalÃ½yÃ½z
+	char[] memory = new char[32768 * 4]; // hexa tutalÃ½m
+	// memoryyi 128k yaptÄ±m. Ã§Ã¼nkÃ¼ registerlar 2 byte e 4 uzunlupunda bu da 64kbyte
+	// ise 128k uzunluÄŸunda olsun.
+	// her char 4 bit dÃ¼ÅŸÃ¼nÃ¼yoruz(hexa karakter)
+	// bu 4 Ã¼ ne ise yarÃ½yo bilmiyorum henuz
+	// eriÅŸirken 2 ile Ã§arp
 	char[] di = new char[4];
 	char[] sp = new char[4];
 	char[] si = new char[4];
@@ -31,14 +34,15 @@ public class Hyp86 {
 	boolean AF = false;
 	boolean CF = false;
 	boolean OF = false;
+	boolean SF = false;
 
 	int numberOfInstructions;
 	String SP = "FFFE"; // stack pointer , memoryye erisirken hexadan decimale cevircez
-	int MP = 0; // memory Pointer, instructionları okuduktan sonra 6*n' e kadar -1 falan yapıp
-				// erişilmez kılmamız lazım. (n=number of instructions)
+	int MP = 0; // memory Pointer, instructionlarÃ½ okuduktan sonra 6*n' e kadar -1 falan yapÃ½p
+	// eriÃ¾ilmez kÃ½lmamÃ½z lazÃ½m. (n=number of instructions)
 
-	Hyp86(String s) { // constructor
-		numberOfInstructions = 0; // bunu initialize edip ona göre memory ayırcaz
+	Hyp86(String FileAsString) { // constructor
+		numberOfInstructions = 0; // bunu initialize edip ona gÃ¶re memory ayÃ½rcaz
 	}
 
 	public static void add(String first, String second) {
@@ -46,102 +50,78 @@ public class Hyp86 {
 	}
 
 	// !!!!!!!!!!!!! mov:
-	// second offset içerebilir veya var içeribilir
+	// second offset iÃ§erebilir veya var iÃ§eribilir
 	// When using variable names offset variable-name accesses the address,
 	// just the variable-name accesses the value.
 	// !!!!!!!!!!!!!
 
-	// firstin memorydei adresine secondın değerini taşı
+	// firstin memorydei adresine secondÃ½n deÃ°erini taÃ¾Ã½
 	// second pointer olabilir ex: [454]
-	// second sayı olabilir ex: 454
+	// second sayÃ½ olabilir ex: 454
 	// second reg olabilir ex: cl
 	// first reg veya memory
-	// second boyutu firstten büyükse hata ver
+	// boyut uyumsuzluÄŸunda hata ver
 
 	public void mov_mem_xx(String first, String second) {
 
 	}
 
 	public void mov_ax_unknown(String second) {
-		if (second.contains("[") && second.contains("]")) { // second is memory
+
+		if (second.contains("[") && second.contains("]")) { // indirect adrressing
 			// w[xxxx] ya da b[xxxx] olabilir
-			// [bx] olabilir
-			// w[xxxxh] ya da b[0xxxxh] olabilir. fuck uzun sürücek!!!
+			/*
+			 * Bad Index Register:
+			 * 
+			 * This is reported when you attempt to use a register other than SI, DI, BX, or
+			 * BP for indexing. Those are the only registers that the 86 architecture allows
+			 * you to place inside brackets, to address memory.
+			 */
 
-			if (second.charAt(0) == 'b') { // tek byte
-				second = second.substring(2, second.length() - 1); // got rid of b[ and ]
-
-			} else if (second.contains("ax") || second.contains("cx") || second.contains("bx") || second.contains("dx")
-					|| second.contains("al") || second.contains("ah") || second.contains("bl") || second.contains("bh")
-					|| second.contains("cl") || second.contains("ch") || second.contains("dl")
-					|| second.contains("dh")) { // register indirect : mov ax,[bx] -> burda bazen bad index register
-												// yiyebiliyoruz nedennii çözemedim.
-												// belki memoryde öyle bi adres olmadığı içindir.
-				second = second.substring(1, second.length() - 1); // got rid of [ and ]
-				String num = "";
-				if (second.equals("ax")) {
-					for (int i = 0; i <= 3; i++)
-						num += ax[i];
-				} else if (second.equals("bx")) {
-					for (int i = 0; i <= 3; i++)
-						num += bx[i];
-				} else if (second.equals("cx")) {
-					for (int i = 0; i <= 3; i++)
-						num += cx[i];
-				} else if (second.equals("dx")) {
-					for (int i = 0; i <= 3; i++)
-						num += dx[i];
-				} else if (second.equals("al")) {
-					for (int i = 0; i <= 1; i++)
-						num += ax[i + 2];
-				} else if (second.equals("ah")) {
-					for (int i = 0; i <= 1; i++)
-						num += ax[i];
-				} else if (second.equals("bl")) {
-					for (int i = 0; i <= 1; i++)
-						num += bx[i + 2];
-				} else if (second.equals("bh")) {
-					for (int i = 0; i <= 1; i++)
-						num += bx[i];
-				} else if (second.equals("cl")) {
-					for (int i = 0; i <= 1; i++)
-						num += cx[i + 2];
-				} else if (second.equals("ch")) {
-					for (int i = 0; i <= 1; i++)
-						num += cx[i];
-				} else if (second.equals("dl")) {
-					for (int i = 0; i <= 1; i++)
-						num += dx[i + 2];
-				} else if (second.equals("dh")) {
-					for (int i = 0; i <= 1; i++)
-						num += dx[i];
-				}
-
-				// [register] adresi alındı şimdi memory sınırları içinde mi ona bakıcaz
-				// öyleyse memorydeki o adresi kopyala değilse hata ver kapat
-				if (Integer.parseInt(num, 16) >= 32768 && Integer.parseInt(num, 16) <= numberOfInstructions * 6) {
-					System.err.println("Bad memory address");
-					System.exit(0);
-				} else {
-
-					// !??!!?!?!?!??!?!
-					for (int i = 0; i <= 3; i++) { // memoryde de 1er 1er artırcaz mı?? yoksa direk o indisin içindeki
-													// sayıyı mı atıcaz??
-						// ax[3-i]=memory[Integer.parseInt(num, 16)+i];
-					}
-				}
-			} else {// w kabul et: mov ax, w[xxxx] ya da mov ax, [xxxx] ya da mov ax,[xxxxh] ya da
-					// mov ax,[0xxxxh]
-				if (second.charAt(0) == 'w') {
-					second = second.substring(2, second.length() - 1); // got rid of w[ and ]
-					// to be continued
-				} else {
-					second = second.substring(1, second.length() - 1); // got rid of [ and ]
-					// to be continued
-				}
+			if (second.charAt(0) == 'b') { // 1 byte
+				System.out.println("Byte/Word Combination Not Allowed");
+				System.exit(0);
 
 			}
 
+			else { // 2 byte
+				if (second.charAt(0) == 'w') {
+					second = second.substring(1); // got rid of 'w'
+				}
+				second = second.substring(1, second.length() - 1); // got rid of [ and ]
+				String num = "";
+				if (second.contains("si") || second.contains("di") || second.contains("bx") || second.contains("bp")) { // register
+					// indirect
+					second = second.substring(1, second.length() - 1); // got rid of [ and ]
+
+					if (second.equals("si")) {
+						for (int i = 3; i >= 0; i--) {
+							num += si[i];
+						}
+					} else if (second.equals("di")) {
+						for (int i = 3; i >= 0; i--) {
+							num += di[i];
+						}
+					} else if (second.equals("bp")) {
+						for (int i = 3; i >= 0; i--) {
+							num += bp[i];
+						}
+					} else if (second.equals("bx")) {
+						for (int i = 3; i >= 0; i--) {
+							num += bx[i];
+						}
+					}
+					// got the value put in ax
+
+				} else {// sayÄ± vardÄ±r iÃ§inde, sayÄ±yÄ± hexaya Ã§evir
+					num = NumberToFourByteHexa(second);
+				}
+
+				for (int i = 0; i <= 3; i++) {
+					ax[3 - i] = memory[Integer.parseInt(num, 16) * 2 + i];
+				}
+
+			}
 		} else if (second.equals("bx")) {
 			for (int i = 3; i >= 0; i--) {
 				ax[i] = bx[i];
@@ -159,12 +139,12 @@ public class Hyp86 {
 			System.out.println("Error: Byte/Word Combination Not Allowed");
 			System.exit(0);
 		}
-		// bu kısım ok gibi ama değişik inputlarla test etmek lazım pek emin değilim
+		// bu kÃ½sÃ½m ok gibi ama deÃ°iÃ¾ik inputlarla test etmek lazÃ½m pek emin deÃ°ilim
 		else {// var olanilir, "offset var" olabilir
 
-			// 01h olabilir -> h yi atıp yerleştir +, 5d olabilir -> dyi atıp hexaya çevir
+			// 01h olabilir -> h yi atÃ½p yerleÃ¾tir +, 5d olabilir -> dyi atÃ½p hexaya Ã§evir
 			// +,
-			// 132 olabilir->hexaya çevir+, 0'la başlıyosa hexa alıyo direk
+			// 132 olabilir->hexaya Ã§evir+, 0'la baÃ¾lÃ½yosa hexa alÃ½yo direk
 
 			// !!!! 0534d yi decimal okumuyo 534d diye hexa okuyo +.
 			if (second.charAt(second.length() - 1) == 'd' && second.charAt(0) != '0') {
@@ -291,7 +271,7 @@ public class Hyp86 {
 		} else if (second.contains("x")) {
 			System.out.println("Byte/Word Combination Not Allowed");
 			System.exit(0);
-		} else { // şu diger regler olabılır sonra yapıcam
+		} else { // Ã¾u diger regler olabÃ½lÃ½r sonra yapÃ½cam
 
 		}
 	}
@@ -328,7 +308,7 @@ public class Hyp86 {
 		} else if (second.contains("x")) {
 			System.out.println("Byte/Word Combination Not Allowed");
 			System.exit(0);
-		} else { // şu diger regler olabılır sonra yapıcam
+		} else { // Ã¾u diger regler olabÃ½lÃ½r sonra yapÃ½cam
 
 		}
 	}
@@ -365,7 +345,7 @@ public class Hyp86 {
 		} else if (second.contains("x")) {
 			System.out.println("Byte/Word Combination Not Allowed");
 			System.exit(0);
-		} else { // şu diger regler olabılır sonra yapıcam
+		} else { // Ã¾u diger regler olabÃ½lÃ½r sonra yapÃ½cam
 		}
 	}
 
@@ -405,7 +385,7 @@ public class Hyp86 {
 		} else if (second.contains("x")) {
 			System.out.println("Byte/Word Combination Not Allowed");
 			System.exit(0);
-		} else { // şu diger regler olabılır sonra yapıcam
+		} else { // Ã¾u diger regler olabÃ½lÃ½r sonra yapÃ½cam
 
 		}
 	}
@@ -442,7 +422,7 @@ public class Hyp86 {
 		} else if (second.contains("x")) {
 			System.out.println("Byte/Word Combination Not Allowed");
 			System.exit(0);
-		} else { // şu diger regler olabılır sonra yapıcam
+		} else { // Ã¾u diger regler olabÃ½lÃ½r sonra yapÃ½cam
 		}
 	}
 
@@ -478,7 +458,7 @@ public class Hyp86 {
 		} else if (second.contains("x")) {
 			System.out.println("Byte/Word Combination Not Allowed");
 			System.exit(0);
-		} else { // şu diger regler olabılır sonra yapıcam
+		} else { // Ã¾u diger regler olabÃ½lÃ½r sonra yapÃ½cam
 
 		}
 	}
@@ -515,13 +495,13 @@ public class Hyp86 {
 		} else if (second.contains("x")) {
 			System.out.println("Byte/Word Combination Not Allowed");
 			System.exit(0);
-		} else { // şu diger regler olabılır sonra yapıcam
+		} else { // Ã¾u diger regler olabÃ½lÃ½r sonra yapÃ½cam
 		}
 	}
 
 	public void mov_reg_unknown(String first, String second) {
 
-		if (first.equalsIgnoreCase("ax")) { // mov *x,*l ya da *x, *h hatası yapıldı
+		if (first.equalsIgnoreCase("ax")) { // mov *x,*l ya da *x, *h hatasÃ½ yapÃ½ldÃ½
 			mov_ax_unknown(second);
 		} else if (first.equalsIgnoreCase("bx")) {
 			mov_bx_unknown(second);
@@ -560,7 +540,7 @@ public class Hyp86 {
 			// reg
 			mov_reg_unknown(first, second);
 
-		} else { // reg veya memoryye yazmıyo hata ver
+		} else { // reg veya memoryye yazmÃ½yo hata ver
 			System.out.println("Undefined sysbols are listed");
 			System.exit(0);
 		}
@@ -581,6 +561,31 @@ public class Hyp86 {
 
 	public static int DecimalToBinary(int a) {
 		return Integer.valueOf(Integer.toBinaryString(a).substring(0, Integer.toBinaryString(a).length()));
+	}
+
+	public String NumberToFourByteHexa(String s) {// 2abd hexa mesela
+		if (s.charAt(0) == '0') {// hexa
+
+		} else if (s.indexOf("d") == s.length() - 1
+				&& !(s.contains("a") || s.contains("b") || s.contains("c") || s.contains("e") || s.contains("f"))) { // deci
+			s = s.substring(0, s.length() - 1);
+			s = Integer.toHexString(Integer.valueOf(s));
+		} else if (s.charAt(s.length() - 1) == 'h') {// hexa
+
+			s = s.substring(0, s.length() - 1);
+		} else if (!(s.contains("a") || s.contains("b") || s.contains("c") || s.contains("d") || s.contains("e")
+				|| s.contains("f"))) {// number
+			s = Integer.toHexString(Integer.valueOf(s));
+		}
+
+		if (s.length() > 4) {
+			return s.substring(s.length() - 4, s.length());
+		} else {
+			while (s.length() < 4) {
+				s = "0" + s;
+			}
+			return s;
+		}
 	}
 
 }
