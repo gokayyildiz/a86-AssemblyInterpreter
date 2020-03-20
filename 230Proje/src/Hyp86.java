@@ -1,3 +1,16 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Scanner;
+
+// mov da bi özelliği implemente ederken önce ax'e ediyorum.
+// değişik inputlarla testen sonra başarılı 
+// olursa diğerlierine copy paste basit zaten
+//**
+//immeadite, register yapıldı gibi
+//register indirect ve memory yapıyorum
+//stack addresssing tam ne bilmiyoum, öğreniyim bakıcam
+// mov dl,"*" diye bişi varmış, asciiden hexaya çevirip yazıyo. yeni öğrendim bakıcam
+//**
 // mov da bi Ã¶zelliÃ°i implemente ederken Ã¶nce ax'e ediyorum.
 // deÃ°iÃ¾ik inputlarla testen sonra baÃ¾arÃ½lÃ½ 
 // olursa diÃ°erlierine copy paste basit zaten
@@ -9,16 +22,16 @@
 //**
 
 public class Hyp86 {
+	
+	/*labels, <label, index of where the label's instruction starts>
+	 *instructionList, to see is the given label a kind of instruction
+	 *variables, array of variables defined 
+	 */
+	HashMap<String, Integer> labels = new HashMap<>();
+	ArrayList<String> instructionList = new ArrayList<>();
+	ArrayList<Variable> variables = new ArrayList<>();
+	String[] memory = new String[64 * 1024];
 
-	// byte arrayi yapÃ½nca charÃ½ koyamayÃ½z o yÃ¼zden array boyutunu yarÃ½ya dÃ¼Ã¾Ã¼rdÃ¼m.
-	// bu 2^15 yapÃ½yo. hoca da bu uzunlukta tutmuÃ¾tu zaten
-	// ama fffe 65534 yapÃ½yo
-	// bence biz arrayi yine 64k tutmalÃ½yÃ½z
-	char[] memory = new char[32768 * 4]; // hexa tutalÃ½m
-	// memoryyi 128k yaptÄ±m. Ã§Ã¼nkÃ¼ registerlar 2 byte e 4 uzunlupunda bu da 64kbyte
-	// ise 128k uzunluÄŸunda olsun.
-	// her char 4 bit dÃ¼ÅŸÃ¼nÃ¼yoruz(hexa karakter)
-	// bu 4 Ã¼ ne ise yarÃ½yo bilmiyorum henuz
 	// eriÅŸirken 2 ile Ã§arp
 	char[] di = new char[4];
 	char[] sp = new char[4];
@@ -41,10 +54,97 @@ public class Hyp86 {
 	int MP = 0; // memory Pointer, instructionlarÃ½ okuduktan sonra 6*n' e kadar -1 falan yapÃ½p
 	// eriÃ¾ilmez kÃ½lmamÃ½z lazÃ½m. (n=number of instructions)
 
-	Hyp86(String FileAsString) { // constructor
-		numberOfInstructions = 0; // bunu initialize edip ona gÃ¶re memory ayÃ½rcaz
+	
+	/**
+	 * add instructions in an order to the memory until int 20h comes
+	 * get rid of commas at instructions,
+	 * finally have "mov ax bx" instead of "mov ax,bx"
+	 * 
+	 * @param fileAsString
+	 */
+	Hyp86(String fileAsString) { 
+		fillInstructions();
+		fileAsString = fileAsString.toLowerCase();
+		
+		Scanner scanner = new Scanner(fileAsString);
+		String line;
+		Scanner token;
+		int indexCursor = 0;
+		String label = "";
+		boolean int20hCame = false;
+		while(scanner.hasNextLine()) {
+			line = scanner.nextLine();
+			token = new Scanner(line);
+			String first = token.next();
+			
+			if(!int20hCame && instructionList.contains(first)) {//means instruction
+		
+				if(!label.equals("")) {
+					labels.put(label, indexCursor);
+					label = "";
+				}
+				if(line.indexOf(',') != -1) {
+					int temo = line.indexOf(',');
+					String temp = line.substring(0, temo) + " " + line.substring(temo +1, line.length());
+					line = temp;
+				}
+				
+				if(first.equals("int") && token.next().equals("20h")) {
+					int20hCame = true;
+				}
+				memory[indexCursor] = line;
+				indexCursor +=6;
+				
+			}
+			if(line.indexOf(":") != -1) {// means label
+				label = line.trim().substring(0,line.length()-1);				  
+				continue;
+			}
+			
+			if(line.indexOf("dw") != -1 ||line.indexOf("db") != -1 ) {// variable definition
+			
+				if(first.equals("dw")) {
+					variables.add(new Variable(label, 0, token.next(), true));
+				}else if(first.equals("db")) {
+					variables.add(new Variable(label, 0, token.next(), false));
+				}else {
+					if(token.next().equals("dw")) {
+						variables.add(new Variable(first, 0, token.next(), true));
+					}else{
+						variables.add(new Variable(first, 0, token.next(), false));
+					}
+				}
+				
+				
+			}
+			
+			token.close();
+			label = "";
+			
+			
+			
+		}
+		Variable x;
+		for(int i = 0; i< variables.size() ; i++) {
+			x = variables.get(i);
+			if(x.type == true) {
+				memory[indexCursor] = x.name;
+				x.memoryIndex = indexCursor;
+				indexCursor +=2;	
+			}else {
+				memory[indexCursor] = x.name;
+				x.memoryIndex = indexCursor;
+				indexCursor +=1;
+			}
+			
+		}
+		
+		
+		scanner.close();
 
 	}
+
+	
 
 	public static void add(String first, String second) {
 
@@ -584,6 +684,43 @@ public class Hyp86 {
 			}
 			return s;
 		}
+	}
+	
+	private void fillInstructions() {
+		instructionList.add("mov");
+		instructionList.add("add");
+		instructionList.add("sub");
+		instructionList.add("mul");
+		instructionList.add("div");
+		instructionList.add("xor");
+		instructionList.add("or");
+		instructionList.add("and");
+		instructionList.add("not");
+		instructionList.add("rcl");
+		instructionList.add("rcr");
+		instructionList.add("shl");
+		instructionList.add("shr");
+		instructionList.add("push");
+		instructionList.add("pop");
+		instructionList.add("nop");
+		instructionList.add("cmp");
+		instructionList.add("jmp");
+		instructionList.add("jz");
+		instructionList.add("jnz");
+		instructionList.add("je");
+		instructionList.add("jne");
+		instructionList.add("ja");
+		instructionList.add("jae");
+		instructionList.add("jb");
+		instructionList.add("jbe");
+		instructionList.add("jnae");
+		instructionList.add("jnb");
+		instructionList.add("jnbe");
+		instructionList.add("jnc");
+		instructionList.add("jc");
+		instructionList.add("int");
+		
+		
 	}
 
 }
