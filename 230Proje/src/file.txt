@@ -9,4 +9,7 @@ int 21h
 dec cx
 jnz more
 int 20h ; exit to dos
+var1 dw 12
+var2 db 11
+var3 db 15
 code ends

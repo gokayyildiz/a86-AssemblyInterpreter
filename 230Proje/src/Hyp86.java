@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Scanner;
 
 // mov da bi �zelli�i implemente ederken �nce ax'e ediyorum.
@@ -22,10 +23,11 @@ import java.util.Scanner;
 //**
 
 public class Hyp86 {
-	
-	/*labels, <label, index of where the label's instruction starts>
-	 *instructionList, to see is the given label a kind of instruction
-	 *variables, array of variables defined 
+
+	/*
+	 * labels, <label, index of where the label's instruction starts>
+	 * instructionList, to see is the given label a kind of instruction variables,
+	 * array of variables defined
 	 */
 	HashMap<String, Integer> labels = new HashMap<>();
 	ArrayList<String> instructionList = new ArrayList<>();
@@ -54,97 +56,89 @@ public class Hyp86 {
 	int MP = 0; // memory Pointer, instructionlarý okuduktan sonra 6*n' e kadar -1 falan yapýp
 	// eriþilmez kýlmamýz lazým. (n=number of instructions)
 
-	
 	/**
-	 * add instructions in an order to the memory until int 20h comes
-	 * get rid of commas at instructions,
-	 * finally have "mov ax bx" instead of "mov ax,bx"
+	 * add instructions in an order to the memory until int 20h comes get rid of
+	 * commas at instructions, finally have "mov ax bx" instead of "mov ax,bx"
 	 * 
 	 * @param fileAsString
 	 */
-	Hyp86(String fileAsString) { 
+	Hyp86(String fileAsString) {
 		fillInstructions();
 		fileAsString = fileAsString.toLowerCase();
-		
+
 		Scanner scanner = new Scanner(fileAsString);
 		String line;
 		Scanner token;
 		int indexCursor = 0;
 		String label = "";
 		boolean int20hCame = false;
-		while(scanner.hasNextLine()) {
+		while (scanner.hasNextLine()) {
 			line = scanner.nextLine();
 			token = new Scanner(line);
 			String first = token.next();
-			
-			if(!int20hCame && instructionList.contains(first)) {//means instruction
-		
-				if(!label.equals("")) {
+
+			if (!int20hCame && instructionList.contains(first)) {// means instruction
+
+				if (!label.equals("")) {
 					labels.put(label, indexCursor);
 					label = "";
 				}
-				if(line.indexOf(',') != -1) {
+				if (line.indexOf(',') != -1) {
 					int temo = line.indexOf(',');
-					String temp = line.substring(0, temo) + " " + line.substring(temo +1, line.length());
+					String temp = line.substring(0, temo) + " " + line.substring(temo + 1, line.length());
 					line = temp;
 				}
-				
-				if(first.equals("int") && token.next().equals("20h")) {
+
+				if (first.equals("int") && token.next().equals("20h")) {
 					int20hCame = true;
 				}
 				memory[indexCursor] = line;
-				indexCursor +=6;
-				
+				indexCursor += 6;
+
 			}
-			if(line.indexOf(":") != -1) {// means label
-				label = line.trim().substring(0,line.length()-1);				  
+			if (line.indexOf(":") != -1) {// means label
+				label = line.trim().substring(0, line.length() - 1);
 				continue;
 			}
-			
-			if(line.indexOf("dw") != -1 ||line.indexOf("db") != -1 ) {// variable definition
-			
-				if(first.equals("dw")) {
+
+			if (line.indexOf("dw") != -1 || line.indexOf("db") != -1) {// variable definition
+
+				if (first.equals("dw")) {
 					variables.add(new Variable(label, 0, token.next(), true));
-				}else if(first.equals("db")) {
+				} else if (first.equals("db")) {
 					variables.add(new Variable(label, 0, token.next(), false));
-				}else {
-					if(token.next().equals("dw")) {
+				} else {
+					if (token.next().equals("dw")) {
 						variables.add(new Variable(first, 0, token.next(), true));
-					}else{
+					} else {
 						variables.add(new Variable(first, 0, token.next(), false));
 					}
 				}
-				
-				
+
 			}
-			
+
 			token.close();
 			label = "";
-			
-			
-			
+
 		}
 		Variable x;
-		for(int i = 0; i< variables.size() ; i++) {
+		for (int i = 0; i < variables.size(); i++) {
 			x = variables.get(i);
-			if(x.type == true) {
+			if (x.type == true) {
 				memory[indexCursor] = x.name;
 				x.memoryIndex = indexCursor;
-				indexCursor +=2;	
-			}else {
+				indexCursor += 2;
+			} else {
 				memory[indexCursor] = x.name;
 				x.memoryIndex = indexCursor;
-				indexCursor +=1;
+				indexCursor += 1;
 			}
-			
+
 		}
-		
-		
+
 		scanner.close();
 
 	}
-
-	
 
 	public static void add(String first, String second) {
 
@@ -163,36 +157,55 @@ public class Hyp86 {
 	// first reg veya memory
 	// boyut uyumsuzluğunda hata ver
 
-	public void mov_mem_xx(String first, String second) { // gökay yeni mmeory yaptıktan sonra yazıcam
+	public void mov_mem_xx(String first, String second) { //
 
 	}
 
 	public void mov_ax_unknown(String second) {
-/*
-		if (second.contains("[") && second.contains("]")) { // indirect adrressing
-			// w[xxxx] ya da b[xxxx] olabilir
-			*
-			 * Bad Index Register:
+		boolean isVar = false;
+		Variable var = null;
+		Variable temp;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			temp = itr.next();
+			if (second.contains(temp.name)) {
+				isVar = true;
+				var = temp;
+			}
+		}
+		if (second.contains("offset")) {
+			String value = NumberToFourByteHexa("" + var.memoryIndex);
+			for (int i = 0; i <= 3; i++) {
+				ax[i] = '0';
+			}
+			for (int i = 0; i <= 3 && i < value.length(); i++) {
+				ax[3 - i] = value.charAt(value.length() - i - 1);
+			}
+		}
+
+		else if (second.contains("[") && second.contains("]")) {
+			/*
+			 * * Bad Index Register:
 			 * 
 			 * This is reported when you attempt to use a register other than SI, DI, BX, or
 			 * BP for indexing. Those are the only registers that the 86 architecture allows
 			 * you to place inside brackets, to address memory.
 			 *
-/*
+			 */
+
 			if (second.charAt(0) == 'b') { // 1 byte
 				System.out.println("Byte/Word Combination Not Allowed");
 				System.exit(0);
 
-			}
-
-			else { // 2 byte
+			} else { // 2 byte
 				if (second.charAt(0) == 'w') {
 					second = second.substring(1); // got rid of 'w'
 				}
+
 				second = second.substring(1, second.length() - 1); // got rid of [ and ]
 				String num = "";
-				if (second.contains("si") || second.contains("di") || second.contains("bx") || second.contains("bp")) { // register
-					// indirect
+				if ((second.contains("si") || second.contains("di") || second.contains("bx")
+						|| second.contains("bp"))) {// register
 					if (second.equals("si")) {
 						for (int i = 0; i <= 3; i++) {
 							num += si[i];
@@ -210,53 +223,65 @@ public class Hyp86 {
 							num += bx[i];
 						}
 					}
-					// got the value put in ax
-
-				} else {// sayı vardır içinde, sayıyı hexaya çevir
+				} else if (isVar) {// variable
+					num = NumberToFourByteHexa(var.data);
+					for (int i = 0; i <= 3; i++) {
+						ax[i] = '0';
+					}
+					for (int i = 0; i <= 3 && i < num.length(); i++) {
+						ax[3 - i] = num.charAt(num.length() - i - 1);
+					}
+					return;
+				} else {// number
 					num = NumberToFourByteHexa(second);
 				}
 
+				// got the value, just insert to ax
 				for (int i = 0; i <= 3; i++) {
-					ax[ i] = memory[Integer.parseInt(num, 16) * 2 + i];
+					ax[i] = '0';
 				}
 
+				if (Integer.parseInt(num, 16) >= memory.length || Integer.parseInt(num, 16) < numberOfInstructions * 6
+						|| memory[Integer.parseInt(num, 16)] == null) {// if memory is null then ax becomes 0 or not a
+																		// valid
+																		// address
+					// ZF = true;
+				} else {
+					String memoryLocaitonOfNum = memory[Integer.parseInt(num, 16)];
+					for (int i = 0; i <= 3 && i < num.length(); i++) {
+						ax[3 - i] = memoryLocaitonOfNum.charAt(memoryLocaitonOfNum.length() - i - 1);
+					}
+				}
 			}
-		}
-		
-		
-		 burası değişecek çünkü memory şekli değişti
-		*/
-		
+		} else if (second.contains("bx") || second.contains("cx") || second.contains("dx") || second.contains("al")
+				|| second.contains("ah") || second.contains("bl") || second.contains("bh") || second.contains("cl")
+				|| second.contains("ch") || second.contains("dl") || second.contains("dh")) { // register
 
-		
-		
-		
-		
-		
-		//else
-		if (second.equals("bx")) {
-			for (int i = 3; i >= 0; i--) {
-				ax[i] = bx[i];
+			if (second.equals("bx")) {
+				for (int i = 3; i >= 0; i--) {
+					ax[i] = bx[i];
+				}
+			} else if (second.equals("cx")) {
+				for (int i = 3; i >= 0; i--) {
+					ax[i] = cx[i];
+				}
+			} else if (second.equals("dx")) {
+				for (int i = 3; i >= 0; i--) {
+					ax[i] = dx[i];
+				}
+			} else {// error
+				System.out.println("Error: Byte/Word Combination Not Allowed");
+				System.exit(0);
 			}
-		} else if (second.equals("cx")) {
-			for (int i = 3; i >= 0; i--) {
-				ax[i] = cx[i];
+		} else { // number or variable
+			if (isVar) {
+				second = NumberToFourByteHexa(var.data); // variable
+			} else {
+				second = NumberToFourByteHexa(second); // number
 			}
-		} else if (second.equals("dx")) {
-			for (int i = 3; i >= 0; i--) {
-				ax[i] = dx[i];
-			}
-		} else if (second.contains("al") || second.contains("ah") || second.contains("bl") || second.contains("bh")
-				|| second.contains("cl") || second.contains("ch") || second.contains("dl") || second.contains("dh")) {// error
-			System.out.println("Error: Byte/Word Combination Not Allowed");
-			System.exit(0);
-		}
-		// bu kýsým ok gibi ama deðiþik inputlarla test etmek lazým pek emin deðilim
-		else {// var olanilir, "offset var" olabilir
-
-			second = NumberToFourByteHexa(second);
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < 3; i++) {
 				ax[i] = 0;
+			}
 			for (int i = 0; i <= 3 && i < second.length(); i++) {
 				ax[3 - i] = second.charAt(second.length() - i - 1);
 			}
@@ -685,7 +710,7 @@ public class Hyp86 {
 			return s;
 		}
 	}
-	
+
 	private void fillInstructions() {
 		instructionList.add("mov");
 		instructionList.add("add");
@@ -719,8 +744,7 @@ public class Hyp86 {
 		instructionList.add("jnc");
 		instructionList.add("jc");
 		instructionList.add("int");
-		
-		
+
 	}
 
 }
