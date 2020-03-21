@@ -23,12 +23,11 @@ public class main {
 		assembly.bx[1] = '2';
 		assembly.bx[2] = '4';
 		assembly.bx[3] = '3';
-		assembly.mov_ax_unknown("432");
-		assembly.mov_ax_unknown("var1");
-		assembly.mov_ax_unknown("432d");
-		assembly.mov_ax_unknown("bx");
-		assembly.NumberToFourByteHexa("213");
-		assembly.mov_ax_unknown("0F32");
+		// assembly.mov_ah_unknown("432");
+		assembly.mov_ax_unknown("offset var2");
+		assembly.mov_ah_unknown("42d");
+		assembly.mov_ah_unknown("bl");
+		assembly.mov_ax_unknown("0f32");
 	}
 
 	/**

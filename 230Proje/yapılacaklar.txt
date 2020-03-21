@@ -1,8 +1,15 @@
-numberOfInstructiıns lazım parametre olarak Hyp86ya.
- PArse ederken o da tuutlabilir veya FileAsStringin bidaha üzerinden geçip hesplanabilir.
- Ya da constructorda hesaplanabilir. birini yapalım işte.
+ numberOfInstructiÄ±ns lazÄ±m parametre olarak Hyp86ya.
+ PArse ederken o da tuutlabilir veya FileAsStringin bidaha Ã¼zerinden geÃ§ip hesplanabilir.
+ Ya da constructorda hesaplanabilir. birini yapalÄ±m iÅŸte.
  
  
- Faydalı link: https://www.skynet.ie/~darkstar/assembler/manual
+ Faydali link: 
+ https://www.skynet.ie/~darkstar/assembler/manual
+ http://web.karabuk.edu.tr/emelkocak/indir/MTM305/Adresleme%20ModlarÄ±.pdf
  
  
+ 
+ mov al, b bx
+ mov al, bx b 
+ gibi inputlar olabiliyo bunları içercek mi hocanın testCase'i
+ sormak lazım

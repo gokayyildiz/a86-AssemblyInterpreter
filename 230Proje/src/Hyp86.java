@@ -3,25 +3,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Scanner;
 
-// mov da bi özelliði implemente ederken önce ax'e ediyorum.
-// deðiþik inputlarla testen sonra baþarýlý 
-// olursa diðerlierine copy paste basit zaten
-//**
-//immeadite, register yapýldý gibi
-//register indirect ve memory yapýyorum
-//stack addresssing tam ne bilmiyoum, öðreniyim bakýcam
-// mov dl,"*" diye biþi varmýþ, asciiden hexaya çevirip yazýyo. yeni öðrendim bakýcam
-//**
-// mov da bi Ã¶zelliÃ°i implemente ederken Ã¶nce ax'e ediyorum.
-// deÃ°iÃ¾ik inputlarla testen sonra baÃ¾arÃ½lÃ½ 
-// olursa diÃ°erlierine copy paste basit zaten
-//**
-//immeadite, register yapÃ½ldÃ½ gibi
-//register indirect ve memory yapÃ½yorum
-//stack addresssing tam ne bilmiyoum, Ã¶Ã°reniyim bakÃ½cam
-// mov dl,"*" diye biÃ¾i varmÃ½Ã¾, asciiden hexaya Ã§evirip yazÃ½yo. yeni Ã¶Ã°rendim bakÃ½cam
-//**
-
 public class Hyp86 {
 
 	/*
@@ -36,7 +17,6 @@ public class Hyp86 {
 
 	// eriÅŸirken 2 ile Ã§arp
 	char[] di = new char[4];
-	char[] sp = new char[4];
 	char[] si = new char[4];
 	char[] bp = new char[4];
 
@@ -144,19 +124,6 @@ public class Hyp86 {
 
 	}
 
-	// !!!!!!!!!!!!! mov:
-	// second offset iÃ§erebilir veya var iÃ§eribilir
-	// When using variable names offset variable-name accesses the address,
-	// just the variable-name accesses the value.
-	// !!!!!!!!!!!!!
-
-	// firstin memorydei adresine secondÃ½n deÃ°erini taÃ¾Ã½
-	// second pointer olabilir ex: [454]
-	// second sayÃ½ olabilir ex: 454
-	// second reg olabilir ex: cl
-	// first reg veya memory
-	// boyut uyumsuzluÄŸunda hata ver
-
 	public void mov_mem_xx(String first, String second) { //
 
 	}
@@ -174,6 +141,7 @@ public class Hyp86 {
 			}
 		}
 		if (second.contains("offset")) {
+
 			String value = NumberToFourByteHexa("" + var.memoryIndex);
 			for (int i = 0; i <= 3; i++) {
 				ax[i] = '0';
@@ -181,9 +149,8 @@ public class Hyp86 {
 			for (int i = 0; i <= 3 && i < value.length(); i++) {
 				ax[3 - i] = value.charAt(value.length() - i - 1);
 			}
-		}
 
-		else if (second.contains("[") && second.contains("]")) {
+		} else if (second.contains("[") && second.contains("]")) {
 			/*
 			 * * Bad Index Register:
 			 * 
@@ -194,7 +161,7 @@ public class Hyp86 {
 			 */
 
 			if (second.charAt(0) == 'b') { // 1 byte
-				System.out.println("Byte/Word Combination Not Allowed");
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
 				System.exit(0);
 
 			} else { // 2 byte
@@ -224,14 +191,19 @@ public class Hyp86 {
 						}
 					}
 				} else if (isVar) {// variable
-					num = NumberToFourByteHexa(var.data);
-					for (int i = 0; i <= 3; i++) {
-						ax[i] = '0';
+					if (!var.type) {
+						System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+						System.exit(0);
+					} else {
+						num = NumberToFourByteHexa(var.data);
+						for (int i = 0; i <= 3; i++) {
+							ax[i] = '0';
+						}
+						for (int i = 0; i <= 3 && i < num.length(); i++) {
+							ax[3 - i] = num.charAt(num.length() - i - 1);
+						}
+						return;
 					}
-					for (int i = 0; i <= 3 && i < num.length(); i++) {
-						ax[3 - i] = num.charAt(num.length() - i - 1);
-					}
-					return;
 				} else {// number
 					num = NumberToFourByteHexa(second);
 				}
@@ -243,8 +215,7 @@ public class Hyp86 {
 
 				if (Integer.parseInt(num, 16) >= memory.length || Integer.parseInt(num, 16) < numberOfInstructions * 6
 						|| memory[Integer.parseInt(num, 16)] == null) {// if memory is null then ax becomes 0 or not a
-																		// valid
-																		// address
+																		// valid address
 					// ZF = true;
 				} else {
 					String memoryLocaitonOfNum = memory[Integer.parseInt(num, 16)];
@@ -270,11 +241,15 @@ public class Hyp86 {
 					ax[i] = dx[i];
 				}
 			} else {// error
-				System.out.println("Error: Byte/Word Combination Not Allowed");
+				System.out.println("#ERROR 13: Error: Byte/Word Combination Not Allowed");
 				System.exit(0);
 			}
 		} else { // number or variable
 			if (isVar) {
+				if (!var.type) {
+					System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+					System.exit(0);
+				}
 				second = NumberToFourByteHexa(var.data); // variable
 			} else {
 				second = NumberToFourByteHexa(second); // number
@@ -290,149 +265,498 @@ public class Hyp86 {
 	}
 
 	public void mov_bx_unknown(String second) {
-		if (second.contains("[") && second.contains("]")) { // second is memory
-
-		} else if (second.contains("ax")) {
-			for (int i = 3; i >= 0; i--) {
-				bx[i] = ax[i];
+		boolean isVar = false;
+		Variable var = null;
+		Variable temp;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			temp = itr.next();
+			if (second.contains(temp.name)) {
+				isVar = true;
+				var = temp;
 			}
-		} else if (second.contains("cx")) {
-			for (int i = 3; i >= 0; i--) {
-				bx[i] = cx[i];
-			}
-		} else if (second.contains("dx")) {
-			for (int i = 3; i >= 0; i--) {
-				bx[i] = dx[i];
-			}
-		} else if (second.contains("al") || second.contains("ah") || second.contains("bl") || second.contains("bh")
-				|| second.contains("cl") || second.contains("ch") || second.contains("dl") || second.contains("dh")) {// error
-			System.out.println("Error: Byte/Word Combination Not Allowed");
-			System.exit(0);
-		} else {// number
-
 		}
+		if (second.contains("offset")) {
+			String value = NumberToFourByteHexa("" + var.memoryIndex);
+			for (int i = 0; i <= 3; i++) {
+				bx[i] = '0';
+			}
+			for (int i = 0; i <= 3 && i < value.length(); i++) {
+				bx[3 - i] = value.charAt(value.length() - i - 1);
+			}
+		} else if (second.contains("[") && second.contains("]")) { // second is memory
+			/*
+			 * * Bad Index Register:
+			 * 
+			 * This is reported when you attempt to use a register other than SI, DI, BX, or
+			 * BP for indexing. Those are the only registers that the 86 architecture allows
+			 * you to place inside brackets, to address memory.
+			 *
+			 */
 
+			if (second.charAt(0) == 'b') { // 1 byte
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+				System.exit(0);
+
+			} else { // 2 byte
+				if (second.charAt(0) == 'w') {
+					second = second.substring(1); // got rid of 'w'
+				}
+
+				second = second.substring(1, second.length() - 1); // got rid of [ and ]
+				String num = "";
+				if ((second.contains("si") || second.contains("di") || second.contains("bp"))) {// register
+					if (second.equals("si")) {
+						for (int i = 0; i <= 3; i++) {
+							num += si[i];
+						}
+					} else if (second.equals("di")) {
+						for (int i = 0; i <= 3; i++) {
+							num += di[i];
+						}
+					} else if (second.equals("bp")) {
+						for (int i = 0; i <= 3; i++) {
+							num += bp[i];
+						}
+
+					}
+				} else if (isVar) {// variable
+					if (!var.type) {
+						System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+						System.exit(0);
+					}
+					num = NumberToFourByteHexa(var.data);
+					for (int i = 0; i <= 3; i++) {
+						bx[i] = '0';
+					}
+					for (int i = 0; i <= 3 && i < num.length(); i++) {
+						bx[3 - i] = num.charAt(num.length() - i - 1);
+					}
+					return;
+				} else {// number
+					num = NumberToFourByteHexa(second);
+				}
+
+				// got the value, just insert to ax
+				for (int i = 0; i <= 3; i++) {
+					ax[i] = '0';
+				}
+
+				if (Integer.parseInt(num, 16) >= memory.length || Integer.parseInt(num, 16) < numberOfInstructions * 6
+						|| memory[Integer.parseInt(num, 16)] == null) {// if memory is null then ax becomes 0 or not a
+																		// valid
+																		// address
+					// ZF = true;
+				} else {
+					String memoryLocaitonOfNum = memory[Integer.parseInt(num, 16)];
+					for (int i = 0; i <= 3 && i < num.length(); i++) {
+						bx[3 - i] = memoryLocaitonOfNum.charAt(memoryLocaitonOfNum.length() - i - 1);
+					}
+				}
+			}
+		} else if (second.contains("ax") || second.contains("cx") || second.contains("dx") || second.contains("al")
+				|| second.contains("ah") || second.contains("bl") || second.contains("bh") || second.contains("cl")
+				|| second.contains("ch") || second.contains("dl") || second.contains("dh")) { // register
+
+			if (second.equals("ax")) {
+				for (int i = 3; i >= 0; i--) {
+					bx[i] = ax[i];
+				}
+			} else if (second.equals("cx")) {
+				for (int i = 3; i >= 0; i--) {
+					bx[i] = cx[i];
+				}
+			} else if (second.equals("dx")) {
+				for (int i = 3; i >= 0; i--) {
+					bx[i] = dx[i];
+				}
+			} else {// error
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+				System.exit(0);
+			}
+		} else { // number or variable
+			if (isVar) {
+				if (!var.type) {
+					System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+					System.exit(0);
+				}
+				second = NumberToFourByteHexa(var.data); // variable
+			} else {
+				second = NumberToFourByteHexa(second); // number
+			}
+			for (int i = 0; i < 3; i++) {
+				bx[i] = 0;
+			}
+			for (int i = 0; i <= 3 && i < second.length(); i++) {
+				bx[3 - i] = second.charAt(second.length() - i - 1);
+			}
+		}
 	}
 
 	public void mov_cx_unknown(String second) {
-		if (second.contains("[") && second.contains("]")) { // second is memory
+		boolean isVar = false;
+		Variable var = null;
+		Variable temp;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			temp = itr.next();
+			if (second.contains(temp.name)) {
+				isVar = true;
+				var = temp;
+			}
+		}
+		if (second.contains("offset")) {
+			String value = NumberToFourByteHexa("" + var.memoryIndex);
+			for (int i = 0; i <= 3; i++) {
+				cx[i] = '0';
+			}
+			for (int i = 0; i <= 3 && i < value.length(); i++) {
+				cx[3 - i] = value.charAt(value.length() - i - 1);
+			}
+		}
 
-		} else if (second.contains("ax")) {
-			for (int i = 3; i >= 0; i--) {
-				cx[i] = ax[i];
-			}
-		} else if (second.contains("bx")) {
-			for (int i = 3; i >= 0; i--) {
-				cx[i] = bx[i];
-			}
-		} else if (second.contains("dx")) {
-			for (int i = 3; i >= 0; i--) {
-				cx[i] = dx[i];
-			}
-		} else if (second.contains("al") || second.contains("ah") || second.contains("bl") || second.contains("bh")
-				|| second.contains("cl") || second.contains("ch") || second.contains("dl") || second.contains("dh")) {// error
-			System.out.println("Error: Byte/Word Combination Not Allowed");
-			System.exit(0);
-		} else {// number
+		else if (second.contains("[") && second.contains("]")) {
+			/*
+			 * * Bad Index Register:
+			 * 
+			 * This is reported when you attempt to use a register other than SI, DI, BX, or
+			 * BP for indexing. Those are the only registers that the 86 architecture allows
+			 * you to place inside brackets, to address memory.
+			 *
+			 */
 
+			if (second.charAt(0) == 'b') { // 1 byte
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+				System.exit(0);
+
+			} else { // 2 byte
+				if (second.charAt(0) == 'w') {
+					second = second.substring(1); // got rid of 'w'
+				}
+
+				second = second.substring(1, second.length() - 1); // got rid of [ and ]
+				String num = "";
+				if ((second.contains("si") || second.contains("di") || second.contains("bx")
+						|| second.contains("bp"))) {// register
+					if (second.equals("si")) {
+						for (int i = 0; i <= 3; i++) {
+							num += si[i];
+						}
+					} else if (second.equals("di")) {
+						for (int i = 0; i <= 3; i++) {
+							num += di[i];
+						}
+					} else if (second.equals("bp")) {
+						for (int i = 0; i <= 3; i++) {
+							num += bp[i];
+						}
+					} else if (second.equals("bx")) {
+						for (int i = 0; i <= 3; i++) {
+							num += bx[i];
+						}
+					}
+				} else if (isVar) {// variable
+					if (!var.type) {
+						System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+						System.exit(0);
+					}
+					num = NumberToFourByteHexa(var.data);
+					for (int i = 0; i <= 3; i++) {
+						cx[i] = '0';
+					}
+					for (int i = 0; i <= 3 && i < num.length(); i++) {
+						cx[3 - i] = num.charAt(num.length() - i - 1);
+					}
+					return;
+				} else {// number
+					num = NumberToFourByteHexa(second);
+				}
+
+				// got the value, just insert to ax
+				for (int i = 0; i <= 3; i++) {
+					cx[i] = '0';
+				}
+
+				if (Integer.parseInt(num, 16) >= memory.length || Integer.parseInt(num, 16) < numberOfInstructions * 6
+						|| memory[Integer.parseInt(num, 16)] == null) {// if memory is null then ax becomes 0 or not a
+																		// valid
+																		// address
+					// ZF = true;
+				} else {
+					String memoryLocaitonOfNum = memory[Integer.parseInt(num, 16)];
+					for (int i = 0; i <= 3 && i < num.length(); i++) {
+						cx[3 - i] = memoryLocaitonOfNum.charAt(memoryLocaitonOfNum.length() - i - 1);
+					}
+				}
+			}
+		} else if (second.contains("bx") || second.contains("ax") || second.contains("dx") || second.contains("al")
+				|| second.contains("ah") || second.contains("bl") || second.contains("bh") || second.contains("cl")
+				|| second.contains("ch") || second.contains("dl") || second.contains("dh")) { // register
+
+			if (second.equals("bx")) {
+				for (int i = 3; i >= 0; i--) {
+					cx[i] = bx[i];
+				}
+			} else if (second.equals("ax")) {
+				for (int i = 3; i >= 0; i--) {
+					cx[i] = cx[i];
+				}
+			} else if (second.equals("dx")) {
+				for (int i = 3; i >= 0; i--) {
+					cx[i] = dx[i];
+				}
+			} else {// error
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+				System.exit(0);
+			}
+		} else { // number or variable
+			if (isVar) {
+				if (!var.type) {
+					System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+					System.exit(0);
+				}
+				second = NumberToFourByteHexa(var.data); // variable
+			} else {
+				second = NumberToFourByteHexa(second); // number
+			}
+			for (int i = 0; i < 3; i++) {
+				cx[i] = 0;
+			}
+			for (int i = 0; i <= 3 && i < second.length(); i++) {
+				cx[3 - i] = second.charAt(second.length() - i - 1);
+			}
 		}
 
 	}
 
 	public void mov_dx_unknown(String second) {
-		if (second.contains("[") && second.contains("]")) { // second is memory
+		boolean isVar = false;
+		Variable var = null;
+		Variable temp;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			temp = itr.next();
+			if (second.contains(temp.name)) {
+				isVar = true;
+				var = temp;
+			}
+		}
+		if (second.contains("offset")) {
+			String value = NumberToFourByteHexa("" + var.memoryIndex);
+			for (int i = 0; i <= 3; i++) {
+				dx[i] = '0';
+			}
+			for (int i = 0; i <= 3 && i < value.length(); i++) {
+				dx[3 - i] = value.charAt(value.length() - i - 1);
+			}
+		}
 
-		} else if (second.contains("ax")) {
-			for (int i = 3; i >= 0; i--) {
-				dx[i] = ax[i];
+		else if (second.contains("[") && second.contains("]")) {
+			/*
+			 * * Bad Index Register:
+			 * 
+			 * This is reported when you attempt to use a register other than SI, DI, BX, or
+			 * BP for indexing. Those are the only registers that the 86 architecture allows
+			 * you to place inside brackets, to address memory.
+			 *
+			 */
+
+			if (second.charAt(0) == 'b') { // 1 byte
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+				System.exit(0);
+
+			} else { // 2 byte
+				if (second.charAt(0) == 'w') {
+					second = second.substring(1); // got rid of 'w'
+				}
+
+				second = second.substring(1, second.length() - 1); // got rid of [ and ]
+				String num = "";
+				if ((second.contains("si") || second.contains("di") || second.contains("bx")
+						|| second.contains("bp"))) {// register
+					if (second.equals("si")) {
+						for (int i = 0; i <= 3; i++) {
+							num += si[i];
+						}
+					} else if (second.equals("di")) {
+						for (int i = 0; i <= 3; i++) {
+							num += di[i];
+						}
+					} else if (second.equals("bp")) {
+						for (int i = 0; i <= 3; i++) {
+							num += bp[i];
+						}
+					} else if (second.equals("bx")) {
+						for (int i = 0; i <= 3; i++) {
+							num += bx[i];
+						}
+					}
+				} else if (isVar) {// variable
+					if (!var.type) {
+						System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+						System.exit(0);
+					}
+					num = NumberToFourByteHexa(var.data);
+					for (int i = 0; i <= 3; i++) {
+						dx[i] = '0';
+					}
+					for (int i = 0; i <= 3 && i < num.length(); i++) {
+						dx[3 - i] = num.charAt(num.length() - i - 1);
+					}
+					return;
+				} else {// number
+					num = NumberToFourByteHexa(second);
+				}
+
+				// got the value, just insert to ax
+				for (int i = 0; i <= 3; i++) {
+					dx[i] = '0';
+				}
+
+				if (Integer.parseInt(num, 16) >= memory.length || Integer.parseInt(num, 16) < numberOfInstructions * 6
+						|| memory[Integer.parseInt(num, 16)] == null) {// if memory is null then ax becomes 0 or not a
+																		// valid
+																		// address
+					// ZF = true;
+				} else {
+					String memoryLocaitonOfNum = memory[Integer.parseInt(num, 16)];
+					for (int i = 0; i <= 3 && i < num.length(); i++) {
+						dx[3 - i] = memoryLocaitonOfNum.charAt(memoryLocaitonOfNum.length() - i - 1);
+					}
+				}
 			}
-		} else if (second.contains("bx")) {
-			for (int i = 3; i >= 0; i--) {
-				dx[i] = bx[i];
+		} else if (second.contains("bx") || second.contains("cx") || second.contains("ax") || second.contains("al")
+				|| second.contains("ah") || second.contains("bl") || second.contains("bh") || second.contains("cl")
+				|| second.contains("ch") || second.contains("dl") || second.contains("dh")) { // register
+
+			if (second.equals("bx")) {
+				for (int i = 3; i >= 0; i--) {
+					dx[i] = bx[i];
+				}
+			} else if (second.equals("cx")) {
+				for (int i = 3; i >= 0; i--) {
+					dx[i] = cx[i];
+				}
+			} else if (second.equals("ax")) {
+				for (int i = 3; i >= 0; i--) {
+					dx[i] = ax[i];
+				}
+			} else {// error
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+				System.exit(0);
 			}
-		} else if (second.contains("cx")) {
-			for (int i = 3; i >= 0; i--) {
-				dx[i] = cx[i];
+		} else { // number or variable
+			if (isVar) {
+				if (!var.type) {
+					System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+					System.exit(0);
+				}
+				second = NumberToFourByteHexa(var.data); // variable
+			} else {
+				second = NumberToFourByteHexa(second); // number
 			}
-		} else if (second.contains("al") || second.contains("ah") || second.contains("bl") || second.contains("bh")
-				|| second.contains("cl") || second.contains("ch") || second.contains("dl") || second.contains("dh")) {// error
-			System.out.println("Error: Byte/Word Combination Not Allowed");
-			System.exit(0);
-		} else {// number
+			for (int i = 0; i < 3; i++) {
+				dx[i] = 0;
+			}
+			for (int i = 0; i <= 3 && i < second.length(); i++) {
+				dx[3 - i] = second.charAt(second.length() - i - 1);
+			}
 		}
 	}
 
 	public void mov_al_unknown(String second) {
-		if (second.equals("ah")) {
-			for (int i = 3; i >= 2; i--) {
-				ax[i] = ax[i - 2];
-			}
-		} else if (second.equals("bl")) {
-			for (int i = 3; i >= 2; i--) {
-				ax[i] = bx[i];
-			}
-		} else if (second.equals("bh")) {
-			for (int i = 3; i >= 2; i--) {
-				ax[i] = bx[i - 2];
-			}
-		} else if (second.equals("cl")) {
-			for (int i = 3; i >= 2; i--) {
-				ax[i] = cx[i];
-			}
-		} else if (second.equals("ch")) {
-			for (int i = 3; i >= 2; i--) {
-				ax[i] = cx[i - 2];
-			}
-		} else if (second.equals("dl")) {
-			for (int i = 3; i >= 2; i--) {
-				ax[i] = dx[i];
-			}
-		} else if (second.equals("dh")) {
-			for (int i = 3; i >= 2; i--) {
-				ax[i] = dx[i - 2];
-			}
-		} else if (second.contains("x")) {
-			System.out.println("Byte/Word Combination Not Allowed");
-			System.exit(0);
-		} else { // Ã¾u diger regler olabÃ½lÃ½r sonra yapÃ½cam
 
-		}
 	}
 
 	public void mov_ah_unknown(String second) {
-		if (second.equals("al")) {
-			for (int i = 3; i >= 2; i--) {
-				ax[i - 2] = ax[i];
+		boolean isVar = false;
+		Variable var = null;
+		Variable temp;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			temp = itr.next();
+			if (second.contains(temp.name)) {
+				isVar = true;
+				var = temp;
 			}
-		} else if (second.equals("bl")) {
-			for (int i = 3; i >= 2; i--) {
-				ax[i - 2] = bx[i];
+		}
+		if (second.contains("offset")) {
+			String value = NumberToFourByteHexa("" + var.memoryIndex);
+			for (int i = 0; i <= 1; i++) {
+				ax[i] = '0';
 			}
-		} else if (second.equals("bh")) {
-			for (int i = 3; i >= 2; i--) {
-				ax[i - 2] = bx[i - 2];
+			for (int i = 0; i <= 1 && i < value.length(); i++) {
+				ax[1 - i] = value.charAt(value.length() - i - 1);
 			}
-		} else if (second.equals("cl")) {
-			for (int i = 3; i >= 2; i--) {
-				ax[i - 2] = cx[i];
+		} else if (second.contains("ax") || second.contains("bx") || second.contains("cx") || second.contains("dx")
+				|| second.contains("al") || second.contains("bl") || second.contains("bh") || second.contains("cl")
+				|| second.contains("ch") || second.contains("dl") || second.contains("dh")) { // register
+			if (second.equals("al")) {
+				for (int i = 3; i >= 2; i--) {
+					ax[i - 2] = ax[i];
+				}
+			} else if (second.equals("bl")) {
+				for (int i = 3; i >= 2; i--) {
+					ax[i - 2] = bx[i];
+				}
+			} else if (second.equals("bh")) {
+				for (int i = 3; i >= 2; i--) {
+					ax[i - 2] = bx[i - 2];
+				}
+			} else if (second.equals("cl")) {
+				for (int i = 3; i >= 2; i--) {
+					ax[i - 2] = cx[i];
+				}
+			} else if (second.equals("ch")) {
+				for (int i = 3; i >= 2; i--) {
+					ax[i - 2] = cx[i - 2];
+				}
+			} else if (second.equals("dl")) {
+				for (int i = 3; i >= 2; i--) {
+					ax[i - 2] = dx[i];
+				}
+			} else if (second.equals("dh")) {
+				for (int i = 3; i >= 2; i--) {
+					ax[i - 2] = dx[i - 2];
+				}
+			} else {
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+				System.exit(0);
 			}
-		} else if (second.equals("ch")) {
-			for (int i = 3; i >= 2; i--) {
-				ax[i - 2] = cx[i - 2];
+		} else if (second.contains("[") && second.contains("]")) {// memory
+			if (second.charAt(0) == 'w') { // 2 byte
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+				System.exit(0);
+			} else { // 1 byte
+				if (second.charAt(0) == 'b') {
+					second = second.substring(1); // got rid of "b"
+				}
+				second = second.substring(1, second.length() - 1); // got rid of "[" and "]"
+				/*
+				 * where I left
+				 */
 			}
-		} else if (second.equals("dl")) {
-			for (int i = 3; i >= 2; i--) {
-				ax[i - 2] = dx[i];
-			}
-		} else if (second.equals("dh")) {
-			for (int i = 3; i >= 2; i--) {
-				ax[i - 2] = dx[i - 2];
-			}
-		} else if (second.contains("x")) {
-			System.out.println("Byte/Word Combination Not Allowed");
-			System.exit(0);
-		} else { // Ã¾u diger regler olabÃ½lÃ½r sonra yapÃ½cam
 
+		} else { // number or variable
+			if (isVar) {
+				if (var.type) {
+					System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+					System.exit(0);
+				}
+				second = NumberToFourByteHexa(var.data); // variable
+			} else {
+				second = NumberToFourByteHexa(second); // number
+			}
+			if (Integer.parseInt(second, 16) > 255) {
+				System.out.println("#ERROR 30: Byte-Sized Constant Required");
+				System.exit(0);
+			}
+			for (int i = 0; i < 1; i++) {
+				ax[i] = 0;
+			}
+			for (int i = 0; i <= 1 && i < second.length(); i++) {
+				ax[1 - i] = second.charAt(second.length() - i - 1);
+			}
 		}
 	}
 
@@ -622,9 +946,21 @@ public class Hyp86 {
 		}
 	}
 
+	public void mov_si_unknown(String second) {
+
+	}
+
+	public void mov_di_unknown(String second) {
+
+	}
+
+	public void mov_bp_unknown(String second) {
+
+	}
+
 	public void mov_reg_unknown(String first, String second) {
 
-		if (first.equalsIgnoreCase("ax")) { // mov *x,*l ya da *x, *h hatasÃ½ yapÃ½ldÃ½
+		if (first.equalsIgnoreCase("ax")) {
 			mov_ax_unknown(second);
 		} else if (first.equalsIgnoreCase("bx")) {
 			mov_bx_unknown(second);
@@ -648,6 +984,12 @@ public class Hyp86 {
 			mov_dl_unknown(second);
 		} else if (first.equalsIgnoreCase("dh")) {
 			mov_dh_unknown(second);
+		} else if (first.equalsIgnoreCase("di")) {
+			mov_dh_unknown(second);
+		} else if (first.equalsIgnoreCase("sp")) {
+			mov_dh_unknown(second);
+		} else if (first.equalsIgnoreCase("bp")) {
+			mov_dh_unknown(second);
 		}
 	}
 
@@ -659,23 +1001,16 @@ public class Hyp86 {
 
 		} else if (first.equals("ax") || first.equals("cx") || first.equals("bx") || first.equals("dx")
 				|| first.equals("ah") || first.equals("al") || first.equals("bl") || first.equals("bh")
-				|| first.equals("ch") || first.equals("cl") || first.equals("dl") || first.equals("dh")) { // first is
+				|| first.equals("ch") || first.equals("cl") || first.equals("dl") || first.equals("dh")
+				|| first.equals("di") || first.equals("si") || first.equals("bp")) { // first is
 			// reg
 			mov_reg_unknown(first, second);
 
 		} else { // reg veya memoryye yazmÃ½yo hata ver
-			System.out.println("Undefined sysbols are listed");
+			System.out.println("Undefined symbols are listed");
 			System.exit(0);
 		}
 
-	}
-
-	public int hexaToDecimal(String s) {
-		return Integer.parseInt(s, 16);
-	}
-
-	public String DecimalToHexa(int a) {
-		return Integer.toHexString(a);
 	}
 
 	public int binaryToDecimal(int a) {
@@ -686,8 +1021,12 @@ public class Hyp86 {
 		return Integer.valueOf(Integer.toBinaryString(a).substring(0, Integer.toBinaryString(a).length()));
 	}
 
-	public String NumberToFourByteHexa(String s) {// 2abd hexa mesela
-		if (s.charAt(0) == '0') {// hexa
+	public static String NumberToFourByteHexa(String s) {// 2abd hexa mesela
+		if (s.charAt(0) == 'a' || s.charAt(0) == 'b' || s.charAt(0) == 'c' || s.charAt(0) == 'd' || s.charAt(0) == 'e'
+				|| s.charAt(0) == 'f') {
+			System.out.println("Undefined symbol:" + s);
+			System.exit(0);
+		} else if (s.charAt(0) == '0') {// hexa
 
 		} else if (s.indexOf("d") == s.length() - 1
 				&& !(s.contains("a") || s.contains("b") || s.contains("c") || s.contains("e") || s.contains("f"))) { // deci
