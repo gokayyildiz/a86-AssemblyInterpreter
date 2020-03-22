@@ -10,6 +10,8 @@
  
  
  mov al, b bx
- mov al, bx b 
+ mov al, bx b
+ mov [324h], var b
+ mov [124], 43 w 
  gibi inputlar olabiliyo bunları içercek mi hocanın testCase'i
  sormak lazım

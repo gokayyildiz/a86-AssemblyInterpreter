@@ -14,20 +14,15 @@ public class main {
 		fileAsString = parser();// whole code as a string
 
 		Hyp86 assembly = new Hyp86(fileAsString);
-
-		// registerda ters tutuluyo aray tarzýna göre
-		// yani sað taraf 0 sol taraf 15 regde
-		// biz ax=ah:al yapalým
-		// al indexi daha yüksek olucak ama yapcak biþi yok
 		assembly.bx[0] = '5';
 		assembly.bx[1] = '2';
 		assembly.bx[2] = '4';
 		assembly.bx[3] = '3';
 		// assembly.mov_ah_unknown("432");
-		assembly.mov_ax_unknown("offset var2");
-		assembly.mov_ah_unknown("42d");
-		assembly.mov_ah_unknown("bl");
-		assembly.mov_ax_unknown("0f32");
+		assembly.mov_ah_unknown("offset var2");
+		assembly.mov_ah_unknown("[64d]");
+		assembly.mov_ah_unknown("[bx]");
+		assembly.mov_ah_unknown("22");
 	}
 
 	/**
