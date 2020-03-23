@@ -16,8 +16,6 @@ public class Variable {
 	public boolean isType() {
 		return type;
 	}
-
-	public int resultData;// hold the data as a decimal integer
 	/**
 	 * @param name
 	 * @param memoryIndex
@@ -29,31 +27,9 @@ public class Variable {
 		this.memoryIndex = memoryIndex;
 		this.data = data;
 		this.type = type;
-		data_check();
 	}
 	
-	private void data_check(){
-		int index = -1;
-		String temp;
 	
-		if(data.indexOf('h') != -1) {
-			index = data.indexOf('h');
-			temp = data.substring(0,index);
-			resultData = Integer.parseInt(temp, 16);
-		}else if(data.indexOf('b') != -1) {
-			index = data.indexOf('b');
-			temp = data.substring(0,index);
-			resultData = Integer.parseInt(temp, 2);
-		}else {
-			if(data.indexOf('d') != -1) {
-				index = data.indexOf('b');
-				temp = data.substring(0,index);
-				resultData = Integer.parseInt(temp);
-			}else {
-				resultData = Integer.parseInt(data);
-			}
-		}
-		
 		
 		
 	}
@@ -61,4 +37,4 @@ public class Variable {
 	
 	
 
-}
+

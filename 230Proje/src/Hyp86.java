@@ -113,14 +113,14 @@ public class Hyp86 {
 			if(line.indexOf("dw") != -1 ||line.indexOf("db") != -1 ) {// variable definition
 			
 				if(first.equals("dw")) {
-					variables.add(new Variable(label, 0, token.next(), true));
+					variables.add(new Variable(label, 0, NumberToFourByteHexa(token.next()), true));
 				}else if(first.equals("db")) {
-					variables.add(new Variable(label, 0, token.next(), false));
+					variables.add(new Variable(label, 0, NumberToFourByteHexa(token.next()), false));
 				}else {
 					if(token.next().equals("dw")) {
-						variables.add(new Variable(first, 0, token.next(), true));
+						variables.add(new Variable(first, 0, NumberToFourByteHexa(token.next()), true));
 					}else{
-						variables.add(new Variable(first, 0, token.next(), false));
+						variables.add(new Variable(first, 0, NumberToFourByteHexa(token.next()), false));
 					}
 				}
 				
@@ -189,8 +189,7 @@ public class Hyp86 {
 			int a = 0;
 			for(int i = 0 ; i < variables.size() ; i++) {
 			if(variables.get(i).getName().equals(reg) && variables.get(i).isType()) {
-				String data = NumberToFourByteHexa(""+variables.get(i).resultData);
-				memory[index] = data;
+				memory[index] = variables.get(i).data;
 				break;
 			}
 			
@@ -278,7 +277,7 @@ public class Hyp86 {
 			int a = 0;
 			for(int i = 0 ; i < variables.size() ; i++) {
 			if(variables.get(i).getName().equals(reg) && variables.get(i).isType()) {
-				variables.get(i).resultData = Integer.parseInt(memory[index],16);
+				variables.get(i).data = memory[index];
 				break;
 			}
 			
