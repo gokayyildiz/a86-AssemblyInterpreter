@@ -1,21 +1,44 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
+
+// mov da bi özelliği implemente ederken önce ax'e ediyorum.
+// değişik inputlarla testen sonra başarılı 
+// olursa diğerlierine copy paste basit zaten
+//**
+//immeadite, register yapıldı gibi
+//register indirect ve memory yapıyorum
+//stack addresssing tam ne bilmiyoum, öğreniyim bakıcam
+// mov dl,"*" diye bişi varmış, asciiden hexaya çevirip yazıyo. yeni öğrendim bakıcam
+//**
+// mov da bi Ã¶zelliÃ°i implemente ederken Ã¶nce ax'e ediyorum.
+// deÃ°iÃ¾ik inputlarla testen sonra baÃ¾arÃ½lÃ½ 
+// olursa diÃ°erlierine copy paste basit zaten
+//**
+//immeadite, register yapÃ½ldÃ½ gibi
+//register indirect ve memory yapÃ½yorum
+//stack addresssing tam ne bilmiyoum, Ã¶Ã°reniyim bakÃ½cam
+// mov dl,"*" diye biÃ¾i varmÃ½Ã¾, asciiden hexaya Ã§evirip yazÃ½yo. yeni Ã¶Ã°rendim bakÃ½cam
+//**
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Scanner;
 
-public class Hyp86 {
 
-	/*
-	 * labels, <label, index of where the label's instruction starts>
-	 * instructionList, to see is the given label a kind of instruction variables,
-	 * array of variables defined
+
+public class Hyp86 {
+	
+	/*labels, <label, index of where the label's instruction starts>
+	 *instructionList, to see is the given label a kind of instruction
+	 *variables, array of variables defined 
 	 */
 	HashMap<String, Integer> labels = new HashMap<>();
 	ArrayList<String> instructionList = new ArrayList<>();
 	ArrayList<Variable> variables = new ArrayList<>();
 	String[] memory = new String[64 * 1024];
 
-	// erişirken 2 ile çarp
+	
 	char[] di = new char[4];
 	char[] si = new char[4];
 	char[] bp = new char[4];
@@ -31,94 +54,259 @@ public class Hyp86 {
 	boolean OF = false;
 	boolean SF = false;
 
-	int numberOfInstructions = 1; // 1 since Int 20h absolutely will be there.
+	int numberOfInstructions = 0;
+	private int instrustionAreaEnd = -1;
 	String SP = "FFFE"; // stack pointer , memoryye erisirken hexadan decimale cevircez
-	int MP = 0; // memory Pointer, instructionlarý okuduktan sonra 6*n' e kadar -1 falan yapýp
-	// eriþilmez kýlmamýz lazým. (n=number of instructions)
+	int MP = 0; // memory Pointer, instructionlarokuduktan sonra 6*n' e kadar -1 falan yap
 
+	
+	
+	
+	
 	/**
-	 * add instructions in an order to the memory until int 20h comes get rid of
-	 * commas at instructions, finally have "mov ax bx" instead of "mov ax,bx"
+	 * add instructions in an order to the memory until int 20h comes
+	 * get rid of commas at instructions,
+	 * finally have "mov ax bx" instead of "mov ax,bx"
 	 * 
 	 * @param fileAsString
 	 */
-	Hyp86(String fileAsString) {
+	Hyp86(String fileAsString) { 
 		fillInstructions();
 		fileAsString = fileAsString.toLowerCase();
-
+		
 		Scanner scanner = new Scanner(fileAsString);
 		String line;
 		Scanner token;
 		int indexCursor = 0;
 		String label = "";
 		boolean int20hCame = false;
-		while (scanner.hasNextLine()) {
+		while(scanner.hasNextLine()) {
 			line = scanner.nextLine();
 			token = new Scanner(line);
 			String first = token.next();
-
-			if (!int20hCame && instructionList.contains(first)) {// means instruction
-				numberOfInstructions++; // Veyis add this
-				if (!label.equals("")) {
+			
+			if(!int20hCame && instructionList.contains(first)) {//means instruction
+				numberOfInstructions++; // veyis add
+				if(!label.equals("")) {
 					labels.put(label, indexCursor);
 					label = "";
 				}
-				if (line.indexOf(',') != -1) {
+				if(line.indexOf(',') != -1) {
 					int temo = line.indexOf(',');
-					String temp = line.substring(0, temo) + " " + line.substring(temo + 1, line.length());
+					String temp = line.substring(0, temo) + " " + line.substring(temo +1, line.length());
 					line = temp;
 				}
-
-				if (first.equals("int") && token.next().equals("20h")) {
+				
+				if(first.equals("int") && token.next().equals("20h")) {
+					instrustionAreaEnd = indexCursor + 5 ;// new addition
 					int20hCame = true;
 				}
 				memory[indexCursor] = line;
-				indexCursor += 6;
-
+				indexCursor +=6;
+				
 			}
-			if (line.indexOf(":") != -1) {// means label
-				label = line.trim().substring(0, line.length() - 1);
+			if(line.indexOf(":") != -1) {// means label
+				label = line.trim().substring(0,line.length()-1);				  
 				continue;
 			}
-
-			if (line.indexOf("dw") != -1 || line.indexOf("db") != -1) {// variable definition
-
-				if (first.equals("dw")) {
+			
+			if(line.indexOf("dw") != -1 ||line.indexOf("db") != -1 ) {// variable definition
+			
+				if(first.equals("dw")) {
 					variables.add(new Variable(label, 0, token.next(), true));
-				} else if (first.equals("db")) {
+				}else if(first.equals("db")) {
 					variables.add(new Variable(label, 0, token.next(), false));
-				} else {
-					if (token.next().equals("dw")) {
+				}else {
+					if(token.next().equals("dw")) {
 						variables.add(new Variable(first, 0, token.next(), true));
-					} else {
+					}else{
 						variables.add(new Variable(first, 0, token.next(), false));
 					}
 				}
-
+				
+				
 			}
-
+			
 			token.close();
 			label = "";
-
+			
+			
+			
 		}
 		Variable x;
-		for (int i = 0; i < variables.size(); i++) {
+		for(int i = 0; i< variables.size() ; i++) {
 			x = variables.get(i);
-			if (x.type == true) {
+			if(x.type == true) {
 				memory[indexCursor] = x.name;
 				x.memoryIndex = indexCursor;
-				indexCursor += 2;
-			} else {
+				indexCursor +=2;	
+			}else {
 				memory[indexCursor] = x.name;
 				x.memoryIndex = indexCursor;
-				indexCursor += 1;
+				indexCursor +=1;
 			}
-
+			
 		}
-
+		
+		
 		scanner.close();
 
 	}
+	/**
+	 * push allows pushing a register, memory address, variable, or number
+	 * 
+	 * @param reg
+	 */
+	
+	
+	public void push(String reg) {
+		int index = Integer.parseInt(SP, 16);
+		
+		if(reg.equals("ax")) {
+			memory[index] = ""+ ax[0] + ax[1] + ax[2] + ax[3];
+
+			
+		}else if(reg.equals("bx")) {
+			memory[index] = ""+ bx[0] + bx[1] + bx[2] + bx[3];
+		
+		}else if(reg.equals("cx")) {
+			memory[index] = ""+ cx[0] + cx[1] + cx[2] + cx[3];
+			
+		}else if(reg.equals("dx")) {
+			memory[index] = ""+ dx[0] + dx[1] + dx[2] + dx[3];
+			
+		}else if(reg.equals("di")) {
+			memory[index] = ""+ di[0] + di[1] + di[2] + di[3];
+			
+		}else if(reg.equals("si")) {
+			memory[index] = ""+ si[0] + si[1] + si[2] + si[3];
+			
+		}else  if(reg.equals("bp")) {
+			memory[index] = ""+ bp[0] + bp[1] + bp[2] + bp[3];
+			
+		}else{
+
+			int a = 0;
+			for(int i = 0 ; i < variables.size() ; i++) {
+			if(variables.get(i).getName().equals(reg) && variables.get(i).isType()) {
+				String data = NumberToFourByteHexa(""+variables.get(i).resultData);
+				memory[index] = data;
+				break;
+			}
+			
+			a++;
+			}
+			if(a== variables.size()) {
+				if(reg.indexOf('[') != -1) {
+					reg = reg.substring(1,reg.length()-1);
+					
+					if(instrustionAreaEnd < Integer.parseInt(NumberToFourByteHexa(reg),16)) {
+						memory[index] = memory[Integer.parseInt(NumberToFourByteHexa(reg),16)];
+					}else {
+						System.out.println("don't try to reach instruction area");
+						return;
+					}
+					
+				}else {
+				
+					memory[index] = NumberToFourByteHexa(reg);
+				}
+			}
+			
+					
+		}
+		
+		SP = NumberToFourByteHexa("" + (index-2)); 
+	}
+	
+	/**
+	 * pop allows popping to a variable, register or memory address
+	 * register and variable cases are perfect
+	 * @param reg
+	 */
+	
+	public void pop(String reg) {
+		int index = Integer.parseInt(SP,16) + 2;
+		if(index >= 1024*64) {
+			System.out.println("no element to pop");
+			return;
+		}
+		if(reg.equals("ax")) {
+			ax[0] = memory[index].charAt(0);
+			ax[1] = memory[index].charAt(1);
+			ax[2] = memory[index].charAt(2);
+			ax[3] = memory[index].charAt(3);
+
+			
+		}else if(reg.equals("bx")) {
+			bx[0] = memory[index].charAt(0);
+			bx[1] = memory[index].charAt(1);
+			bx[2] = memory[index].charAt(2);
+			bx[3] = memory[index].charAt(3);
+		
+		}else if(reg.equals("cx")) {
+			cx[0] = memory[index].charAt(0);
+			cx[1] = memory[index].charAt(1);
+			cx[2] = memory[index].charAt(2);
+			cx[3] = memory[index].charAt(3);
+			
+		}else if(reg.equals("dx")) {
+			dx[0] = memory[index].charAt(0);
+			dx[1] = memory[index].charAt(1);
+			dx[2] = memory[index].charAt(2);
+			dx[3] = memory[index].charAt(3);
+			
+		}else if(reg.equals("di")) {
+			di[0] = memory[index].charAt(0);
+			di[1] = memory[index].charAt(1);
+			di[2] = memory[index].charAt(2);
+			di[3] = memory[index].charAt(3);
+			
+		}else if(reg.equals("si")) {
+			si[0] = memory[index].charAt(0);
+			si[1] = memory[index].charAt(1);
+			si[2] = memory[index].charAt(2);
+			si[3] = memory[index].charAt(3);
+			
+		}else  if(reg.equals("bp")) {
+			bp[0] = memory[index].charAt(0);
+			bp[1] = memory[index].charAt(1);
+			bp[2] = memory[index].charAt(2);
+			bp[3] = memory[index].charAt(3);
+			
+		}else {
+			int a = 0;
+			for(int i = 0 ; i < variables.size() ; i++) {
+			if(variables.get(i).getName().equals(reg) && variables.get(i).isType()) {
+				variables.get(i).resultData = Integer.parseInt(memory[index],16);
+				break;
+			}
+			
+			a++;
+			}
+			
+		if(a == variables.size() && reg.indexOf('[') != -1) {
+				reg = reg.substring(1,reg.length()-1);
+				if(instrustionAreaEnd < Integer.parseInt(NumberToFourByteHexa(reg),16)) {
+					memory[Integer.parseInt(NumberToFourByteHexa(reg),16)] = memory[index] ;		
+				}else {
+					System.out.println("don't try to reach instruction area");
+					return;
+				}
+				
+		}	
+			
+			
+		
+		}
+		
+		SP = NumberToFourByteHexa(""+index);
+		memory[index] = null;
+		
+		
+		
+	}
+	
 
 	public static void add(String first, String second) {
 
@@ -2454,3 +2642,5 @@ public class Hyp86 {
 	}
 
 }
+
+	
