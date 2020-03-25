@@ -14,15 +14,24 @@ public class main {
 		fileAsString = parser();// whole code as a string
 
 		Hyp86 assembly = new Hyp86(fileAsString);
-		assembly.bx[0] = '5';
-		assembly.bx[1] = '2';
-		assembly.bx[2] = '4';
-		assembly.bx[3] = '3';
-		// assembly.mov_ah_unknown("432");
-		assembly.mov_ah_unknown("offset var2");
-		assembly.mov_ah_unknown("[64d]");
-		assembly.mov_ah_unknown("[bx]");
-		assembly.mov_ah_unknown("22");
+		assembly.memory[500] = "0a34";
+		assembly.bp[0] = '3';
+		assembly.bp[1] = '3';
+		assembly.bp[2] = 'c';
+		assembly.bx[0] = '3';
+		assembly.bx[1] = 'b';
+		assembly.bx[2] = '6';
+		assembly.bx[3] = 'a';
+		// assembly.add("[500h]", "[bx]");+
+		// assembly.add("[500h]", "[bp]");+
+		assembly.add("[500]", "bx");
+		assembly.add("[500]", "4564");
+		assembly.add("[500]", "0a52dh");
+		// assembly.add("[500]", "[500]");+
+//		assembly.add("[500]", "offset var1");+
+//		assembly.add("[500d]", "1");+
+		assembly.add("[500d]", "1000h");
+
 	}
 
 	/**
