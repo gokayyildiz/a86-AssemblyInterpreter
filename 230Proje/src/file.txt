@@ -10,6 +10,6 @@ dec cx
 jnz more
 int 20h ; exit to dos
 var1 dw 22
-var2 db 21
-var3 db 25
+var2 db 'a'
+var3 db 'G'
 code ends

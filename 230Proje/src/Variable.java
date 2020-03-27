@@ -27,8 +27,16 @@ public class Variable {
 	public Variable(String name, int memoryIndex, String data, boolean type) {
 		this.name = name;
 		this.memoryIndex = memoryIndex;
-		//data is saved as hexa
-		this.data = Hyp86.NumberToFourByteHexa(data);
+		// data is saved as hexa
+		// data could be char. Then this line gives error. Needs to be fixed!!
+		// herþeye küöçük harfe çevirince eðer input büyükse variablenýn deðeri
+		// deðiþiyo.Ýstenmeyen bir þey! e.g: var1 dw 'W', var2 db 'H'
+		if (data.contains("\'")) {
+			int a = data.charAt(data.indexOf("\'") + 1) + 1 - 1;
+			this.data = "" + a;
+		} else {
+			this.data = Hyp86.NumberToFourByteHexa(data);
+		}
 		this.type = type;
 	}
 
