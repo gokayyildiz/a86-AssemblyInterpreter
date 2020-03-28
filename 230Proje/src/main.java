@@ -18,6 +18,8 @@ public class main {
 
 		Hyp86 assembly = new Hyp86(fileAsString);
 		assembly.memory[500] = "0a34";
+		assembly.ax[0] = '2';
+		assembly.ax[1] = 'f';
 		assembly.bp[0] = '3';
 		assembly.bp[1] = '3';
 		assembly.bp[2] = 'c';
@@ -25,19 +27,23 @@ public class main {
 		assembly.bx[1] = 'b';
 		assembly.bx[2] = '6';
 		assembly.bx[3] = 'a';
-
-	//	assembly.add("ax", "a234");
-	//	assembly.add("axb", "axp");
-		// assembly.inc("b[500d]");
-		assembly.add("ax", "254");
-	//	assembly.mov("vax", "0a52dh");
-		assembly.add("ax", "var1");
-//		assembly.add("ax", "var2");
-		assembly.add("ax", "[500]");
-		assembly.add("ax", "offset var1");
+		// assembly.add("al", "0a234");
+		// assembly.add("al", "ax");
+		assembly.inc("al");
+		assembly.add("al", "ah");
+		assembly.add("al", "var2");
+		assembly.add("al", "[500]");
+		assembly.add("al", "offset var1");
+		assembly.inc("ah");
+		assembly.add("ah", "ah");
+		// assembly.mov("vax", "0a52dh");
+//		assembly.add("al", "var1");
+		assembly.add("ah", "var2");
+		assembly.add("ah", "[500]");
+		assembly.add("ah", "offset var1");
 		// assembly.inc("w[500d]");
-		assembly.add("ax", "1");
-		assembly.add("ax", "1000h");
+		assembly.add("ah", "1");
+		// assembly.add("al", "1000h");
 
 	}
 
