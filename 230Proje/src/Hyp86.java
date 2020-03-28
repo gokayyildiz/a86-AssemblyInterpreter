@@ -296,6 +296,36 @@ public class Hyp86 {
 
 	}
 
+	/**
+	 * Calls helper mov methods according to the contents of @param first.
+	 * 
+	 * @param first:  first operand of mov operation
+	 * @param second: second operand of mov operation
+	 */
+
+	public void mov(String first, String second) {
+
+		CF = false;
+		AF = false;
+		OF = false;
+		ZF = false;
+		if (first.contains("[") && first.contains("]")) { // first is memory
+			mov_mem_xx(first, second);
+		} else if (first.equalsIgnoreCase("ax") || first.equalsIgnoreCase("bx") || first.equalsIgnoreCase("cx")
+				|| first.equalsIgnoreCase("dx") || first.equalsIgnoreCase("di") || first.equalsIgnoreCase("si")
+				|| first.equalsIgnoreCase("bp")) {// 16 bit register
+			MOV_TwoByteReg(first, second);
+		} else if (first.equalsIgnoreCase("ah") || first.equalsIgnoreCase("al") || first.equalsIgnoreCase("bl")
+				|| first.equalsIgnoreCase("bh") || first.equalsIgnoreCase("ch") || first.equalsIgnoreCase("cl")
+				|| first.equalsIgnoreCase("dl") || first.equalsIgnoreCase("dh")) {// 8 bit register
+			MOV_OneByteReg(first, second);
+		} else { // reg veya memoryye yazmiyo hata ver
+			System.out.println("Undefined symbols are listed: " + first);
+			System.exit(0);
+		}
+
+	}
+
 	public void add(String first, String second) {
 		AF = false;
 		ZF = false;
@@ -1062,51 +1092,6 @@ public class Hyp86 {
 
 	}
 
-
-
-	private void mov_reg_unknown(String first, String second) {
-		if (first.equalsIgnoreCase("ax") || first.equalsIgnoreCase("bx") || first.equalsIgnoreCase("cx")
-				|| first.equalsIgnoreCase("dx") || first.equalsIgnoreCase("di") || first.equalsIgnoreCase("si")
-				|| first.equalsIgnoreCase("bp")) {
-			contentsOfSecondOperandOfMOVTwoByte(first, second);
-		} else {
-			contentsOfSecondOperandOfMOVOneByte(first, second);
-		}
-	}
-
-	/**
-	 * Calls helper mov methods according to the contents of @param first.
-	 * 
-	 * @param first:  first operand of mov operation
-	 * @param second: second operand of mov operation
-	 */
-	public void mov(String first, String second) {
-
-		CF = false;
-		AF = false;
-		OF = false;
-		ZF = false;
-		if (first.contains("[") && first.contains("]")) { // first is memory
-
-			mov_mem_xx(first, second);
-
-		} else if (first.equals("ax") || first.equals("cx") || first.equals("bx") || first.equals("dx")
-				|| first.equals("ah") || first.equals("al") || first.equals("bl") || first.equals("bh")
-				|| first.equals("ch") || first.equals("cl") || first.equals("dl") || first.equals("dh")
-				|| first.equals("di") || first.equals("si") || first.equals("bp")) { // first is reg
-			mov_reg_unknown(first, second);
-
-		} else { // reg veya memoryye yazmiyo hata ver
-			System.out.println("Undefined symbols are listed: " + first);
-			System.exit(0);
-		}
-
-	}
-
-	public int binaryToDecimal(int a) {
-		return Integer.parseInt("+a+", 2);
-	}
-
 	/**
 	 * a function that returns 4-digit-hexadecimal representation of parameter.
 	 * 
@@ -1180,7 +1165,14 @@ public class Hyp86 {
 
 	}
 
-	private void contentsOfSecondOperandOfMOVOneByte(String first, String second) {
+	/**
+	 * this function works with 8 bit registers. It handles several errors and moves
+	 * source to destination
+	 * 
+	 * @param first:  destination of MOV operation
+	 * @param second: source of MOV operation
+	 */
+	private void MOV_OneByteReg(String first, String second) {
 		char[] temp = new char[2];
 		boolean isVar = false;
 		Variable var = null;
@@ -1373,7 +1365,14 @@ public class Hyp86 {
 
 	}
 
-	private void contentsOfSecondOperandOfMOVTwoByte(String first, String second) {
+	/**
+	 * this function works with 16 bit registers. It handles several errors and
+	 * moves source to destination
+	 * 
+	 * @param first:  destination of MOV operation
+	 * @param second: source of MOV operation
+	 */
+	private void MOV_TwoByteReg(String first, String second) {
 		char[] temp = new char[4];
 		boolean isVar = false;
 		Variable var = null;
@@ -1562,6 +1561,13 @@ public class Hyp86 {
 
 	}
 
+	/**
+	 * this function just calculates source(addend of addition operation) of ADD
+	 * operation when first operand is 16 bit
+	 * 
+	 * @param second source operand of ADD operation
+	 * @return source operand of ADD in hexadecimal representation
+	 */
 	private String contentsOfSecondOperandOfADDTwoByte(String second) {
 
 		boolean isVar = false;
@@ -1691,6 +1697,13 @@ public class Hyp86 {
 		return addend;
 	}
 
+	/**
+	 * this function just calculates source(addend of addition operation) of ADD
+	 * operation when first operand is 8 bit
+	 * 
+	 * @param second source operand of ADD operation
+	 * @return source operand of ADD in hexadecimal representation
+	 */
 	private String contentsOfSecondOperandOfADDOneByte(String second) {
 		boolean isVar = false;
 		Variable var = null;
