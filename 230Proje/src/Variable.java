@@ -30,7 +30,7 @@ public class Variable {
 		// data is saved as hexa
 		// data could be char. Then this line gives error. Needs to be fixed!!
 		// herþeye küöçük harfe çevirince eðer input büyükse variablenýn deðeri
-		// deðiþiyo.Ýstenmeyen bir þey! e.g: var1 dw 'W', var2 db 'H'
+		// deðiþiyo.Ýstenmeyen bir þey! e.g: var1 dw 'W', var2 db 'H'.
 		if (data.contains("\'")) {
 			int a = data.charAt(data.indexOf("\'") + 1) + 1 - 1;
 			this.data = "" + a;

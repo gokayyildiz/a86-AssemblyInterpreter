@@ -8,6 +8,9 @@ import java.util.Scanner;
 
 public class main {
 
+	// we assumed that there must be 'b' or 'w' in front of square brackets ('[')
+	// since Mr. Ozturan answered that way in Piazza.
+
 	public static void main(String[] args) throws IOException {
 
 		String fileAsString;// can be the parameter of the Hyp86 object !!
@@ -22,15 +25,19 @@ public class main {
 		assembly.bx[1] = 'b';
 		assembly.bx[2] = '6';
 		assembly.bx[3] = 'a';
-		// assembly.add("[500h]", "[bx]");+
-		// assembly.add("[500h]", "[bp]");+
-		assembly.add("[500]", "bx");
-		assembly.add("[500]", "4564");
-		assembly.add("[500]", "0a52dh");
-		// assembly.add("[500]", "[500]");+
-//		assembly.add("[500]", "offset var1");+
-//		assembly.add("[500d]", "1");+
-		assembly.add("[500d]", "1000h");
+
+	//	assembly.add("ax", "a234");
+	//	assembly.add("axb", "axp");
+		// assembly.inc("b[500d]");
+		assembly.add("ax", "254");
+	//	assembly.mov("vax", "0a52dh");
+		assembly.add("ax", "var1");
+//		assembly.add("ax", "var2");
+		assembly.add("ax", "[500]");
+		assembly.add("ax", "offset var1");
+		// assembly.inc("w[500d]");
+		assembly.add("ax", "1");
+		assembly.add("ax", "1000h");
 
 	}
 
