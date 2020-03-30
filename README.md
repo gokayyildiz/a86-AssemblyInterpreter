@@ -1,5 +1,5 @@
 # repository
-!!! shr veya shl de sanırım variableı shr ederken mov([varindex],*2) diye çağrıyosun yapma direk mov(w var yaz)!!!!
+!!! shr veya shl de sanırım operand variable olduğunda mov([varindex],*2) diye çağrıyosun yapma direk mov(w var,*2)yaz!!!!
 
 
 çok copy paste oldu movda gözden kaçan yerler olmuş olabilir.Debugda döneriz bidaha.
