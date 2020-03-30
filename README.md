@@ -1,4 +1,7 @@
 # repository
+!!! shr veya shl de sanırım variableı shr ederken mov([varindex],*2) diye çağrıyosun yapma direk mov(w var yaz)!!!!
+
+
 çok copy paste oldu movda gözden kaçan yerler olmuş olabilir.Debugda döneriz bidaha.
 
 error oldupunda hata satırını 6 ya bölüp vericez de variable define ederkende hata olabiliyo 
