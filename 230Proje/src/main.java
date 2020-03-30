@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Scanner;
 
+//mov xx,char kısmı kalmış!!!
 public class main {
 
 	// we assumed that there must be 'b' or 'w' in front of square brackets ('[')
@@ -24,22 +25,22 @@ public class main {
 //commit
 		Hyp86 assembly = new Hyp86(fileAsString);
 		assembly.memory[500] = "0a34";
-		assembly.memory[4660]="abc2";
-		assembly.mov("ax","2f11");
-		assembly.mov("bp","033ch");
-		assembly.mov("bx","3b6ah");
-		assembly.mov("si","500d");
-		assembly.mov("al","25");
-		assembly.mov("w[1f6]", "23h");
-		assembly.mov("b[500]", "al");
-		assembly.mov("w[1f6]", "23h");
-		assembly.mov("w[500]", "ax");
-		assembly.mov("w[1f6]", "[bx]");
-		assembly.mov("b[500]", "var2");
-		assembly.mov("w[1f6]", "offset var3");
-		assembly.mov("w[500]", "var1");
-		assembly.mov("w[1f6]", "045ah");
-		assembly.mov("b[504]", "b[si]");
+		assembly.memory[4660] = "abc2";
+		assembly.mov("ax", "2f11");
+		assembly.mov("bp", "500d");
+		assembly.mov("bx", "508d");
+		assembly.mov("si", "500d");
+		assembly.mov("al", "25");
+		assembly.add("w[bp]", "\'a\'");
+		assembly.sub("w[bx]", "\'c\'");
+		assembly.add("b[504]", "23h");
+		assembly.sub("w[500]", "ax");
+	//	assembly.add("w[508]", "[bp]");
+	//	assembly.sub("b[512]", "var2");
+		assembly.sub("w[1f6]", "offset var3");
+		assembly.sub("w[500]", "var1");
+		assembly.sub("w[1f6]", "045ah");
+		assembly.sub("b[504]", "b[si]");
 		assembly.mov("cx", "var1");
 		assembly.mov("w var1", "b var2");
 		assembly.mov("w var2", "w[1234h]");
