@@ -13,27 +13,59 @@ public class main {
 
 	public static void main(String[] args) throws IOException {
 
+//		String a = "  asf afsafsa   ";
+//		System.out.print(a);
+//		a = a.trim();
+//		System.out.print(a);
+//		System.out.print("x");
+
 		String fileAsString;// can be the parameter of the Hyp86 object !!
 		fileAsString = parser();// whole code as a string
-
+//commit
 		Hyp86 assembly = new Hyp86(fileAsString);
 		assembly.memory[500] = "0a34";
-		assembly.ax[0] = '2';
-		assembly.ax[1] = 'f';
-		assembly.bp[0] = '3';
-		assembly.bp[1] = '3';
-		assembly.bp[2] = 'c';
-		assembly.bx[0] = '3';
-		assembly.bx[1] = 'b';
-		assembly.bx[2] = '6';
-		assembly.bx[3] = 'a';
+		assembly.memory[4660]="abc2";
+		assembly.mov("ax","2f11");
+		assembly.mov("bp","033ch");
+		assembly.mov("bx","3b6ah");
+		assembly.mov("si","500d");
+		assembly.mov("al","25");
+		assembly.mov("w[1f6]", "23h");
+		assembly.mov("b[500]", "al");
+		assembly.mov("w[1f6]", "23h");
+		assembly.mov("w[500]", "ax");
+		assembly.mov("w[1f6]", "[bx]");
+		assembly.mov("b[500]", "var2");
+		assembly.mov("w[1f6]", "offset var3");
+		assembly.mov("w[500]", "var1");
+		assembly.mov("w[1f6]", "045ah");
+		assembly.mov("b[504]", "b[si]");
+		assembly.mov("cx", "var1");
+		assembly.mov("w var1", "b var2");
+		assembly.mov("w var2", "w[1234h]");
+		assembly.mov("cx", "var1");
+		assembly.mov("w var1", "[1234h]");
+		assembly.mov("cx", "var1");
+		assembly.mov("w var1", "offset var1");
+		assembly.mov("w var1", "ax");
+		assembly.mov("w var1", "[bx]");
+		assembly.mov("w var1", "b[1234h]");
+		assembly.mov("w var1", "var2");
+		assembly.mov("w var1", "al");
+		assembly.mov("w var1", "255");
+		assembly.mov("w var1", "257");
+
 		// assembly.add("al", "0a234");
 		// assembly.add("al", "ax");
-		assembly.inc("al");
-		assembly.add("al", "ah");
-		assembly.add("al", "var2");
-		assembly.add("al", "[500]");
-		assembly.add("al", "offset var1");
+		assembly.mov("b var2 ", "21");
+		// assembly.mov("al","124h");
+		assembly.mov("w var1 ", "124d");
+		assembly.mov("w var1 ", "0124");
+		// assembly.add("b[var2]", "1f24");
+//		assembly.add("w[500h]", "ah");
+		assembly.mov("w var1", "var2");
+		assembly.mov("al", "[500]");
+		assembly.mov("al", "offset var1");
 		assembly.inc("ah");
 		assembly.add("ah", "ah");
 		// assembly.mov("vax", "0a52dh");
