@@ -5,8 +5,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Scanner;
-
-//mov xx,char kısmı kalmış!!!
+//add xx,char - add var,xx
+//sub xx,char - sub var,xx
+//mov xx,char kısımları kalmış!!!
 public class main {
 
 	// we assumed that there must be 'b' or 'w' in front of square brackets ('[')
@@ -32,15 +33,15 @@ public class main {
 		assembly.mov("si", "500d");
 		assembly.mov("al", "25");
 		assembly.add("w[bp]", "\'a\'");
-		assembly.sub("w[bx]", "\'c\'");
-		assembly.add("b[504]", "23h");
+		assembly.add("ax", "var1");
+		assembly.sub("bx", "w var2");
 		assembly.sub("w[500]", "ax");
 	//	assembly.add("w[508]", "[bp]");
 	//	assembly.sub("b[512]", "var2");
 		assembly.sub("w[1f6]", "offset var3");
-		assembly.sub("w[500]", "var1");
+	//	assembly.sub("w[500]", "var1");
 		assembly.sub("w[1f6]", "045ah");
-		assembly.sub("b[504]", "b[si]");
+	//	assembly.sub("b[504]", "b[si]");
 		assembly.mov("cx", "var1");
 		assembly.mov("w var1", "b var2");
 		assembly.mov("w var2", "w[1234h]");
