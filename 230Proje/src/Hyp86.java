@@ -136,6 +136,497 @@ public class Hyp86 {
 		scanner.close();
 
 	}
+	/**
+	 * all compare instructions and methods are based on
+	 * the design of MOV instructions
+	 * 
+	 * @param first
+	 * @param second
+	 */
+	public void cmp(String first, String second) {
+		boolean isFirstVar = false;
+		Variable firstvar = null;
+		Variable temp;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			temp = itr.next();
+			if (first.contains(temp.name)) {
+				isFirstVar = true;
+				firstvar = temp;
+				break;
+			}
+		} // now we know first operand is whether variable ->(add w[var1],ax)
+		if (isFirstVar) {
+			if (first.charAt(0) == 'w') {
+				firstvar.type = true;
+			} else if (first.charAt(0) == 'b') {
+				firstvar.type = false;
+			}
+			cmp_var_xx(firstvar, second);
+		} else if (first.contains("[") && first.contains("]")) { // first is memory
+			cmp_mem_xx(first, second);
+		} else if (isRegTwoByte(first)) {// 16 bit register
+			CMP_TwoByteReg(first, second);
+		} else if (isRegOneByte(first)) {// 8 bit register
+			CMP_OneByteReg(first, second);
+		} else { // reg veya memoryye yazmiyo hata ver
+			System.out.println("Undefined symbols are listed: " + first);
+			System.exit(0);
+		}
+
+	}
+	private void cmp_var_xx(Variable firstvar, String second) {
+		int destValue= Integer.parseInt(firstvar.data,16);
+		int srcValue = -1;
+		boolean isSecondVar = false;
+		Variable secondVar = null;
+		Variable tempVar;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			tempVar = itr.next();
+			if (second.contains(tempVar.name)) {
+				isSecondVar = true;
+				secondVar = tempVar;
+				break;
+			}
+		}
+		
+		if (second.contains("offset")) {
+
+			srcValue = secondVar.memoryIndex;
+			
+			
+
+		} else if (second.contains("[") && second.contains("]")) {
+			boolean thereWasb = false;
+			if (second.charAt(0) == 'b') { // 1 byte
+				second = second.substring(1); // got rid of 'b'
+				thereWasb = true;
+			}
+			if (second.charAt(0) == 'w') {
+				second = second.substring(1); // got rid of 'w'
+			}
+			if (isSecondVar) {
+				firstvar.data = secondVar.data;
+				return;
+			}
+			second = second.substring(1, second.length() - 1); // got rid of [ and ]
+			String num = "";
+			if (isRegOneByte(second) || isRegTwoByte(second)) {// register
+				if (second.equalsIgnoreCase("si")) {
+					for (int i = 0; i <= 3; i++) {
+						num += si[i];
+					}
+				} else if (second.equalsIgnoreCase("di")) {
+					for (int i = 0; i <= 3; i++) {
+						num += di[i];
+					}
+				} else if (second.equalsIgnoreCase("bp")) {
+					for (int i = 0; i <= 3; i++) {
+						num += bp[i];
+					}
+				} else if (second.equalsIgnoreCase("bx")) {
+					for (int i = 0; i <= 3; i++) {
+						num += bx[i];
+					}
+				} else {
+					System.out.println("#ERROR 39: Bad Index Register ");
+					System.exit(0);
+				}
+			} else {// number
+				num = NumberToFourByteHexa(second);
+			}
+
+			if (Integer.parseInt(num, 16) >= memory.length || Integer.parseInt(num, 16) < numberOfInstructions * 6) {
+				System.out.println("Address is not valid");
+				System.exit(0);
+
+			} else if (memory[Integer.parseInt(num, 16)] == null) {
+			} else {
+				String memoryLocaitonOfNum = memory[Integer.parseInt(num, 16)];
+				srcValue = Integer.parseInt(memoryLocaitonOfNum,16);
+			}
+
+		} else if (isRegOneByte(second) || isRegTwoByte(second)) { // register
+
+			if (second.equalsIgnoreCase("ax")) {
+				srcValue = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
+			} else if (second.equalsIgnoreCase("bx")) {
+				srcValue = Integer.parseInt("" + bx[0] + bx[1] + bx[2] + bx[3], 16);
+			} else if (second.equalsIgnoreCase("cx")) {
+				srcValue = Integer.parseInt("" + cx[0] + cx[1] + cx[2] + cx[3], 16);
+			} else if (second.equalsIgnoreCase("dx")) {
+				srcValue = Integer.parseInt("" + dx[0] + dx[1] + dx[2] + dx[3], 16);
+			} else if (second.equalsIgnoreCase("si")) {
+				srcValue = Integer.parseInt("" + si[0] + si[1] + si[2] + si[3], 16);
+			} else if (second.equalsIgnoreCase("bp")) {
+				srcValue = Integer.parseInt("" + bp[0] + bp[1] + bp[2] + bp[3], 16);
+			} else if (second.equalsIgnoreCase("di")) {
+				srcValue = Integer.parseInt("" + di[0] + di[1] + di[2] + di[3], 16);
+			} else if (second.equalsIgnoreCase("ah")) {
+				srcValue = Integer.parseInt("" + ax[0] + ax[1] , 16);
+			} else if (second.equalsIgnoreCase("bh")) {
+				srcValue = Integer.parseInt("" + bx[0] + bx[1] , 16);
+			} else if (second.equalsIgnoreCase("ch")) {
+				srcValue = Integer.parseInt("" + cx[0] + cx[1] , 16);
+			} else if (second.equalsIgnoreCase("dh")) {
+				srcValue = Integer.parseInt("" + dx[0] + dx[1] , 16);
+			} else if (second.equalsIgnoreCase("al")) {
+				srcValue = Integer.parseInt("" + ax[2] + ax[3], 16);
+			} else if (second.equalsIgnoreCase("bl")) {
+				srcValue = Integer.parseInt("" +bx[2] + bx[3], 16);
+			} else if (second.equalsIgnoreCase("cl")) {
+				srcValue = Integer.parseInt("" + cx[2] + cx[3], 16);
+			} else if (second.equalsIgnoreCase("dl")) {
+				srcValue = Integer.parseInt("" + dx[2] + dx[3], 16);
+			}
+		} else { // number or variable
+			if (isSecondVar) {
+				srcValue = Integer.parseInt(NumberToFourByteHexa("0" + secondVar.data + "h"),16);
+			} else {
+				srcValue = Integer.parseInt(NumberToFourByteHexa(second),16); // number
+			}
+
+			
+		}
+		if(destValue> srcValue) {
+			CF=false;
+			ZF= false;
+		}else if(destValue < srcValue) {
+			CF = true;
+			ZF = false;
+		}else {
+			ZF= true;
+		}
+		
+
+		
+
+	}
+	
+	
+	
+	private void cmp_mem_xx(String first, String second) { //
+		String source;
+
+		if (first.charAt(0) == 'b') {// first operand is kind of b[xx] so source must be one byte.
+			first = first.substring(2, first.length() - 1);// got rid of "b[" and "]"
+			source = contentsOfSecondOperandOfADDSUBOneByte(second);
+		} else {// assume there is w
+			if (first.charAt(0) == 'w') {// first operand is kind of w[xx] so source must be two byte.
+				first = first.substring(1); // got rid of "w"
+			}
+			first = first.substring(1, first.length() - 1);// got rid of "[" and "]"
+			source = contentsOfSecondOperandOfADDSUBTwoByte(second);
+		}
+
+		int memoryIndex = memoryIndexOfFirst(first);
+		int dest = Integer.parseInt(memory[memoryIndex],16);
+		int src = Integer.parseInt(source,16);
+		
+		if(dest> src) {
+			CF=false;
+			ZF= false;
+		}else if(dest < src) {
+			CF = true;
+			ZF = false;
+		}else {
+			ZF= true;
+		}
+		
+	}
+	
+	private void CMP_TwoByteReg(String first, String second) {
+		int destValue = 0;
+		int srcValue = 0;
+		boolean isVar = false;
+		Variable var = null;
+		Variable tempVar;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			tempVar = itr.next();
+			if (second.contains(tempVar.name)) {
+				isVar = true;
+				var = tempVar;
+				break;
+			}
+		}
+
+		if (second.contains("offset")) {
+			srcValue = var.memoryIndex;
+		
+		} else if (second.contains("[") && second.contains("]")) {
+
+			if (second.charAt(0) == 'b') { // 1 byte
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+				System.exit(0);
+
+			} else { // 2 byte
+				if (second.charAt(0) == 'w') {
+					second = second.substring(1); // got rid of 'w'
+				}
+
+				second = second.substring(1, second.length() - 1); // got rid of [ and ]
+				String num = "";
+				if (isRegOneByte(second) || isRegTwoByte(second)) {// register
+					if (second.equalsIgnoreCase("si")) {
+						for (int i = 0; i <= 3; i++) {
+							num += si[i];
+						}
+					} else if (second.equalsIgnoreCase("di")) {
+						for (int i = 0; i <= 3; i++) {
+							num += di[i];
+						}
+					} else if (second.equalsIgnoreCase("bp")) {
+						for (int i = 0; i <= 3; i++) {
+							num += bp[i];
+						}
+					} else if (second.equalsIgnoreCase("bx")) {
+						for (int i = 0; i <= 3; i++) {
+							num += bx[i];
+						}
+					} else {
+						System.out.println("#ERROR 39: Bad Index Register ");
+						System.exit(0);
+					}
+				} else if (isVar) {// variable
+					if (!var.type) {
+						System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+						System.exit(0);
+					} else {
+						num = NumberToFourByteHexa(var.data);
+					
+					}
+				} else {// number
+					num = NumberToFourByteHexa(second);
+				}
+
+				
+
+				if (Integer.parseInt(num, 16) >= memory.length
+						|| Integer.parseInt(num, 16) < numberOfInstructions * 6) {
+					System.out.println("Address is not valid");
+					System.exit(0);
+
+				} else if (memory[Integer.parseInt(num, 16)] == null) {
+				} else {
+					srcValue = Integer.parseInt(memory[Integer.parseInt(num, 16)],16);
+					
+				}
+			}
+		} else if (isRegOneByte(second) || isRegTwoByte(second)) { // register
+
+			if (second.equalsIgnoreCase("ax")) {
+				srcValue = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
+			} else if (second.equalsIgnoreCase("bx")) {
+				srcValue = Integer.parseInt("" + bx[0] + bx[1] + bx[2] + bx[3], 16);
+			} else if (second.equalsIgnoreCase("cx")) {
+				srcValue = Integer.parseInt("" + cx[0] + cx[1] + cx[2] + cx[3], 16);
+			} else if (second.equalsIgnoreCase("dx")) {
+				srcValue = Integer.parseInt("" + dx[0] + dx[1] + dx[2] + dx[3], 16);
+			} else if (second.equalsIgnoreCase("si")) {
+				srcValue = Integer.parseInt("" + si[0] + si[1] + si[2] + si[3], 16);
+			} else if (second.equalsIgnoreCase("bp")) {
+				srcValue = Integer.parseInt("" + bp[0] + bp[1] + bp[2] + bp[3], 16);
+			} else if (second.equalsIgnoreCase("di")) {
+				srcValue = Integer.parseInt("" + di[0] + di[1] + di[2] + di[3], 16);
+			}else {// error
+				System.out.println("#ERROR 13: Error: Byte/Word Combination Not Allowed");
+				System.exit(0);
+			}
+		} else { // number or variable
+			if (isVar) {
+				if (!var.type) {
+					System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+					System.exit(0);
+				}
+				srcValue = Integer.parseInt(NumberToFourByteHexa("0" + var.data + "h"),16);// variable
+			} else {
+				srcValue = Integer.parseInt(NumberToFourByteHexa(second),16); // number
+			}
+			
+		}
+		
+		
+		if (first.equalsIgnoreCase("ax")) {
+			destValue = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
+		} else if (first.equalsIgnoreCase("bx")) {
+			destValue = Integer.parseInt("" + bx[0] + bx[1] + bx[2] + bx[3], 16);
+		} else if (first.equalsIgnoreCase("cx")) {
+			destValue = Integer.parseInt("" + cx[0] + cx[1] + cx[2] + cx[3], 16);
+		} else if (first.equalsIgnoreCase("dx")) {
+			destValue = Integer.parseInt("" + dx[0] + dx[1] + dx[2] + dx[3], 16);
+		} else if (first.equalsIgnoreCase("si")) {
+			destValue = Integer.parseInt("" + si[0] + si[1] + si[2] + si[3], 16);
+		} else if (first.equalsIgnoreCase("bp")) {
+			destValue = Integer.parseInt("" + bp[0] + bp[1] + bp[2] + bp[3], 16);
+		} else if (first.equalsIgnoreCase("di")) {
+			destValue = Integer.parseInt("" + di[0] + di[1] + di[2] + di[3], 16);
+		}else {// error
+			System.out.println("#ERROR 13: Error: Byte/Word Combination Not Allowed");
+			System.exit(0);
+		}
+		
+		
+		if(destValue> srcValue) {
+			CF=false;
+			ZF= false;
+		}else if(destValue < srcValue) {
+			CF = true;
+			ZF = false;
+		}else {
+			ZF= true;
+		}
+
+		
+	}
+	
+	private void CMP_OneByteReg(String first, String second) {
+		int destValue = 0;
+		int srcValue = 0;
+		boolean isVar = false;
+		Variable var = null;
+		Variable tempVar;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			tempVar = itr.next();
+			if (second.contains(tempVar.name)) {
+				isVar = true;
+				var = tempVar;
+				break;
+			}
+		}
+		if (second.contains("offset")) {
+			 srcValue= var.memoryIndex;
+		
+		} else if (second.contains("[") && second.contains("]")) {// memory
+			if (second.charAt(0) == 'w') { // 2 byte
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+				System.exit(0);
+			} else { // 1 byte
+				if (second.charAt(0) == 'b') {
+					second = second.substring(1); // got rid of "b"
+				}
+				second = second.substring(1, second.length() - 1); // got rid of "[" and "]"
+				String num = "";
+
+				if (isRegOneByte(second) || isRegTwoByte(second)) {// register
+					if (second.equalsIgnoreCase("si")) {
+						for (int i = 0; i <= 3; i++) {
+							num += si[i];
+						}
+					} else if (second.equalsIgnoreCase("di")) {
+						for (int i = 0; i <= 3; i++) {
+							num += di[i];
+						}
+					} else if (second.equalsIgnoreCase("bp")) {
+						for (int i = 0; i <= 3; i++) {
+							num += bp[i];
+						}
+					} else if (second.equalsIgnoreCase("bx")) {
+						for (int i = 0; i <= 3; i++) {
+							num += bx[i];
+						}
+					} else {
+						System.out.println("#ERROR 39: Bad Index Register ");
+						System.exit(0);
+					}
+				} else if (isVar) {// variable
+					if (var.type) {
+						System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+						System.exit(0);
+					} else {
+						num = NumberToFourByteHexa(var.data);
+					
+					}
+				} else {// number
+					num = NumberToFourByteHexa(second);
+				}
+
+				if (memory[Integer.parseInt(num, 16)] == null) {
+
+				} else if (Integer.parseInt(num, 16) < numberOfInstructions * 6
+						|| Integer.parseInt(num, 16) >= 64 * 1024) {
+					System.out.println("Address is not valid");
+					System.exit(0);
+				} else {
+					String memoryLocaitonOfNum = memory[Integer.parseInt(num, 16)];
+					srcValue = Integer.parseInt(memoryLocaitonOfNum,16);
+				}
+
+			}
+
+		} else if (isRegOneByte(second) || isRegTwoByte(second)) { // register
+			if (second.equalsIgnoreCase("ah")) {
+				srcValue = Integer.parseInt("" + ax[0] + ax[1] , 16);
+			} else if (second.equalsIgnoreCase("bh")) {
+				srcValue = Integer.parseInt("" + bx[0] + bx[1] , 16);
+			} else if (second.equalsIgnoreCase("ch")) {
+				srcValue = Integer.parseInt("" + cx[0] + cx[1] , 16);
+			} else if (second.equalsIgnoreCase("dh")) {
+				srcValue = Integer.parseInt("" + dx[0] + dx[1] , 16);
+			} else if (second.equalsIgnoreCase("al")) {
+				srcValue = Integer.parseInt("" + ax[2] + ax[3], 16);
+			} else if (second.equalsIgnoreCase("bl")) {
+				srcValue = Integer.parseInt("" +bx[2] + bx[3], 16);
+			} else if (second.equalsIgnoreCase("cl")) {
+				srcValue = Integer.parseInt("" + cx[2] + cx[3], 16);
+			} else if (second.equalsIgnoreCase("dl")) {
+				srcValue = Integer.parseInt("" + dx[2] + dx[3], 16);
+			} else {
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+				System.exit(0);
+			}
+		} else { // number or variable
+			if (isVar) {
+				if (var.type) {
+					System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
+					System.exit(0);
+				}
+				srcValue = Integer.parseInt(NumberToFourByteHexa("0" + var.data + "h"),16); // variable
+			} else {
+				srcValue = Integer.parseInt(NumberToFourByteHexa(second),16); // number
+			}
+			if (Integer.parseInt(second, 16) > 255) {
+				System.out.println("#ERROR 30: Byte-Sized Constant Required");
+				System.exit(0);
+			}
+		}
+
+		// temp has the value just insert it
+		if (first.equalsIgnoreCase("ah")) {
+			destValue = Integer.parseInt("" + ax[0] + ax[1] , 16);
+		} else if (first.equalsIgnoreCase("bh")) {
+			destValue = Integer.parseInt("" + bx[0] + bx[1] , 16);
+		} else if (first.equalsIgnoreCase("ch")) {
+			destValue = Integer.parseInt("" + cx[0] + cx[1] , 16);
+		} else if (first.equalsIgnoreCase("dh")) {
+			destValue = Integer.parseInt("" + dx[0] + dx[1] , 16);
+		} else if (first.equalsIgnoreCase("al")) {
+			destValue = Integer.parseInt("" + ax[2] + ax[3], 16);
+		} else if (first.equalsIgnoreCase("bl")) {
+			destValue = Integer.parseInt("" +bx[2] + bx[3], 16);
+		} else if (first.equalsIgnoreCase("cl")) {
+			destValue = Integer.parseInt("" + cx[2] + cx[3], 16);
+		} else if (first.equalsIgnoreCase("dl")) {
+			destValue = Integer.parseInt("" + dx[2] + dx[3], 16);
+		}
+		
+		if(destValue> srcValue) {
+			CF=false;
+			ZF= false;
+		}else if(destValue < srcValue) {
+			CF = true;
+			ZF = false;
+		}else {
+			ZF= true;
+		}
+
+	}
+
+	
+	
+	
 
 	/**
 	 * push allows pushing a register, memory address, variable, or number
@@ -2863,3 +3354,5 @@ public class Hyp86 {
 				|| regg.equalsIgnoreCase("bh") || regg.equalsIgnoreCase("ch") || regg.equalsIgnoreCase("cl")
 				|| regg.equalsIgnoreCase("dl") || regg.equalsIgnoreCase("dh");
 	}
+	
+}
