@@ -695,8 +695,6 @@ public class Hyp86 {
 
 	}
 
-
-
 	/**
 	 * all compare instructions and methods are based on the design of MOV
 	 * instructions
@@ -1175,11 +1173,259 @@ public class Hyp86 {
 	}
 
 	public void xor(String first, String second) {
+		CF = false;
+		OF = false;
+
+		boolean isFirstVar = false;
+		Variable firstvar = null;
+		Variable temp;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			temp = itr.next();
+			if (first.contains(temp.name)) {
+				isFirstVar = true;
+				firstvar = temp;
+				break;
+			}
+		} // now we know first operand is whether variable ->(add w[var1],ax)
+		if (isFirstVar) {
+			if (first.charAt(0) == 'w') {
+				firstvar.type = true;
+			} else if (first.charAt(0) == 'b') {
+				firstvar.type = false;
+			}
+
+			firstvar.data = helperXor(firstvar.data, source_when_first_operand_is_variable(firstvar, second));
+
+		} else if (first.contains("[") && first.contains("]")) { // first is memory
+			String source = source_when_first_operand_is_memory(first, second);
+			int memoryIndex = memoryIndexOfFirst(first);
+			memory[memoryIndex] = helperXor(memory[memoryIndex], source);
+
+		} else if (isRegTwoByte(first)) {// 16 bit register
+
+			String source = source_when_first_operand_is_twoByteReg(first, second);
+			if (first.equalsIgnoreCase("ax")) {
+				String data = helperXor("" + ax[0] + ax[1] + ax[2] + ax[3], source);
+				for (int i = 0; i <= 3; i++) {
+					ax[i] = data.charAt(i);
+				}
+			} else if (first.equalsIgnoreCase("bx")) {
+				String data = helperXor("" + bx[0] + bx[1] + bx[2] + bx[3], source);
+				for (int i = 0; i <= 3; i++) {
+					bx[i] = data.charAt(i);
+				}
+			} else if (first.equalsIgnoreCase("cx")) {
+				String data = helperXor("" + cx[0] + cx[1] + cx[2] + cx[3], source);
+				for (int i = 0; i <= 3; i++) {
+					cx[i] = data.charAt(i);
+				}
+			} else if (first.equalsIgnoreCase("dx")) {
+				String data = helperXor("" + dx[0] + dx[1] + dx[2] + dx[3], source);
+				for (int i = 0; i <= 3; i++) {
+					dx[i] = data.charAt(i);
+				}
+			} else if (first.equalsIgnoreCase("di")) {
+				String data = helperXor("" + di[0] + di[1] + di[2] + di[3], source);
+				for (int i = 0; i <= 3; i++) {
+					di[i] = data.charAt(i);
+				}
+			} else if (first.equalsIgnoreCase("si")) {
+				String data = helperXor("" + si[0] + si[1] + si[2] + si[3], source);
+				for (int i = 0; i <= 3; i++) {
+					si[i] = data.charAt(i);
+				}
+			} else if (first.equalsIgnoreCase("bp")) {
+				String data = helperXor("" + bp[0] + bp[1] + bp[2] + bp[3], source);
+				for (int i = 0; i <= 3; i++) {
+					bp[i] = data.charAt(i);
+				}
+			}
+		} else if (isRegOneByte(first)) {// 8 bit register
+			String source = source_when_first_operand_is_oneByteReg(first, second);
+			if (first.equalsIgnoreCase("al")) {
+				String data = helperXor("" + ax[2] + ax[3], source);
+				for (int i = 0; i <= 1; i++) {
+					ax[i + 2] = data.charAt(i + 2);
+				}
+			} else if (first.equalsIgnoreCase("ah")) {
+				String data = helperXor("" + ax[0] + ax[1], source);
+				for (int i = 0; i <= 1; i++) {
+					ax[i] = data.charAt(i + 2);
+				}
+			} else if (first.equalsIgnoreCase("bl")) {
+				String data = helperXor("" + ax[2] + ax[3], source);
+				for (int i = 0; i <= 1; i++) {
+					cx[i + 2] = data.charAt(i + 2);
+				}
+			} else if (first.equalsIgnoreCase("bh")) {
+				String data = helperXor("" + bx[0] + bx[1], source);
+				for (int i = 0; i <= 1; i++) {
+					dx[i] = data.charAt(i + 2);
+				}
+			} else if (first.equalsIgnoreCase("cl")) {
+				String data = helperXor("" + ax[2] + ax[3], source);
+				for (int i = 0; i <= 1; i++) {
+					cx[i + 2] = data.charAt(i + 2);
+				}
+			} else if (first.equalsIgnoreCase("ch")) {
+				String data = helperXor("" + cx[0] + cx[1], source);
+				for (int i = 0; i <= 1; i++) {
+					cx[i] = data.charAt(i + 2);
+				}
+			} else if (first.equalsIgnoreCase("dl")) {
+				String data = helperXor("" + dx[2] + dx[3], source);
+				for (int i = 0; i <= 1; i++) {
+					dx[i + 2] = data.charAt(i + 2);
+				}
+			} else if (first.equalsIgnoreCase("dh")) {
+				String data = helperXor("" + dx[0] + dx[1], source);
+				for (int i = 0; i <= 1; i++) {
+					dx[i] = data.charAt(i);
+				}
+			}
+		} else { // reg veya memoryye yazmiyo hata ver
+			System.out.println("Undefined symbols are listed: " + first);
+			System.exit(0);
+		}
 
 	}
 
-	public void or(String first, String second) {
+	private String helperXor(String first, String second) {
+		int a = Integer.parseInt(first, 16) ^ Integer.parseInt(second, 16);
+		// TODO
+		// other flags???
+		if (a == 0)
+			ZF = true;
+		return NumberToFourByteHexa("" + a);
+	}
 
+	public void or(String first, String second) {
+		CF = false;
+		OF = false;
+
+		boolean isFirstVar = false;
+		Variable firstvar = null;
+		Variable temp;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			temp = itr.next();
+			if (first.contains(temp.name)) {
+				isFirstVar = true;
+				firstvar = temp;
+				break;
+			}
+		} // now we know first operand is whether variable ->(add w[var1],ax)
+		if (isFirstVar) {
+			if (first.charAt(0) == 'w') {
+				firstvar.type = true;
+			} else if (first.charAt(0) == 'b') {
+				firstvar.type = false;
+			}
+
+			firstvar.data = helperOr(firstvar.data, source_when_first_operand_is_variable(firstvar, second));
+
+		} else if (first.contains("[") && first.contains("]")) { // first is memory
+			String source = source_when_first_operand_is_memory(first, second);
+			int memoryIndex = memoryIndexOfFirst(first);
+			memory[memoryIndex] = helperOr(memory[memoryIndex], source);
+
+		} else if (isRegTwoByte(first)) {// 16 bit register
+
+			String source = source_when_first_operand_is_twoByteReg(first, second);
+			if (first.equalsIgnoreCase("ax")) {
+				String data = helperOr("" + ax[0] + ax[1] + ax[2] + ax[3], source);
+				for (int i = 0; i <= 3; i++) {
+					ax[i] = data.charAt(i);
+				}
+			} else if (first.equalsIgnoreCase("bx")) {
+				String data = helperOr("" + bx[0] + bx[1] + bx[2] + bx[3], source);
+				for (int i = 0; i <= 3; i++) {
+					bx[i] = data.charAt(i);
+				}
+			} else if (first.equalsIgnoreCase("cx")) {
+				String data = helperOr("" + cx[0] + cx[1] + cx[2] + cx[3], source);
+				for (int i = 0; i <= 3; i++) {
+					cx[i] = data.charAt(i);
+				}
+			} else if (first.equalsIgnoreCase("dx")) {
+				String data = helperOr("" + dx[0] + dx[1] + dx[2] + dx[3], source);
+				for (int i = 0; i <= 3; i++) {
+					dx[i] = data.charAt(i);
+				}
+			} else if (first.equalsIgnoreCase("di")) {
+				String data = helperOr("" + di[0] + di[1] + di[2] + di[3], source);
+				for (int i = 0; i <= 3; i++) {
+					di[i] = data.charAt(i);
+				}
+			} else if (first.equalsIgnoreCase("si")) {
+				String data = helperOr("" + si[0] + si[1] + si[2] + si[3], source);
+				for (int i = 0; i <= 3; i++) {
+					si[i] = data.charAt(i);
+				}
+			} else if (first.equalsIgnoreCase("bp")) {
+				String data = helperOr("" + bp[0] + bp[1] + bp[2] + bp[3], source);
+				for (int i = 0; i <= 3; i++) {
+					bp[i] = data.charAt(i);
+				}
+			}
+		} else if (isRegOneByte(first)) {// 8 bit register
+			String source = source_when_first_operand_is_oneByteReg(first, second);
+			if (first.equalsIgnoreCase("al")) {
+				String data = helperOr("" + ax[2] + ax[3], source);
+				for (int i = 0; i <= 1; i++) {
+					ax[i + 2] = data.charAt(i + 2);
+				}
+			} else if (first.equalsIgnoreCase("ah")) {
+				String data = helperOr("" + ax[0] + ax[1], source);
+				for (int i = 0; i <= 1; i++) {
+					ax[i] = data.charAt(i + 2);
+				}
+			} else if (first.equalsIgnoreCase("bl")) {
+				String data = helperOr("" + ax[2] + ax[3], source);
+				for (int i = 0; i <= 1; i++) {
+					cx[i + 2] = data.charAt(i + 2);
+				}
+			} else if (first.equalsIgnoreCase("bh")) {
+				String data = helperOr("" + bx[0] + bx[1], source);
+				for (int i = 0; i <= 1; i++) {
+					dx[i] = data.charAt(i + 2);
+				}
+			} else if (first.equalsIgnoreCase("cl")) {
+				String data = helperOr("" + ax[2] + ax[3], source);
+				for (int i = 0; i <= 1; i++) {
+					cx[i + 2] = data.charAt(i + 2);
+				}
+			} else if (first.equalsIgnoreCase("ch")) {
+				String data = helperOr("" + cx[0] + cx[1], source);
+				for (int i = 0; i <= 1; i++) {
+					cx[i] = data.charAt(i + 2);
+				}
+			} else if (first.equalsIgnoreCase("dl")) {
+				String data = helperOr("" + dx[2] + dx[3], source);
+				for (int i = 0; i <= 1; i++) {
+					dx[i + 2] = data.charAt(i + 2);
+				}
+			} else if (first.equalsIgnoreCase("dh")) {
+				String data = helperOr("" + dx[0] + dx[1], source);
+				for (int i = 0; i <= 1; i++) {
+					dx[i] = data.charAt(i);
+				}
+			}
+		} else { // reg veya memoryye yazmiyo hata ver
+			System.out.println("Undefined symbols are listed: " + first);
+			System.exit(0);
+		}
+
+	}
+
+	private String helperOr(String first, String second) {
+		int a = Integer.parseInt(first, 16) | Integer.parseInt(second, 16);
+		// TODO
+		// other flags???
+		if (a == 0)
+			ZF = true;
+		return NumberToFourByteHexa("" + a);
 	}
 
 	public void not(String first, String second) {
@@ -1189,7 +1435,7 @@ public class Hyp86 {
 	public void and(String first, String second) {
 		CF = false;
 		OF = false;
-		
+
 		boolean isFirstVar = false;
 		Variable firstvar = null;
 		Variable temp;
@@ -1842,7 +2088,7 @@ public class Hyp86 {
 							temp[1 - i] = num.charAt(num.length() - i - 1);
 						}
 						// TODO
-						return "";
+						return "" + temp[0] + temp[1];
 					}
 				} else {// number
 					num = NumberToFourByteHexa(second);
@@ -2007,7 +2253,7 @@ public class Hyp86 {
 							temp[3 - i] = num.charAt(num.length() - i - 1);
 						}
 						// TODO
-						return "";
+						return "" + temp[0] + temp[1];
 					}
 				} else {// number
 					num = NumberToFourByteHexa(second);
