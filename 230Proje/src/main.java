@@ -1,10 +1,13 @@
 import java.io.BufferedReader;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Scanner;
+
+//TODO
 //add xx,char - add var,xx
 //sub xx,char - sub var,xx
 //mov xx,char kısımları kalmış!!!
@@ -15,33 +18,33 @@ public class main {
 
 	public static void main(String[] args) throws IOException {
 
-//		String a = "  asf afsafsa   ";
-//		System.out.print(a);
-//		a = a.trim();
-//		System.out.print(a);
-//		System.out.print("x");
-
+		
 		String fileAsString;// can be the parameter of the Hyp86 object !!
 		fileAsString = parser();// whole code as a string
-//commit
+
 		Hyp86 assembly = new Hyp86(fileAsString);
-		assembly.memory[500] = "0a34";
-		assembly.memory[4660] = "abc2";
-		assembly.mov("ax", "2f11");
-		assembly.mov("bp", "500d");
-		assembly.mov("bx", "508d");
-		assembly.mov("si", "500d");
-		assembly.mov("al", "25");
-		assembly.add("w[bp]", "\'a\'");
-		assembly.add("ax", "var1");
-		assembly.sub("bx", "w var2");
-		assembly.sub("w[500]", "ax");
-	//	assembly.add("w[508]", "[bp]");
-	//	assembly.sub("b[512]", "var2");
+		System.out.print("");
+		assembly.execute();
+		assembly.memory[500] = "0a";
+		assembly.memory[4660] = "ab";
+		assembly.mov("w[500d]","5aabh");
+		assembly.mov("b[500d]","2bh");
+		assembly.shr("ax", "1");
+		assembly.or("ax", "2f11");
+		assembly.xor("bp", "500d");
+		assembly.and("bx", "508d");
+		assembly.or("si", "500d");
+		assembly.xor("al", "25");
+	//	assembly.and("w[bp]", "\'a\'");
+		assembly.or("ax", "var1");
+		assembly.xor("bx", "w var2");
+		assembly.and("w[500]", "ax");
+		// assembly.add("w[508]", "[bp]");
+		// assembly.sub("b[512]", "var2");
 		assembly.sub("w[1f6]", "offset var3");
-	//	assembly.sub("w[500]", "var1");
+		// assembly.sub("w[500]", "var1");
 		assembly.sub("w[1f6]", "045ah");
-	//	assembly.sub("b[504]", "b[si]");
+		// assembly.sub("b[504]", "b[si]");
 		assembly.mov("cx", "var1");
 		assembly.mov("w var1", "b var2");
 		assembly.mov("w var2", "w[1234h]");
@@ -68,7 +71,7 @@ public class main {
 		assembly.mov("w var1", "var2");
 		assembly.mov("al", "[500]");
 		assembly.mov("al", "offset var1");
-		assembly.inc("ah");
+		
 		assembly.add("ah", "ah");
 		// assembly.mov("vax", "0a52dh");
 //		assembly.add("al", "var1");
@@ -80,6 +83,8 @@ public class main {
 		// assembly.add("al", "1000h");
 
 	}
+
+	
 
 	/**
 	 * parser takes the input file and parse it to labels
