@@ -2,10 +2,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Scanner;
-
+//TODO
 //variable önünde w olduğu veya b olduğu sürece typeı hiç önemli değil.
 
-// Multiplicand × Multiplier = Product
 public class Hyp86 {
 
 	/*
@@ -57,13 +56,15 @@ public class Hyp86 {
 
 		}
 		fillInstructions();
-		fileAsString = fileAsString.toLowerCase();
+		//TODO
+		//bunu yapmıycaktık
+		//fileAsString = fileAsString.toLowerCase();
 
 		Scanner scanner = new Scanner(fileAsString);
 		String line;
 		Scanner token;
 		String isChar1;
-		
+
 		int indexCursor = 0;
 		boolean int20hCame = false;
 		while (scanner.hasNextLine()) {
@@ -82,26 +83,26 @@ public class Hyp86 {
 					int temo = line.indexOf(',');
 					memory[indexCursor + 1] = line.substring(0, temo).trim().toLowerCase();
 					isChar1 = line.substring(temo + 1, line.length()).trim();
-				
+
 					if (isChar1.contains("\'")) {// when var.data is 'x'
 						int a = isChar1.charAt(isChar1.indexOf("\'") + 1) + 1 - 1;
-						isChar1 = NumberToFourByteHexa(""+a);
+						isChar1 = NumberToFourByteHexa("" + a);
 					} else if (isChar1.contains("\"")) {// when var.data is "x"
 						int a = isChar1.charAt(isChar1.indexOf("\"") + 1) + 1 - 1;
-						isChar1 = NumberToFourByteHexa(""+a);
+						isChar1 = NumberToFourByteHexa("" + a);
 					}
-					
+
 					memory[indexCursor + 2] = isChar1.toLowerCase();
 				} else {
 					isChar1 = line.trim();
 					if (isChar1.contains("\'")) {// when var.data is 'x'
 						int a = isChar1.charAt(isChar1.indexOf("\'") + 1) + 1 - 1;
-						isChar1 = NumberToFourByteHexa(""+a);
+						isChar1 = NumberToFourByteHexa("" + a);
 					} else if (isChar1.contains("\"")) {// when var.data is "x"
 						int a = isChar1.charAt(isChar1.indexOf("\"") + 1) + 1 - 1;
-						isChar1 = NumberToFourByteHexa(""+a);
+						isChar1 = NumberToFourByteHexa("" + a);
 					}
-					
+
 					memory[indexCursor + 1] = isChar1;
 				}
 				if (first.equals("int") && token.next().equals("20h")) {
@@ -129,17 +130,17 @@ public class Hyp86 {
 
 		}
 		Variable x;
-		String dataVar ;
+		String dataVar;
 		for (int i = 0; i < variables.size(); i++) {
 			x = variables.get(i);
-			if (x.type == true) {
-				memory[indexCursor] = x.data.substring(0,2);
-				memory[indexCursor+1] = x.data.substring(2);
-				x.memoryIndex = indexCursor;
+			if (x.getType() == true) {
+				memory[indexCursor] = x.getData().substring(0, 2);
+				memory[indexCursor + 1] = x.getData().substring(2);
+				x.setMemoryIndex(indexCursor);
 				indexCursor += 2;
 			} else {
-				memory[indexCursor] = x.data.substring(2);
-				x.memoryIndex = indexCursor;
+				memory[indexCursor] = x.getData().substring(2);
+				x.setMemoryIndex(indexCursor);
 				indexCursor += 1;
 			}
 
@@ -148,6 +149,7 @@ public class Hyp86 {
 		scanner.close();
 
 	}
+
 	private String execute_helper_isVar(String token) {
 		Variable var = null;
 		Variable temp;
@@ -165,363 +167,214 @@ public class Hyp86 {
 		return null;
 	}
 
-	
 	public void execute() {
-		String first,second;
-		MP=0;
-		while(true) {
-			if(memory[MP].equals("int")) {
-				if(memory[MP+1].equals("20h")) {
+		String first, second;
+		MP = 0;
+		while (true) {
+			if (memory[MP].equals("int")) {
+				if (memory[MP + 1].equals("20h")) {
 					System.exit(0);
-				}else {
+				} else {
 					int21h();
 				}
-			}else if(memory[MP].equals("mov")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				second =  execute_helper_isVar(memory[MP+2]);
-				if(first == null) {
-					first = memory[MP+1];
+			} else if (memory[MP].equals("mov")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				second = execute_helper_isVar(memory[MP + 2]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				if(second == null) {
-					second = memory[MP+2];
+				if (second == null) {
+					second = memory[MP + 2];
 				}
-				
-				mov(first , second);
-				
-			}else if(memory[MP].equals("add")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				second =  execute_helper_isVar(memory[MP+2]);
-				if(first == null) {
-					first = memory[MP+1];
+
+				mov(first, second);
+
+			} else if (memory[MP].equals("add")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				second = execute_helper_isVar(memory[MP + 2]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				if(second == null) {
-					second = memory[MP+2];
+				if (second == null) {
+					second = memory[MP + 2];
 				}
-				
-				add(first , second);
-			}else if(memory[MP].equals("sub")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				second =  execute_helper_isVar(memory[MP+2]);
-				if(first == null) {
-					first = memory[MP+1];
+
+				add(first, second);
+			} else if (memory[MP].equals("sub")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				second = execute_helper_isVar(memory[MP + 2]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				if(second == null) {
-					second = memory[MP+2];
+				if (second == null) {
+					second = memory[MP + 2];
 				}
-				
-				sub(first , second);
-			}else if(memory[MP].equals("cmp")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				second =  execute_helper_isVar(memory[MP+2]);
-				if(first == null) {
-					first = memory[MP+1];
+
+				sub(first, second);
+			} else if (memory[MP].equals("cmp")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				second = execute_helper_isVar(memory[MP + 2]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				if(second == null) {
-					second = memory[MP+2];
+				if (second == null) {
+					second = memory[MP + 2];
 				}
-				
-				cmp(first , second);
-			}else if(memory[MP].equals("and")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				second =  execute_helper_isVar(memory[MP+2]);
-				if(first == null) {
-					first = memory[MP+1];
+
+				cmp(first, second);
+			} else if (memory[MP].equals("and")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				second = execute_helper_isVar(memory[MP + 2]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				if(second == null) {
-					second = memory[MP+2];
+				if (second == null) {
+					second = memory[MP + 2];
 				}
-				
-				and(first , second);
-			}else if(memory[MP].equals("or")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				second =  execute_helper_isVar(memory[MP+2]);
-				if(first == null) {
-					first = memory[MP+1];
+
+				and(first, second);
+			} else if (memory[MP].equals("or")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				second = execute_helper_isVar(memory[MP + 2]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				if(second == null) {
-					second = memory[MP+2];
+				if (second == null) {
+					second = memory[MP + 2];
 				}
-				
-				or(first , second);
-			}else if(memory[MP].equals("xor")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				second =  execute_helper_isVar(memory[MP+2]);
-				if(first == null) {
-					first = memory[MP+1];
+
+				or(first, second);
+			} else if (memory[MP].equals("xor")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				second = execute_helper_isVar(memory[MP + 2]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				if(second == null) {
-					second = memory[MP+2];
+				if (second == null) {
+					second = memory[MP + 2];
 				}
-				
-				xor(first , second);
-			}else if(memory[MP].equals("shl")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				second =  execute_helper_isVar(memory[MP+2]);
-				if(first == null) {
-					first = memory[MP+1];
+
+				xor(first, second);
+			} else if (memory[MP].equals("shl")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				second = execute_helper_isVar(memory[MP + 2]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				if(second == null) {
-					second = memory[MP+2];
+				if (second == null) {
+					second = memory[MP + 2];
 				}
-				
-				shl(first , second);
-			}else if(memory[MP].equals("shr")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				second =  execute_helper_isVar(memory[MP+2]);
-				if(first == null) {
-					first = memory[MP+1];
+
+				shl(first, second);
+			} else if (memory[MP].equals("shr")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				second = execute_helper_isVar(memory[MP + 2]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				if(second == null) {
-					second = memory[MP+2];
+				if (second == null) {
+					second = memory[MP + 2];
 				}
-				
-				shr(first , second);
-			}else if(memory[MP].equals("rcl")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				second =  execute_helper_isVar(memory[MP+2]);
-				if(first == null) {
-					first = memory[MP+1];
+
+				shr(first, second);
+			} else if (memory[MP].equals("rcl")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				second = execute_helper_isVar(memory[MP + 2]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				if(second == null) {
-					second = memory[MP+2];
+				if (second == null) {
+					second = memory[MP + 2];
 				}
-				
-				//rcl(first , second);
-			}else if(memory[MP].equals("rcr")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				second =  execute_helper_isVar(memory[MP+2]);
-				if(first == null) {
-					first = memory[MP+1];
+
+				// rcl(first , second);
+			} else if (memory[MP].equals("rcr")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				second = execute_helper_isVar(memory[MP + 2]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				if(second == null) {
-					second = memory[MP+2];
+				if (second == null) {
+					second = memory[MP + 2];
 				}
-				
-				//rcr(first , second);
-			}else if(memory[MP].equals("mul")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				if(first == null) {
-					first = memory[MP+1];
+
+				// rcr(first , second);
+			} else if (memory[MP].equals("mul")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				
+
 				mul(first);
-			}else if(memory[MP].equals("div")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				if(first == null) {
-					first = memory[MP+1];
+			} else if (memory[MP].equals("div")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				
+
 				div(first);
-			}else if(memory[MP].equals("push")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				if(first == null) {
-					first = memory[MP+1];
+			} else if (memory[MP].equals("push")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				
+
 				push(first);
-			}else if(memory[MP].equals("pop")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				if(first == null) {
-					first = memory[MP+1];
+			} else if (memory[MP].equals("pop")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				
+
 				pop(first);
-			}else if(memory[MP].equals("not")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				if(first == null) {
-					first = memory[MP+1];
+			} else if (memory[MP].equals("not")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				
-				//not(first);
-			}else if(memory[MP].equals("inc")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				if(first == null) {
-					first = memory[MP+1];
+
+				// not(first);
+			} else if (memory[MP].equals("inc")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				
-				inc(first);
-			}else if(memory[MP].equals("dec")) {
-				first = execute_helper_isVar(memory[MP+1]);
-				if(first == null) {
-					first = memory[MP+1];
+
+				add(first,"1");
+			} else if (memory[MP].equals("dec")) {
+				first = execute_helper_isVar(memory[MP + 1]);
+				if (first == null) {
+					first = memory[MP + 1];
 				}
-				
-				dec(first);
-			}else if(memory[MP].equals("jmp")) {
-				jmp(memory[MP+1]);
+
+				sub(first,"1");
+			} else if (memory[MP].equals("jmp")) {
+				jmp(memory[MP + 1]);
 				continue;
-			}else if(memory[MP].equals("jz")){
-				if(ZF) {
-					jmp(memory[MP+1]);
+			} else if (memory[MP].equals("jz")) {
+				if (ZF) {
+					jmp(memory[MP + 1]);
 					continue;
 				}
-			}else if(memory[MP].equals("jnz")) {
-				if(!ZF) {
-					jmp(memory[MP+1]);
+			} else if (memory[MP].equals("jnz")) {
+				if (!ZF) {
+					jmp(memory[MP + 1]);
 					continue;
 				}
 			}
-			
-			
-			
-			MP +=6;
+
+			MP += 6;
 		}
-		
-		
+
 	}
-	
+
 	public void jmp(String label) {
-		if(labels.containsKey(label)) {
+		if (labels.containsKey(label)) {
 			MP = labels.get(label);
-		}else {
+		} else {
 			System.out.println("label does not exist");
 			System.exit(0);
 		}
-	}
-	
-
-	public void mul(String first) {
-		// variable part can be deleted later
-
-		String source;
-		boolean isFirstVar = false;
-		Variable firstvar = null;
-		Variable temp;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			temp = itr.next();
-			if (first.contains(temp.name)) {
-				isFirstVar = true;
-				firstvar = temp;
-				break;
-			}
-		} // now we know first operand is whether variable ->(add w[var1],ax)
-		if (isFirstVar) {
-			if (first.charAt(0) == 'w' && firstvar.type) {
-				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
-				mul_2Byte(source);
-			} else if (first.charAt(0) == 'b' && !firstvar.type) {
-				source = contentsOfSecondOperandOfADDSUBOneByte(first);
-				mul_1Byte(source);
-			}
-		} else if (first.contains("[") && first.contains("]")) { // first is memory
-			if (first.charAt(0) == 'w') {
-				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
-				mul_2Byte(source);
-			} else if (first.charAt(0) == 'b') {
-				source = contentsOfSecondOperandOfADDSUBOneByte(first);
-				mul_1Byte(source);
-			}
-
-		} else if (isRegTwoByte(first)) {// 16 bit register
-			source = contentsOfSecondOperandOfADDSUBTwoByte(first);
-			mul_2Byte(source);
-		} else if (isRegOneByte(first)) {// 8 bit register
-			source = contentsOfSecondOperandOfADDSUBOneByte(first);
-			mul_1Byte(source);
-		} else {
-			System.out.println("Undefined symbols are listed: " + first);
-			System.exit(0);
-		}
-
-		if (Integer.parseInt("" + ax[0], 16) > 7) {
-			CF = true;
-			OF = true;
-		} else {
-			CF = false;
-			OF = false;
-		}
-
-	}
-
-	private void mul_1Byte(String source) {
-		int dest = Integer.parseInt("" + ax[2] + ax[3], 16);
-		dest = dest * Integer.parseInt(source, 16);
-		String result = NumberToFourByteHexa("" + dest);
-		for (int i = 0; i < 4; i++)
-			ax[i] = result.charAt(i);
-
-	}
-
-	private void mul_2Byte(String source) {
-		int dest = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
-		dest = dest * Integer.parseInt(source, 16);
-		String result = Integer.toHexString(dest);
-		while (result.length() < 8)
-			result = "0" + result;
-
-		for (int i = 0; i < 4; i++) {
-			ax[i] = result.charAt(i + 4);
-			dx[i] = result.charAt(i);
-		}
-
-	}
-
-	public void div(String first) {
-		String source;
-		boolean isFirstVar = false;
-		Variable firstvar = null;
-		Variable temp;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			temp = itr.next();
-			if (first.contains(temp.name)) {
-				isFirstVar = true;
-				firstvar = temp;
-				break;
-			}
-		} // now we know first operand is whether variable ->(add w[var1],ax)
-		if (isFirstVar) {
-			if (first.charAt(0) == 'w' && firstvar.type) {
-				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
-				div_2Byte(source);
-			} else if (first.charAt(0) == 'b' && !firstvar.type) {
-				source = contentsOfSecondOperandOfADDSUBOneByte(first);
-				div_1Byte(source);
-			}
-		} else if (first.contains("[") && first.contains("]")) { // first is memory
-			if (first.charAt(0) == 'w') {
-				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
-				div_2Byte(source);
-			} else if (first.charAt(0) == 'b') {
-				source = contentsOfSecondOperandOfADDSUBOneByte(first);
-				div_1Byte(source);
-			}
-
-		} else if (isRegTwoByte(first)) {// 16 bit register
-			source = contentsOfSecondOperandOfADDSUBTwoByte(first);
-			div_2Byte(source);
-		} else if (isRegOneByte(first)) {// 8 bit register
-			source = contentsOfSecondOperandOfADDSUBOneByte(first);
-			div_1Byte(source);
-		} else {
-			System.out.println("Undefined symbols are listed: " + first);
-			System.exit(0);
-		}
-	}
-
-	private void div_1Byte(String source) {
-		int dest = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
-		int src = Integer.parseInt(source, 16);
-		String quot = NumberToFourByteHexa("" + dest / src);
-		String remainder = NumberToFourByteHexa("" + dest % src);
-		ax[0] = remainder.charAt(2);
-		ax[1] = remainder.charAt(3);
-		ax[2] = quot.charAt(2);
-		ax[3] = quot.charAt(3);
-
-	}
-
-	private void div_2Byte(String source) {
-		int dest = Integer.parseInt("" + dx[0] + dx[1] + dx[2] + dx[3] + ax[0] + ax[1] + ax[2] + ax[3], 16);
-		int src = Integer.parseInt(source, 16);
-		String quot = NumberToFourByteHexa("" + dest / src);
-		String remainder = NumberToFourByteHexa("" + dest % src);
-		for (int i = 0; i < 4; i++) {
-			ax[i] = quot.charAt(i);
-			dx[i] = remainder.charAt(i);
-		}
-
 	}
 
 	/**
@@ -555,11 +408,12 @@ public class Hyp86 {
 			memory[index] = "" + bp[0] + bp[1] + bp[2] + bp[3];
 
 		} else {
-
+//TODO
+			// var parts are gonna be deleted
 			int a = 0;
 			for (int i = 0; i < variables.size(); i++) {
-				if (variables.get(i).getName().equals(reg) && variables.get(i).isType()) {
-					memory[index] = variables.get(i).data;
+				if (variables.get(i).getName().equals(reg) && variables.get(i).getType()) {
+					memory[index] = variables.get(i).getData();
 					break;
 				}
 				a++;
@@ -776,28 +630,28 @@ public class Hyp86 {
 			int a = 0;
 			for (int i = 0; i < variables.size(); i++) {
 				if (variables.get(i).getName().equals(xx)) {
-					if (variables.get(i).type) {
+					if (variables.get(i).getType()) {
 						for (int j = 0; j < numero; j++) {
-							regg = "" + variables.get(i).data.charAt(0) + variables.get(i).data.charAt(1)
-									+ variables.get(i).data.charAt(2) + variables.get(i).data.charAt(3);
+							regg = "" + variables.get(i).getData().charAt(0) + variables.get(i).getData().charAt(1)
+									+ variables.get(i).getData().charAt(2) + variables.get(i).getData().charAt(3);
 							otherMult = Integer.parseInt(regg, 16);
-							if (Integer.parseInt("" + variables.get(i).data.charAt(0), 16) <= 7)
+							if (Integer.parseInt("" + variables.get(i).getData().charAt(0), 16) <= 7)
 								CF = false;
 							else
 								CF = true;
 
-							mov("[" + variables.get(i).memoryIndex + "]", "" + otherMult * 2);
+							mov("[" + variables.get(i).getMemoryIndex() + "]", "" + otherMult * 2);
 						}
 					} else {
 						for (int j = 0; j < numero; j++) {
-							regg = "" + variables.get(i).data.charAt(2) + variables.get(i).data.charAt(3);
+							regg = "" + variables.get(i).getData().charAt(2) + variables.get(i).getData().charAt(3);
 							otherMult = Integer.parseInt(regg, 16);
-							if (Integer.parseInt("" + variables.get(i).data.charAt(2), 16) <= 7)
+							if (Integer.parseInt("" + variables.get(i).getData().charAt(2), 16) <= 7)
 								CF = false;
 							else
 								CF = true;
 
-							mov("[" + variables.get(i).memoryIndex + "]", "" + otherMult * 2);
+							mov("[" + variables.get(i).getMemoryIndex() + "]", "" + otherMult * 2);
 						}
 
 					}
@@ -1006,28 +860,28 @@ public class Hyp86 {
 			int a = 0;
 			for (int i = 0; i < variables.size(); i++) {
 				if (variables.get(i).getName().equals(xx)) {
-					if (variables.get(i).type) {
+					if (variables.get(i).getType()) {
 						for (int j = 0; j < numero; j++) {
-							regg = "" + variables.get(i).data.charAt(0) + variables.get(i).data.charAt(1)
-									+ variables.get(i).data.charAt(2) + variables.get(i).data.charAt(3);
+							regg = "" + variables.get(i).getData().charAt(0) + variables.get(i).getData().charAt(1)
+									+ variables.get(i).getData().charAt(2) + variables.get(i).getData().charAt(3);
 							otherMult = Integer.parseInt(regg, 16);
-							if (Integer.parseInt("" + variables.get(i).data.charAt(0), 16) % 2 == 0)
+							if (Integer.parseInt("" + variables.get(i).getData().charAt(0), 16) % 2 == 0)
 								CF = false;
 							else
 								CF = true;
 
-							mov("[" + variables.get(i).memoryIndex + "]", "" + otherMult / 2);
+							mov("[" + variables.get(i).getMemoryIndex() + "]", "" + otherMult / 2);
 						}
 					} else {
 						for (int j = 0; j < numero; j++) {
-							regg = "" + variables.get(i).data.charAt(2) + variables.get(i).data.charAt(3);
+							regg = "" + variables.get(i).getData().charAt(2) + variables.get(i).getData().charAt(3);
 							otherMult = Integer.parseInt(regg, 16);
-							if (Integer.parseInt("" + variables.get(i).data.charAt(2), 16) % 2 == 0)
+							if (Integer.parseInt("" + variables.get(i).getData().charAt(2), 16) % 2 == 0)
 								CF = false;
 							else
 								CF = true;
 
-							mov("[" + variables.get(i).memoryIndex + "]", "" + otherMult / 2);
+							mov("[" + variables.get(i).getMemoryIndex() + "]", "" + otherMult / 2);
 						}
 
 					}
@@ -1059,7 +913,6 @@ public class Hyp86 {
 	 * interrupt with 01 and 02 functions 01 --> getting a char input 02 --> gives
 	 * an output char
 	 */
-	
 	public void int21h() {
 		String ah = "" + ax[0] + ax[1];
 		int ascii;
@@ -1077,7 +930,7 @@ public class Hyp86 {
 			System.out.print((char) ascii);
 
 		}
-		
+//		conc.close();
 
 	}
 
@@ -1089,27 +942,7 @@ public class Hyp86 {
 	 * @param second
 	 */
 	public void cmp(String first, String second) {
-
-		boolean isFirstVar = false;
-		Variable firstvar = null;
-		Variable temp;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			temp = itr.next();
-			if (first.contains(temp.name)) {
-				isFirstVar = true;
-				firstvar = temp;
-				break;
-			}
-		} // now we know first operand is whether variable ->(add w[var1],ax)
-		if (isFirstVar) {
-			if (first.charAt(0) == 'w') {
-				firstvar.type = true;
-			} else if (first.charAt(0) == 'b') {
-				firstvar.type = false;
-			}
-			cmp_var_xx(firstvar, second);
-		} else if (first.contains("[") && first.contains("]")) { // first is memory
+		if (first.contains("[") && first.contains("]")) { // first is memory
 			cmp_mem_xx(first, second);
 		} else if (isRegTwoByte(first)) {// 16 bit register
 			CMP_TwoByteReg(first, second);
@@ -1118,131 +951,6 @@ public class Hyp86 {
 		} else { // reg veya memoryye yazmiyo hata ver
 			System.out.println("Undefined symbols are listed: " + first);
 			System.exit(0);
-		}
-
-	}
-
-	private void cmp_var_xx(Variable firstvar, String second) {
-		int destValue = Integer.parseInt(firstvar.data, 16);
-		int srcValue = -1;
-		boolean isSecondVar = false;
-		Variable secondVar = null;
-		Variable tempVar;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			tempVar = itr.next();
-			if (second.contains(tempVar.name)) {
-				isSecondVar = true;
-				secondVar = tempVar;
-				break;
-			}
-		}
-
-		if (second.contains("offset")) {
-
-			srcValue = secondVar.memoryIndex;
-
-		} else if (second.contains("[") && second.contains("]")) {
-			boolean thereWasb = false;
-			if (second.charAt(0) == 'b') { // 1 byte
-				second = second.substring(1); // got rid of 'b'
-				thereWasb = true;
-			}
-			if (second.charAt(0) == 'w') {
-				second = second.substring(1); // got rid of 'w'
-			}
-			if (isSecondVar) {
-				// TODO
-				// hata var gibi cmp yerine mov yapılmıyo mu burda??
-				firstvar.data = secondVar.data;
-				return;
-			}
-			second = second.substring(1, second.length() - 1); // got rid of [ and ]
-			String num = "";
-			if (isRegOneByte(second) || isRegTwoByte(second)) {// register
-				if (second.equalsIgnoreCase("si")) {
-					for (int i = 0; i <= 3; i++) {
-						num += si[i];
-					}
-				} else if (second.equalsIgnoreCase("di")) {
-					for (int i = 0; i <= 3; i++) {
-						num += di[i];
-					}
-				} else if (second.equalsIgnoreCase("bp")) {
-					for (int i = 0; i <= 3; i++) {
-						num += bp[i];
-					}
-				} else if (second.equalsIgnoreCase("bx")) {
-					for (int i = 0; i <= 3; i++) {
-						num += bx[i];
-					}
-				} else {
-					System.out.println("#ERROR 39: Bad Index Register ");
-					System.exit(0);
-				}
-			} else {// number
-				num = NumberToFourByteHexa(second);
-			}
-
-			if (Integer.parseInt(num, 16) >= memory.length || Integer.parseInt(num, 16) < numberOfInstructions * 6) {
-				System.out.println("Address is not valid");
-				System.exit(0);
-
-			} else if (memory[Integer.parseInt(num, 16)] == null) {
-			} else {
-				String memoryLocaitonOfNum = memory[Integer.parseInt(num, 16)];
-				srcValue = Integer.parseInt(memoryLocaitonOfNum, 16);
-			}
-
-		} else if (isRegOneByte(second) || isRegTwoByte(second)) { // register
-
-			if (second.equalsIgnoreCase("ax")) {
-				srcValue = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
-			} else if (second.equalsIgnoreCase("bx")) {
-				srcValue = Integer.parseInt("" + bx[0] + bx[1] + bx[2] + bx[3], 16);
-			} else if (second.equalsIgnoreCase("cx")) {
-				srcValue = Integer.parseInt("" + cx[0] + cx[1] + cx[2] + cx[3], 16);
-			} else if (second.equalsIgnoreCase("dx")) {
-				srcValue = Integer.parseInt("" + dx[0] + dx[1] + dx[2] + dx[3], 16);
-			} else if (second.equalsIgnoreCase("si")) {
-				srcValue = Integer.parseInt("" + si[0] + si[1] + si[2] + si[3], 16);
-			} else if (second.equalsIgnoreCase("bp")) {
-				srcValue = Integer.parseInt("" + bp[0] + bp[1] + bp[2] + bp[3], 16);
-			} else if (second.equalsIgnoreCase("di")) {
-				srcValue = Integer.parseInt("" + di[0] + di[1] + di[2] + di[3], 16);
-			} else if (second.equalsIgnoreCase("ah")) {
-				srcValue = Integer.parseInt("" + ax[0] + ax[1], 16);
-			} else if (second.equalsIgnoreCase("bh")) {
-				srcValue = Integer.parseInt("" + bx[0] + bx[1], 16);
-			} else if (second.equalsIgnoreCase("ch")) {
-				srcValue = Integer.parseInt("" + cx[0] + cx[1], 16);
-			} else if (second.equalsIgnoreCase("dh")) {
-				srcValue = Integer.parseInt("" + dx[0] + dx[1], 16);
-			} else if (second.equalsIgnoreCase("al")) {
-				srcValue = Integer.parseInt("" + ax[2] + ax[3], 16);
-			} else if (second.equalsIgnoreCase("bl")) {
-				srcValue = Integer.parseInt("" + bx[2] + bx[3], 16);
-			} else if (second.equalsIgnoreCase("cl")) {
-				srcValue = Integer.parseInt("" + cx[2] + cx[3], 16);
-			} else if (second.equalsIgnoreCase("dl")) {
-				srcValue = Integer.parseInt("" + dx[2] + dx[3], 16);
-			}
-		} else { // number or variable
-			if (isSecondVar) {
-				srcValue = Integer.parseInt(NumberToFourByteHexa("0" + secondVar.data + "h"), 16);
-			} else {
-				srcValue = Integer.parseInt(NumberToFourByteHexa(second), 16); // number
-			}
-
-		}
-		if (destValue > srcValue) {
-			CF = false;
-			ZF = false;
-		} else if (destValue < srcValue) {
-			CF = true;
-			ZF = false;
-		} else {
-			ZF = true;
 		}
 
 	}
@@ -1280,23 +988,8 @@ public class Hyp86 {
 	private void CMP_TwoByteReg(String first, String second) {
 		int destValue = 0;
 		int srcValue = 0;
-		boolean isVar = false;
-		Variable var = null;
-		Variable tempVar;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			tempVar = itr.next();
-			if (second.contains(tempVar.name)) {
-				isVar = true;
-				var = tempVar;
-				break;
-			}
-		}
 
-		if (second.contains("offset")) {
-			srcValue = var.memoryIndex;
-
-		} else if (second.contains("[") && second.contains("]")) {
+		if (second.contains("[") && second.contains("]")) {
 
 			if (second.charAt(0) == 'b') { // 1 byte
 				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
@@ -1329,14 +1022,6 @@ public class Hyp86 {
 					} else {
 						System.out.println("#ERROR 39: Bad Index Register ");
 						System.exit(0);
-					}
-				} else if (isVar) {// variable
-					if (!var.type) {
-						System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
-						System.exit(0);
-					} else {
-						num = NumberToFourByteHexa(var.data);
-
 					}
 				} else {// number
 					num = NumberToFourByteHexa(second);
@@ -1374,16 +1059,7 @@ public class Hyp86 {
 				System.exit(0);
 			}
 		} else { // number or variable
-			if (isVar) {
-				if (!var.type) {
-					System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
-					System.exit(0);
-				}
-				srcValue = Integer.parseInt(NumberToFourByteHexa("0" + var.data + "h"), 16);// variable
-			} else {
-				srcValue = Integer.parseInt(NumberToFourByteHexa(second), 16); // number
-			}
-
+			srcValue = Integer.parseInt(NumberToFourByteHexa(second), 16); // number
 		}
 
 		if (first.equalsIgnoreCase("ax")) {
@@ -1426,14 +1102,14 @@ public class Hyp86 {
 		Iterator<Variable> itr = variables.iterator();
 		while (itr.hasNext()) {
 			tempVar = itr.next();
-			if (second.contains(tempVar.name)) {
+			if (second.contains(tempVar.getName())) {
 				isVar = true;
 				var = tempVar;
 				break;
 			}
 		}
 		if (second.contains("offset")) {
-			srcValue = var.memoryIndex;
+			srcValue = var.getMemoryIndex();
 
 		} else if (second.contains("[") && second.contains("]")) {// memory
 			if (second.charAt(0) == 'w') { // 2 byte
@@ -1468,11 +1144,11 @@ public class Hyp86 {
 						System.exit(0);
 					}
 				} else if (isVar) {// variable
-					if (var.type) {
+					if (var.getType()) {
 						System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
 						System.exit(0);
 					} else {
-						num = NumberToFourByteHexa(var.data);
+						num = NumberToFourByteHexa(var.getData());
 
 					}
 				} else {// number
@@ -1515,11 +1191,11 @@ public class Hyp86 {
 			}
 		} else { // number or variable
 			if (isVar) {
-				if (var.type) {
+				if (var.getType()) {
 					System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
 					System.exit(0);
 				}
-				srcValue = Integer.parseInt(NumberToFourByteHexa("0" + var.data + "h"), 16); // variable
+				srcValue = Integer.parseInt(NumberToFourByteHexa("0" + var.getData() + "h"), 16); // variable
 			} else {
 				srcValue = Integer.parseInt(NumberToFourByteHexa(second), 16); // number
 			}
@@ -1563,29 +1239,7 @@ public class Hyp86 {
 	public void xor(String first, String second) {
 		CF = false;
 		OF = false;
-
-		boolean isFirstVar = false;
-		Variable firstvar = null;
-		Variable temp;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			temp = itr.next();
-			if (first.contains(temp.name)) {
-				isFirstVar = true;
-				firstvar = temp;
-				break;
-			}
-		} // now we know first operand is whether variable ->(add w[var1],ax)
-		if (isFirstVar) {
-			if (first.charAt(0) == 'w') {
-				firstvar.type = true;
-			} else if (first.charAt(0) == 'b') {
-				firstvar.type = false;
-			}
-
-			firstvar.data = helperXor(firstvar.data, source_when_first_operand_is_variable(firstvar, second));
-
-		} else if (first.contains("[") && first.contains("]")) { // first is memory
+		if (first.contains("[") && first.contains("]")) { // first is memory
 			String source = source_when_first_operand_is_memory(first, second);
 			int memoryIndex = memoryIndexOfFirst(first);
 			memory[memoryIndex] = helperXor(memory[memoryIndex], source);
@@ -1692,28 +1346,7 @@ public class Hyp86 {
 		CF = false;
 		OF = false;
 
-		boolean isFirstVar = false;
-		Variable firstvar = null;
-		Variable temp;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			temp = itr.next();
-			if (first.contains(temp.name)) {
-				isFirstVar = true;
-				firstvar = temp;
-				break;
-			}
-		} // now we know first operand is whether variable ->(add w[var1],ax)
-		if (isFirstVar) {
-			if (first.charAt(0) == 'w') {
-				firstvar.type = true;
-			} else if (first.charAt(0) == 'b') {
-				firstvar.type = false;
-			}
-
-			firstvar.data = helperOr(firstvar.data, source_when_first_operand_is_variable(firstvar, second));
-
-		} else if (first.contains("[") && first.contains("]")) { // first is memory
+		if (first.contains("[") && first.contains("]")) { // first is memory
 			String source = source_when_first_operand_is_memory(first, second);
 			int memoryIndex = memoryIndexOfFirst(first);
 			memory[memoryIndex] = helperOr(memory[memoryIndex], source);
@@ -1824,28 +1457,7 @@ public class Hyp86 {
 		CF = false;
 		OF = false;
 
-		boolean isFirstVar = false;
-		Variable firstvar = null;
-		Variable temp;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			temp = itr.next();
-			if (first.contains(temp.name)) {
-				isFirstVar = true;
-				firstvar = temp;
-				break;
-			}
-		} // now we know first operand is whether variable ->(add w[var1],ax)
-		if (isFirstVar) {
-			if (first.charAt(0) == 'w') {
-				firstvar.type = true;
-			} else if (first.charAt(0) == 'b') {
-				firstvar.type = false;
-			}
-
-			firstvar.data = helperAnd(firstvar.data, source_when_first_operand_is_variable(firstvar, second));
-
-		} else if (first.contains("[") && first.contains("]")) { // first is memory
+		if (first.contains("[") && first.contains("]")) { // first is memory
 			String source = source_when_first_operand_is_memory(first, second);
 			int memoryIndex = memoryIndexOfFirst(first);
 			memory[memoryIndex] = helperAnd(memory[memoryIndex], source);
@@ -1948,6 +1560,150 @@ public class Hyp86 {
 		return NumberToFourByteHexa("" + a);
 	}
 
+	public void mul(String first) {
+		// variable part can be deleted later
+
+		String source;
+		boolean isFirstVar = false;
+		Variable firstvar = null;
+		Variable temp;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			temp = itr.next();
+			if (first.contains(temp.getName())) {
+				isFirstVar = true;
+				firstvar = temp;
+				break;
+			}
+		} // now we know first operand is whether variable ->(add w[var1],ax)
+		if (isFirstVar) {
+			if (first.charAt(0) == 'w' && firstvar.getType()) {
+				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
+				mul_2Byte(source);
+			} else if (first.charAt(0) == 'b' && !firstvar.getType()) {
+				source = contentsOfSecondOperandOfADDSUBOneByte(first);
+				mul_1Byte(source);
+			}
+		} else if (first.contains("[") && first.contains("]")) { // first is memory
+			if (first.charAt(0) == 'w') {
+				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
+				mul_2Byte(source);
+			} else if (first.charAt(0) == 'b') {
+				source = contentsOfSecondOperandOfADDSUBOneByte(first);
+				mul_1Byte(source);
+			}
+
+		} else if (isRegTwoByte(first)) {// 16 bit register
+			source = contentsOfSecondOperandOfADDSUBTwoByte(first);
+			mul_2Byte(source);
+		} else if (isRegOneByte(first)) {// 8 bit register
+			source = contentsOfSecondOperandOfADDSUBOneByte(first);
+			mul_1Byte(source);
+		} else {
+			System.out.println("Undefined symbols are listed: " + first);
+			System.exit(0);
+		}
+
+		if (Integer.parseInt("" + ax[0], 16) > 7) {
+			CF = true;
+			OF = true;
+		} else {
+			CF = false;
+			OF = false;
+		}
+
+	}
+
+	private void mul_1Byte(String source) {
+		int dest = Integer.parseInt("" + ax[2] + ax[3], 16);
+		dest = dest * Integer.parseInt(source, 16);
+		String result = NumberToFourByteHexa("" + dest);
+		for (int i = 0; i < 4; i++)
+			ax[i] = result.charAt(i);
+
+	}
+
+	private void mul_2Byte(String source) {
+		int dest = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
+		dest = dest * Integer.parseInt(source, 16);
+		String result = Integer.toHexString(dest);
+		while (result.length() < 8)
+			result = "0" + result;
+
+		for (int i = 0; i < 4; i++) {
+			ax[i] = result.charAt(i + 4);
+			dx[i] = result.charAt(i);
+		}
+
+	}
+
+	public void div(String first) {
+		String source;
+		boolean isFirstVar = false;
+		Variable firstvar = null;
+		Variable temp;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			temp = itr.next();
+			if (first.contains(temp.getName())) {
+				isFirstVar = true;
+				firstvar = temp;
+				break;
+			}
+		} // now we know first operand is whether variable ->(add w[var1],ax)
+		if (isFirstVar) {
+			if (first.charAt(0) == 'w' && firstvar.getType()) {
+				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
+				div_2Byte(source);
+			} else if (first.charAt(0) == 'b' && !firstvar.getType()) {
+				source = contentsOfSecondOperandOfADDSUBOneByte(first);
+				div_1Byte(source);
+			}
+		} else if (first.contains("[") && first.contains("]")) { // first is memory
+			if (first.charAt(0) == 'w') {
+				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
+				div_2Byte(source);
+			} else if (first.charAt(0) == 'b') {
+				source = contentsOfSecondOperandOfADDSUBOneByte(first);
+				div_1Byte(source);
+			}
+
+		} else if (isRegTwoByte(first)) {// 16 bit register
+			source = contentsOfSecondOperandOfADDSUBTwoByte(first);
+			div_2Byte(source);
+		} else if (isRegOneByte(first)) {// 8 bit register
+			source = contentsOfSecondOperandOfADDSUBOneByte(first);
+			div_1Byte(source);
+		} else {
+			System.out.println("Undefined symbols are listed: " + first);
+			System.exit(0);
+		}
+	}
+
+	private void div_1Byte(String source) {
+		int dest = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
+		int src = Integer.parseInt(source, 16);
+		String quot = NumberToFourByteHexa("" + dest / src);
+		String remainder = NumberToFourByteHexa("" + dest % src);
+		ax[0] = remainder.charAt(2);
+		ax[1] = remainder.charAt(3);
+		ax[2] = quot.charAt(2);
+		ax[3] = quot.charAt(3);
+
+	}
+
+	private void div_2Byte(String source) {
+		int dest = Integer.parseInt("" + dx[0] + dx[1] + dx[2] + dx[3] + ax[0] + ax[1] + ax[2] + ax[3], 16);
+		int src = Integer.parseInt(source, 16);
+		String quot = NumberToFourByteHexa("" + dest / src);
+		String remainder = NumberToFourByteHexa("" + dest % src);
+		for (int i = 0; i < 4; i++) {
+			ax[i] = quot.charAt(i);
+			dx[i] = remainder.charAt(i);
+		}
+
+	}
+
 	/**
 	 * pop allows popping to a variable, register or memory address register and
 	 * variable cases are perfect
@@ -2005,8 +1761,8 @@ public class Hyp86 {
 		} else {
 			int a = 0;
 			for (int i = 0; i < variables.size(); i++) {
-				if (variables.get(i).getName().equals(reg) && variables.get(i).isType()) {
-					variables.get(i).data = memory[index];
+				if (variables.get(i).getName().equals(reg) && variables.get(i).getType()) {
+					variables.get(i).setData(memory[index]);
 					break;
 				}
 
@@ -2031,19 +1787,11 @@ public class Hyp86 {
 
 	}
 
-	public void inc(String operand) {
-
-		add(operand, "" + 1);
-	}
-
-	public void dec(String operand) {
-		sub(operand, "" + 1);
-	}
 
 	/**
 	 * Calls helper SUB methods according to the contents of @param first.
 	 * 
-	 * @param first: first operand of SUB operation (minuend)
+	 * @param first:  first operand of SUB operation (minuend)
 	 * @param second: second operand of SUB operation (subtrahend)
 	 */
 	public void sub(String first, String second) {
@@ -2067,7 +1815,7 @@ public class Hyp86 {
 	/**
 	 * Calls helper ADD methods according to the contents of @param first.
 	 * 
-	 * @param first: first operand of ADD operation (augend)s
+	 * @param first:  first operand of ADD operation (augend)s
 	 * @param second: second operand of ADD operation (addend)
 	 */
 
@@ -2077,54 +1825,41 @@ public class Hyp86 {
 		AF = false;
 		OF = false;
 		ZF = false;
-
 		if (first.contains("[") && first.contains("]")) { // first is memory
-
 			add_mem_xx(first, second);
-
 		} else if (isRegOneByte(first) || isRegTwoByte(first)) {
 			// first is reg
 			add_reg_unknown(first, second);
-
 		} else { // destination is neither reg nor memory
 			System.out.println("Undefined symbols are listed: " + first);
 			System.exit(0);
 		}
-
 	}
 
 	/**
 	 * Calls helper MOV methods according to the contents of @param first.
 	 * 
-	 * @param first: first operand of MOV operation
+	 * @param first:  first operand of MOV operation
 	 * @param second: second operand of MOV operation
 	 */
 
 	public void mov(String first, String second) {
-		boolean isFirstVar = false;
-		Variable firstvar = null;
-		Variable temp;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			temp = itr.next();
-			if (first.contains(temp.name)) {
-				isFirstVar = true;
-				firstvar = temp;
-				break;
-			}
-		} // now we know first operand is whether variable ->(add w[var1],ax)
-		if (isFirstVar) {
-			if (first.charAt(0) == 'w') {
-				firstvar.type = true;
-			} else if (first.charAt(0) == 'b') {
-				firstvar.type = false;
-			}
-			firstvar.data = source_when_first_operand_is_variable(firstvar, second);
-
-		} else if (first.contains("[") && first.contains("]")) { // first is memory
+		if (first.contains("[") && first.contains("]")) { // first is memory
 			String source = source_when_first_operand_is_memory(first, second);
-			int memoryIndex = memoryIndexOfFirst(first);
-			memory[memoryIndex] = source;
+			if (first.charAt(0) == 'w') {
+				first = first.substring(1);// got rid of w
+				int memoryIndex = memoryIndexOfFirst(first);
+				memory[memoryIndex] = source.substring(0, 2);
+				memory[memoryIndex + 1] = source.substring(2);
+			} else if (first.charAt(0) == 'b') {
+				first = first.substring(1);// got rid of b
+				int memoryIndex = memoryIndexOfFirst(first);
+				memory[memoryIndex] = source.substring(2);
+			} else {
+				System.out.println("There must be w or b in front of square brackets.");
+				System.exit(0);
+			}
+
 		} else if (isRegTwoByte(first)) {// 16 bit register
 
 			String source = source_when_first_operand_is_twoByteReg(second);
@@ -2200,176 +1935,8 @@ public class Hyp86 {
 	}
 
 	/**
-	 * when the first operand of MOV operation is variable, this helper method is
-	 * called. It handles several errors and moves source to destination.
-	 * 
-	 * @param firstvar Destination of MOV operation
-	 * @param second   Source of MOV operation
-	 */
-
-	private String source_when_first_operand_is_variable(Variable firstvar, String second) {
-		// input is mov w/b[firstvar], second
-		char[] temp = new char[4];
-		for (int i = 0; i <= 3; i++)
-			temp[i] = '0';
-		boolean isSecondVar = false;
-		Variable secondVar = null;
-		Variable tempVar;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			tempVar = itr.next();
-			if (second.contains(tempVar.name)) {
-				isSecondVar = true;
-				secondVar = tempVar;
-				break;
-			}
-		}
-
-		if (second.contains("offset")) {
-
-			String value = NumberToFourByteHexa("" + secondVar.memoryIndex);
-
-			for (int i = 0; i <= 3 && i < value.length(); i++) {
-				temp[3 - i] = value.charAt(value.length() - i - 1);
-			}
-
-		} else if (second.contains("[") && second.contains("]")) {
-			boolean thereWasb = false;
-			if (second.charAt(0) == 'b') { // 1 byte
-				second = second.substring(1); // got rid of 'b'
-				thereWasb = true;
-			}
-			if (second.charAt(0) == 'w') {
-				second = second.substring(1); // got rid of 'w'
-			}
-			if (isSecondVar) {
-				return secondVar.data;
-			}
-			second = second.substring(1, second.length() - 1); // got rid of [ and ]
-			String num = "";
-			if (isRegOneByte(second) || isRegTwoByte(second)) {// register
-				if (second.equalsIgnoreCase("si")) {
-					for (int i = 0; i <= 3; i++) {
-						num += si[i];
-					}
-				} else if (second.equalsIgnoreCase("di")) {
-					for (int i = 0; i <= 3; i++) {
-						num += di[i];
-					}
-				} else if (second.equalsIgnoreCase("bp")) {
-					for (int i = 0; i <= 3; i++) {
-						num += bp[i];
-					}
-				} else if (second.equalsIgnoreCase("bx")) {
-					for (int i = 0; i <= 3; i++) {
-						num += bx[i];
-					}
-				} else {
-					System.out.println("#ERROR 39: Bad Index Register ");
-					System.exit(0);
-				}
-			} else {// number
-				num = NumberToFourByteHexa(second);
-			}
-
-			if (Integer.parseInt(num, 16) >= memory.length || Integer.parseInt(num, 16) < numberOfInstructions * 6) {
-				System.out.println("Address is not valid");
-				System.exit(0);
-
-			} else if (memory[Integer.parseInt(num, 16)] == null) {
-			} else {
-				String memoryLocaitonOfNum = memory[Integer.parseInt(num, 16)];
-				for (int i = 0; i <= 3 && i < num.length(); i++) {
-					temp[3 - i] = memoryLocaitonOfNum.charAt(memoryLocaitonOfNum.length() - i - 1);
-				}
-			}
-
-			if (thereWasb) {
-				temp[0] = '0';
-				temp[1] = '0';
-			}
-		} else if (isRegOneByte(second) || isRegTwoByte(second)) { // register
-
-			if (second.equalsIgnoreCase("ax")) {
-				for (int i = 3; i >= 0; i--) {
-					temp[i] = ax[i];
-				}
-			} else if (second.equalsIgnoreCase("bx")) {
-				for (int i = 3; i >= 0; i--) {
-					temp[i] = bx[i];
-				}
-			} else if (second.equalsIgnoreCase("cx")) {
-				for (int i = 3; i >= 0; i--) {
-					temp[i] = cx[i];
-				}
-			} else if (second.equalsIgnoreCase("dx")) {
-				for (int i = 3; i >= 0; i--) {
-					temp[i] = dx[i];
-				}
-			} else if (second.equalsIgnoreCase("si")) {
-				for (int i = 3; i >= 0; i--) {
-					temp[i] = si[i];
-				}
-			} else if (second.equalsIgnoreCase("bp")) {
-				for (int i = 3; i >= 0; i--) {
-					temp[i] = bp[i];
-				}
-			} else if (second.equalsIgnoreCase("di")) {
-				for (int i = 3; i >= 0; i--) {
-					temp[i] = di[i];
-				}
-			} else if (second.equalsIgnoreCase("ah")) {
-				for (int i = 3; i >= 2; i--) {
-					temp[i] = ax[i - 2];
-				}
-			} else if (second.equalsIgnoreCase("bh")) {
-				for (int i = 3; i >= 2; i--) {
-					temp[i] = bx[i - 2];
-				}
-			} else if (second.equalsIgnoreCase("ch")) {
-				for (int i = 3; i >= 2; i--) {
-					temp[i] = cx[i - 2];
-				}
-			} else if (second.equalsIgnoreCase("dh")) {
-				for (int i = 3; i >= 2; i--) {
-					temp[i] = dx[i - 2];
-				}
-			} else if (second.equalsIgnoreCase("al")) {
-				for (int i = 3; i >= 2; i--) {
-					temp[i] = ax[i];
-				}
-			} else if (second.equalsIgnoreCase("bl")) {
-				for (int i = 3; i >= 2; i--) {
-					temp[i] = bx[i];
-				}
-			} else if (second.equalsIgnoreCase("cl")) {
-				for (int i = 3; i >= 2; i--) {
-					temp[i] = cx[i];
-				}
-			} else if (second.equalsIgnoreCase("dl")) {
-				for (int i = 3; i >= 2; i--) {
-					temp[i] = dx[i];
-				}
-			}
-		} else { // number or variable
-			if (isSecondVar) {
-				second = NumberToFourByteHexa("0" + secondVar.data + "h");
-			} else {
-				second = NumberToFourByteHexa(second); // number
-			}
-
-			for (int i = 0; i <= 3 && i < second.length(); i++) {
-				temp[3 - i] = second.charAt(second.length() - i - 1);
-			}
-		}
-		return "" + temp[0] + temp[1] + temp[2] + temp[3];
-
-	}
-
-	/**
-	 * when the first operand of MOV operation is a memory address but not variable,
-	 * this helper method is called. It handles several errors and moves source to
-	 * destination.
+	 * when the first operand of MOV operation is a memory address , this helper
+	 * method is called. It handles several errors and moves source to destination.
 	 * 
 	 * @param first  Destination of MOV operation
 	 * @param second Source of MOV operation
@@ -2378,13 +1945,8 @@ public class Hyp86 {
 		String source;
 
 		if (first.charAt(0) == 'b') {// first operand is kind of b[xx] so source must be one byte.
-			first = first.substring(2, first.length() - 1);// got rid of "b[" and "]"
 			source = contentsOfSecondOperandOfADDSUBOneByte(second);
 		} else {// assume there is w
-			if (first.charAt(0) == 'w') {// first operand is kind of w[xx] so source must be two byte.
-				first = first.substring(1); // got rid of "w"
-			}
-			first = first.substring(1, first.length() - 1);// got rid of "[" and "]"
 			source = contentsOfSecondOperandOfADDSUBTwoByte(second);
 		}
 		while (source.length() < 4) // to make sure source is a 4 length hexadecimal number.
@@ -2401,27 +1963,7 @@ public class Hyp86 {
 	 */
 	private String source_when_first_operand_is_oneByteReg(String second) {
 		char[] temp = new char[2];
-		boolean isVar = false;
-		Variable var = null;
-		Variable tempVar;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			tempVar = itr.next();
-			if (second.contains(tempVar.name)) {
-				isVar = true;
-				var = tempVar;
-				break;
-			}
-		}
-		if (second.contains("offset")) {
-			String value = NumberToFourByteHexa("" + var.memoryIndex);
-			for (int i = 0; i <= 1; i++) {
-				temp[i] = '0';
-			}
-			for (int i = 0; i <= 1 && i < value.length(); i++) {
-				temp[1 - i] = value.charAt(value.length() - i - 1);
-			}
-		} else if (second.contains("[") && second.contains("]")) {// memory
+		if (second.contains("[") && second.contains("]")) {// memory
 			if (second.charAt(0) == 'w') { // 2 byte
 				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
 				System.exit(0);
@@ -2453,27 +1995,9 @@ public class Hyp86 {
 						System.out.println("#ERROR 39: Bad Index Register ");
 						System.exit(0);
 					}
-				} else if (isVar) {// variable
-					// TODO
-					// burası silincek sanırım [var] giib bi input olmadığından
-					if (var.type) {
-						System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
-						System.exit(0);
-					} else {
-						num = NumberToFourByteHexa(var.data);
-						for (int i = 0; i <= 1; i++) {
-							temp[i] = '0';
-						}
-						for (int i = 0; i <= 1 && i < num.length(); i++) {
-							temp[1 - i] = num.charAt(num.length() - i - 1);
-						}
-						// TODO
-						return "" + temp[0] + temp[1];
-					}
 				} else {// number
 					num = NumberToFourByteHexa(second);
 				}
-
 				temp[0] = '0';
 				temp[1] = '0';
 				if (memory[Integer.parseInt(num, 16)] == null) {
@@ -2488,9 +2012,7 @@ public class Hyp86 {
 						temp[1 - i] = num.charAt(num.length() - i - 1);
 					}
 				}
-
 			}
-
 		} else if (isRegOneByte(second) || isRegTwoByte(second)) { // register
 			if (second.equalsIgnoreCase("al")) {
 				for (int i = 1; i >= 0; i--) {
@@ -2529,20 +2051,11 @@ public class Hyp86 {
 				System.exit(0);
 			}
 		} else { // number or variable
-			if (isVar) {
-				if (var.type) {
-					System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
-					System.exit(0);
-				}
-				second = NumberToFourByteHexa("0" + var.data + "h"); // variable
-			} else {
-				second = NumberToFourByteHexa(second); // number
-			}
+			second = NumberToFourByteHexa(second); // number
 			if (Integer.parseInt(second, 16) > 255) {
 				System.out.println("#ERROR 30: Byte-Sized Constant Required");
 				System.exit(0);
 			}
-
 			for (int i = 0; i <= 1 && i < second.length(); i++) {
 				temp[1 - i] = second.charAt(second.length() - i - 1);
 			}
@@ -2556,37 +2069,14 @@ public class Hyp86 {
 	 * when the first operand of MOV operation is a two byte register, this helper
 	 * method is called. It handles several errors and moves source to destination.
 	 * 
-	 * @param first: destination of MOV operation
+	 * @param first:  destination of MOV operation
 	 * @param second: source of MOV operation
 	 */
 	private String source_when_first_operand_is_twoByteReg(String second) {
 		char[] temp = new char[4];
 		for (int i = 0; i < 3; i++)
 			temp[i] = '0';
-		boolean isVar = false;
-		Variable var = null;
-		Variable tempVar;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			tempVar = itr.next();
-			if (second.contains(tempVar.name)) {
-				isVar = true;
-				var = tempVar;
-				break;
-			}
-		}
-
-		if (second.contains("offset")) {
-
-			String value = NumberToFourByteHexa("" + var.memoryIndex);
-			for (int i = 0; i <= 3; i++) {
-				temp[i] = '0';
-			}
-			for (int i = 0; i <= 3 && i < value.length(); i++) {
-				temp[3 - i] = value.charAt(value.length() - i - 1);
-			}
-
-		} else if (second.contains("[") && second.contains("]")) {
+		if (second.contains("[") && second.contains("]")) {
 
 			if (second.charAt(0) == 'b') { // 1 byte
 				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
@@ -2619,26 +2109,6 @@ public class Hyp86 {
 					} else {
 						System.out.println("#ERROR 39: Bad Index Register ");
 						System.exit(0);
-					}
-				} else if (isVar) {// variable
-					// TODO
-					// burda adresi alıyoruz yani [var] demek adres demek her ne kadar var byte size
-					// olsada hata vermemek lazım gibi
-					// heee ama [var]= var demekti
-					// neyseki [var] gibi bi input gelmicek.
-					if (!var.type) {
-						System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
-						System.exit(0);
-					} else {
-						num = NumberToFourByteHexa(var.data);
-						for (int i = 0; i <= 3; i++) {
-							temp[i] = '0';
-						}
-						for (int i = 0; i <= 3 && i < num.length(); i++) {
-							temp[3 - i] = num.charAt(num.length() - i - 1);
-						}
-						// TODO
-						return "" + temp[0] + temp[1];
 					}
 				} else {// number
 					num = NumberToFourByteHexa(second);
@@ -2697,15 +2167,7 @@ public class Hyp86 {
 				System.exit(0);
 			}
 		} else { // number or variable
-			if (isVar) {
-				if (!var.type) {
-					System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
-					System.exit(0);
-				}
-				second = NumberToFourByteHexa("0" + var.data + "h");// variable
-			} else {
-				second = NumberToFourByteHexa(second); // number
-			}
+			second = NumberToFourByteHexa(second); // number
 			for (int i = 0; i < 3; i++) {
 				temp[i] = 0;
 			}
@@ -2830,9 +2292,11 @@ public class Hyp86 {
 				sum -= Integer.parseInt("10000", 16);
 				CF = true;
 			}
-			memory[memoryIndex] = NumberToFourByteHexa(sum + "");
+			memory[memoryIndex] = NumberToFourByteHexa(sum + "").substring(0, 2);
+			memory[memoryIndex + 1] = NumberToFourByteHexa(sum + "").substring(2);
 		} else {// augend is empty(which means 0), result is addend
-			memory[memoryIndex] = addend;
+			memory[memoryIndex] = addend.substring(0, 2);
+			memory[memoryIndex + 1] = addend.substring(2);
 		}
 
 	}
@@ -2849,43 +2313,9 @@ public class Hyp86 {
 	 */
 	private String sourceOfADDorSUBOperation(String first, String second) {
 		String toBeReturned = "";
-		boolean isFirstVar = false;
-		Variable temp;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			temp = itr.next();
-			if (first.contains(temp.name)) {
-				isFirstVar = true;
-				break;
-			}
-		} // now we know first operand is whether variable ->(add w[var1],ax)
-		if (isFirstVar) {
-			System.out.println("There should not be any variables inside sqaure brackets.");
-			System.exit(0);
-		}
-		boolean isSecondVar = false;
-		Iterator<Variable> itrr = variables.iterator();
-		Variable secondVar = null;
-		while (itrr.hasNext()) {
-			temp = itrr.next();
-			if (second.contains(temp.name)) {
-				isSecondVar = true;
-				secondVar = temp;
-				break;
-			}
-		} // now we know second operand is whether variable ->(add w[1234h],var2)
-		if (second.contains("offset") && secondVar != null) {
-			toBeReturned += NumberToFourByteHexa(secondVar.memoryIndex + "d");
-		} else if (second.contains("[") || isSecondVar) {
+		if (second.contains("[")) {
 			System.out.println("#ERROR 50: Reg,Mem Required  ");
 			System.exit(0);
-		} else if (second.indexOf('\'') != -1) { // subtracting a char. takes its ascii value.
-			if (first.charAt(0) == 'b' || first.charAt(0) == 'w') {
-				toBeReturned += NumberToFourByteHexa((second.charAt(second.indexOf('\'') + 1) + 0) + "d");
-			} else {
-				System.out.println("#ERROR 50: Reg,Mem Required  ");
-				System.exit(0);
-			}
 		} else {
 			if (first.charAt(0) == 'b') {// constant must be byte sized and regs too
 				toBeReturned = addsub_mem1B_xx(second);
@@ -2903,7 +2333,7 @@ public class Hyp86 {
 	 * calls helper methods to calculate source then adds it corresponding register
 	 * destination.
 	 * 
-	 * @param first: first operand of ADD operation. It's a register for sure.
+	 * @param first:  first operand of ADD operation. It's a register for sure.
 	 * @param second: second operand of ADD operation
 	 */
 
@@ -3315,7 +2745,7 @@ public class Hyp86 {
 	 * calls helper methods to calculate source then subtracts it corresponding
 	 * register destination.
 	 * 
-	 * @param first: first operand of SUB operation. It's a register for sure.
+	 * @param first:  first operand of SUB operation. It's a register for sure.
 	 * @param second: second operand of SUB operation
 	 */
 
@@ -3707,8 +3137,9 @@ public class Hyp86 {
 	/**
 	 * this method is called when destination of SUB operation is a memory address.
 	 * 
-	 * @param first : destination of SUB operation. It's a memory address for sure.
-	 * @param       second: source of SUB operation.
+	 * @param first   : destination of SUB operation. It's a memory address for
+	 *                sure.
+	 * @param second: source of SUB operation.
 	 */
 	private void sub_mem_xx(String first, String second) {
 		String subtrahend = sourceOfADDorSUBOperation(first, second);
@@ -3752,7 +3183,7 @@ public class Hyp86 {
 	 * @return memoryIndex of input parameter
 	 */
 	private int memoryIndexOfFirst(String input) {
-		input = input.substring(2, input.length() - 1);// got rid of "w[","]"
+		input = input.substring(1, input.length() - 1);// got rid of "[","]"
 		int memoryIndex = 0;// memory index of first operand
 		if (input.equalsIgnoreCase("bx")) {
 			memoryIndex = Integer.parseInt("" + bx[0] + bx[1] + bx[2] + bx[3], 16);
@@ -3853,23 +3284,8 @@ public class Hyp86 {
 	 */
 	private String contentsOfSecondOperandOfADDSUBTwoByte(String second) {
 
-		boolean isVar = false;
-		Variable var = null;
-		Variable temp;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			temp = itr.next();
-			if (second.contains(temp.name)) {
-				isVar = true;
-				var = temp;
-				break;
-			}
-		}
 		String addend = "";
-		if (second.contains("offset")) {
-			second = NumberToFourByteHexa("" + var.memoryIndex);
-			addend += second;
-		} else if (second.contains("[") && second.contains("]")) {
+		if (second.contains("[") && second.contains("]")) {
 
 			if (second.charAt(0) == 'b') { // 1 byte
 				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
@@ -3903,10 +3319,6 @@ public class Hyp86 {
 						System.out.println("#ERROR 39: Bad Index Register ");
 						System.exit(0);
 					}
-				} else if (isVar) {// variable
-					// TODO
-					// delete this
-					addend += NumberToFourByteHexa(var.data);
 				} else {// number
 					addend += NumberToFourByteHexa(second);
 				}
@@ -3958,15 +3370,7 @@ public class Hyp86 {
 				System.exit(0);
 			}
 		} else { // number or variable
-			if (isVar) {
-				if (second.charAt(0) != 'w' && !var.type) {
-					System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
-					System.exit(0);
-				}
-				second = NumberToFourByteHexa(var.data); // variable
-			} else {
-				second = NumberToFourByteHexa(second); // number
-			}
+			second = NumberToFourByteHexa(second); // number
 			addend += second;
 		}
 		return addend;
@@ -3982,24 +3386,10 @@ public class Hyp86 {
 	 */
 	private String contentsOfSecondOperandOfADDSUBOneByte(String second) {
 		// to check whether source is variable
-		boolean isVar = false;
-		Variable var = null;
-		Variable temp;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			temp = itr.next();
-			if (second.contains(temp.name)) {
-				isVar = true;
-				var = temp;
-				break;
-			}
-		}
+
 		String addend = "";// even though it's name until I get the memory address, this variable holds
 							// address.
-		if (second.contains("offset")) {// if source has offset. it's easy just take address and return
-			second = NumberToFourByteHexa("" + (var.memoryIndex));
-			return second.substring(second.length() - 2, second.length());// took last byte
-		} else if (second.contains("[") && second.contains("]")) {// if source is a memory address
+		if (second.contains("[") && second.contains("]")) {// if source is a memory address
 
 			if (second.charAt(0) == 'w') { // 2 byte
 				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
@@ -4032,13 +3422,6 @@ public class Hyp86 {
 					} else {// no other register is allowed within square brackets
 						System.out.println("#ERROR 39: Bad Index Register ");
 						System.exit(0);
-					}
-				} else if (isVar) {// source is variable square brackets
-					if (var.type) {// it must be one byte to match with destination
-						System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
-						System.exit(0);
-					} else {
-						addend = NumberToFourByteHexa(var.data); // it's two byte for sure
 					}
 				} else {// number
 					addend = NumberToFourByteHexa(second); // number within square brackets
@@ -4080,19 +3463,11 @@ public class Hyp86 {
 				System.exit(0);
 			}
 			return addend;
-		} else { // source is number or variable
-			if (isVar) {// if source is a variable
-				if (var.type) {
-					System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
-					System.exit(0);
-				}
-				second = NumberToFourByteHexa(var.data);
-			} else {// if source is a number
-				second = NumberToFourByteHexa(second);
-				if (Integer.parseInt(second, 16) > 255) {// since destination is one byte
-					System.out.println("#ERROR 30: Byte-Sized Constant Required");
-					System.exit(0);
-				}
+		} else { // source is number
+			second = NumberToFourByteHexa(second);
+			if (Integer.parseInt(second, 16) > 255) {// since destination is one byte
+				System.out.println("#ERROR 30: Byte-Sized Constant Required");
+				System.exit(0);
 			}
 			return second;
 		}
