@@ -175,7 +175,6 @@ public class Hyp86 {
 					memory[index] = variables.get(i).data;
 					break;
 				}
-
 				a++;
 			}
 			if (a == variables.size()) {
@@ -190,7 +189,6 @@ public class Hyp86 {
 					}
 
 				} else {
-
 					memory[index] = NumberToFourByteHexa(reg);
 				}
 			}
@@ -766,6 +764,8 @@ public class Hyp86 {
 				second = second.substring(1); // got rid of 'w'
 			}
 			if (isSecondVar) {
+				// TODO
+				// hata var gibi cmp yerine mov yapılmıyo mu burda??
 				firstvar.data = secondVar.data;
 				return;
 			}
@@ -1172,152 +1172,6 @@ public class Hyp86 {
 
 	}
 
-	
-	public void mul(String first) {
-		//variable part can be deleted later
-		
-		String source;
-		boolean isFirstVar = false;
-		Variable firstvar = null;
-		Variable temp;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			temp = itr.next();
-			if (first.contains(temp.name)) {
-				isFirstVar = true;
-				firstvar = temp;
-				break;
-			}
-		} // now we know first operand is whether variable ->(add w[var1],ax)
-		if (isFirstVar) {
-			if (first.charAt(0) == 'w' && firstvar.type) {
-				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
-				mul_2Byte(source);
-			} else if (first.charAt(0) == 'b' && !firstvar.type) {
-				source = contentsOfSecondOperandOfADDSUBOneByte(first);
-				mul_1Byte(source);
-			}
-		} else if (first.contains("[") && first.contains("]")) { // first is memory
-			if (first.charAt(0) == 'w') {
-				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
-				mul_2Byte(source);
-			} else if (first.charAt(0) == 'b') {
-				source = contentsOfSecondOperandOfADDSUBOneByte(first);
-				mul_1Byte(source);
-			}
-			
-		} else if (isRegTwoByte(first)) {// 16 bit register
-			source = contentsOfSecondOperandOfADDSUBTwoByte(first);
-			mul_2Byte(source);
-		} else if (isRegOneByte(first)) {// 8 bit register
-			source = contentsOfSecondOperandOfADDSUBOneByte(first);
-			mul_1Byte(source);
-		} else { 
-			System.out.println("Undefined symbols are listed: " + first);
-			System.exit(0);
-		}
-		
-		if(Integer.parseInt(""+ax[0],16) > 7) {
-			CF = true;
-			OF = true;
-		}else {
-			CF = false;
-			OF = false;
-		}
-		
-		
-	}
-	
-	private void mul_1Byte(String source) {
-		int dest = Integer.parseInt("" + ax[2] + ax[3], 16);
-		dest = dest * Integer.parseInt(source,16);
-		String result = NumberToFourByteHexa(""+ dest);
-		for(int i = 0 ; i< 4 ; i++)
-			ax[i] = result.charAt(i);
-		
-	}
-	private void mul_2Byte(String source) {
-		int dest = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
-		dest = dest * Integer.parseInt(source,16);
-		String result = Integer.toHexString(dest);
-		while(result.length()<8)
-			result = "0"+result;
-		
-		for(int i = 0; i< 4; i++) {
-			ax[i]= result.charAt(i+4);
-			dx[i] = result.charAt(i);
-		}
-		
-		
-	}
-	
-	public void div(String first) {
-		String source;
-		boolean isFirstVar = false;
-		Variable firstvar = null;
-		Variable temp;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			temp = itr.next();
-			if (first.contains(temp.name)) {
-				isFirstVar = true;
-				firstvar = temp;
-				break;
-			}
-		} // now we know first operand is whether variable ->(add w[var1],ax)
-		if (isFirstVar) {
-			if (first.charAt(0) == 'w' && firstvar.type) {
-				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
-				div_2Byte(source);
-			} else if (first.charAt(0) == 'b' && !firstvar.type) {
-				source = contentsOfSecondOperandOfADDSUBOneByte(first);
-				div_1Byte(source);
-			}
-		} else if (first.contains("[") && first.contains("]")) { // first is memory
-			if (first.charAt(0) == 'w') {
-				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
-				div_2Byte(source);
-			} else if (first.charAt(0) == 'b') {
-				source = contentsOfSecondOperandOfADDSUBOneByte(first);
-				div_1Byte(source);
-			}
-			
-		} else if (isRegTwoByte(first)) {// 16 bit register
-			source = contentsOfSecondOperandOfADDSUBTwoByte(first);
-			div_2Byte(source);
-		} else if (isRegOneByte(first)) {// 8 bit register
-			source = contentsOfSecondOperandOfADDSUBOneByte(first);
-			div_1Byte(source);
-		} else { 
-			System.out.println("Undefined symbols are listed: " + first);
-			System.exit(0);
-		}
-	}
-	private void div_1Byte(String source) {
-		int dest = Integer.parseInt(""+ ax[0] + ax[1] + ax[2] + ax[3] ,16);
-		int src = Integer.parseInt(source,16);
-		String quot = NumberToFourByteHexa(""+dest /src);
-		String remainder = NumberToFourByteHexa(""+dest %src);
-		ax[0] = remainder.charAt(2);
-		ax[1] = remainder.charAt(3);
-		ax[2] = quot.charAt(2);
-		ax[3] = quot.charAt(3);
-		
-	}
-	private void div_2Byte(String source) {
-		int dest = Integer.parseInt(""+ dx[0] + dx[1] + dx[2] + dx[3] + ax[0] + ax[1] + ax[2] + ax[3] ,16);
-		int src = Integer.parseInt(source,16);
-		String quot = NumberToFourByteHexa(""+dest /src);
-		String remainder = NumberToFourByteHexa(""+dest %src);
-		for(int i = 0 ; i < 4 ; i++) {
-			ax[i] = quot.charAt(i);
-			dx[i] = remainder.charAt(i);
-		}
-		
-	}
-	
-	
-	
 	public void xor(String first, String second) {
 		CF = false;
 		OF = false;
@@ -1350,7 +1204,7 @@ public class Hyp86 {
 
 		} else if (isRegTwoByte(first)) {// 16 bit register
 
-			String source = source_when_first_operand_is_twoByteReg(first, second);
+			String source = source_when_first_operand_is_twoByteReg(second);
 			if (first.equalsIgnoreCase("ax")) {
 				String data = helperXor("" + ax[0] + ax[1] + ax[2] + ax[3], source);
 				for (int i = 0; i <= 3; i++) {
@@ -1388,7 +1242,7 @@ public class Hyp86 {
 				}
 			}
 		} else if (isRegOneByte(first)) {// 8 bit register
-			String source = source_when_first_operand_is_oneByteReg(first, second);
+			String source = source_when_first_operand_is_oneByteReg(second);
 			if (first.equalsIgnoreCase("al")) {
 				String data = helperXor("" + ax[2] + ax[3], source);
 				for (int i = 0; i <= 1; i++) {
@@ -1478,7 +1332,7 @@ public class Hyp86 {
 
 		} else if (isRegTwoByte(first)) {// 16 bit register
 
-			String source = source_when_first_operand_is_twoByteReg(first, second);
+			String source = source_when_first_operand_is_twoByteReg(second);
 			if (first.equalsIgnoreCase("ax")) {
 				String data = helperOr("" + ax[0] + ax[1] + ax[2] + ax[3], source);
 				for (int i = 0; i <= 3; i++) {
@@ -1516,7 +1370,7 @@ public class Hyp86 {
 				}
 			}
 		} else if (isRegOneByte(first)) {// 8 bit register
-			String source = source_when_first_operand_is_oneByteReg(first, second);
+			String source = source_when_first_operand_is_oneByteReg(second);
 			if (first.equalsIgnoreCase("al")) {
 				String data = helperOr("" + ax[2] + ax[3], source);
 				for (int i = 0; i <= 1; i++) {
@@ -1609,7 +1463,7 @@ public class Hyp86 {
 			memory[memoryIndex] = helperAnd(memory[memoryIndex], source);
 		} else if (isRegTwoByte(first)) {// 16 bit register
 
-			String source = source_when_first_operand_is_twoByteReg(first, second);
+			String source = source_when_first_operand_is_twoByteReg(second);
 			if (first.equalsIgnoreCase("ax")) {
 				String data = helperAnd("" + ax[0] + ax[1] + ax[2] + ax[3], source);
 				for (int i = 0; i <= 3; i++) {
@@ -1648,7 +1502,7 @@ public class Hyp86 {
 				}
 			}
 		} else if (isRegOneByte(first)) {// 8 bit register
-			String source = source_when_first_operand_is_oneByteReg(first, second);
+			String source = source_when_first_operand_is_oneByteReg(second);
 			if (first.equalsIgnoreCase("al")) {
 				String data = helperAnd("" + ax[2] + ax[3], source);
 				for (int i = 0; i <= 1; i++) {
@@ -1859,12 +1713,6 @@ public class Hyp86 {
 	 */
 
 	public void mov(String first, String second) {
-//		CF = false;
-//		SF = false;
-//		AF = false;
-//		OF = false;
-//		ZF = false;
-
 		boolean isFirstVar = false;
 		Variable firstvar = null;
 		Variable temp;
@@ -1883,7 +1731,6 @@ public class Hyp86 {
 			} else if (first.charAt(0) == 'b') {
 				firstvar.type = false;
 			}
-
 			firstvar.data = source_when_first_operand_is_variable(firstvar, second);
 
 		} else if (first.contains("[") && first.contains("]")) { // first is memory
@@ -1892,7 +1739,7 @@ public class Hyp86 {
 			memory[memoryIndex] = source;
 		} else if (isRegTwoByte(first)) {// 16 bit register
 
-			String source = source_when_first_operand_is_twoByteReg(first, second);
+			String source = source_when_first_operand_is_twoByteReg(second);
 			if (first.equalsIgnoreCase("ax")) {
 				for (int i = 0; i <= 3; i++) {
 					ax[i] = source.charAt(i);
@@ -1923,7 +1770,7 @@ public class Hyp86 {
 				}
 			}
 		} else if (isRegOneByte(first)) {// 8 bit register
-			String source = source_when_first_operand_is_oneByteReg(first, second);
+			String source = source_when_first_operand_is_oneByteReg(second);
 			if (first.equalsIgnoreCase("al")) {
 				for (int i = 0; i <= 1; i++) {
 					ax[i + 2] = source.charAt(i);
@@ -1993,9 +1840,7 @@ public class Hyp86 {
 		if (second.contains("offset")) {
 
 			String value = NumberToFourByteHexa("" + secondVar.memoryIndex);
-			for (int i = 0; i <= 3; i++) {
-				temp[i] = '0';
-			}
+
 			for (int i = 0; i <= 3 && i < value.length(); i++) {
 				temp[3 - i] = value.charAt(value.length() - i - 1);
 			}
@@ -2010,7 +1855,6 @@ public class Hyp86 {
 				second = second.substring(1); // got rid of 'w'
 			}
 			if (isSecondVar) {
-
 				return secondVar.data;
 			}
 			second = second.substring(1, second.length() - 1); // got rid of [ and ]
@@ -2167,7 +2011,7 @@ public class Hyp86 {
 	 * @param first  Destination of MOV operation, it's a two byte register
 	 * @param second Source of MOV operation
 	 */
-	private String source_when_first_operand_is_oneByteReg(String first, String second) {
+	private String source_when_first_operand_is_oneByteReg(String second) {
 		char[] temp = new char[2];
 		boolean isVar = false;
 		Variable var = null;
@@ -2222,6 +2066,8 @@ public class Hyp86 {
 						System.exit(0);
 					}
 				} else if (isVar) {// variable
+					// TODO
+					// burası silincek sanırım [var] giib bi input olmadığından
 					if (var.type) {
 						System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
 						System.exit(0);
@@ -2325,7 +2171,7 @@ public class Hyp86 {
 	 * @param first:  destination of MOV operation
 	 * @param second: source of MOV operation
 	 */
-	private String source_when_first_operand_is_twoByteReg(String first, String second) {
+	private String source_when_first_operand_is_twoByteReg(String second) {
 		char[] temp = new char[4];
 		for (int i = 0; i < 3; i++)
 			temp[i] = '0';
@@ -2387,6 +2233,11 @@ public class Hyp86 {
 						System.exit(0);
 					}
 				} else if (isVar) {// variable
+					// TODO
+					// burda adresi alıyoruz yani [var] demek adres demek her ne kadar var byte size
+					// olsada hata vermemek lazım gibi
+					// heee ama [var]= var demekti
+					// neyseki [var] gibi bi input gelmicek.
 					if (!var.type) {
 						System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
 						System.exit(0);
@@ -3666,6 +3517,8 @@ public class Hyp86 {
 						System.exit(0);
 					}
 				} else if (isVar) {// variable
+					// TODO
+					// delete this
 					addend += NumberToFourByteHexa(var.data);
 				} else {// number
 					addend += NumberToFourByteHexa(second);
