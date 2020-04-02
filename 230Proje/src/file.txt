@@ -1,15 +1,12 @@
 code segment
-mov cx,5d ; set counter to 5
+  mov cx,5h 
 more:
-mov ah,01h ;
-int 21h
-mov dl,al
-mov ah,02h ; display a character
-int 21h
-dec cx
-jnz more
-int 20h ; exit to dos
-var1 dw 22
-var2 db 'a'
-var3 db 'G'
+  mov ah,01h
+  int 21h
+  mov dl,al
+  mov ah,2h  
+  int 21h
+  dec cx
+  jnz more
+  int 20h
 code ends
