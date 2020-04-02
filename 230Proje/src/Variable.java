@@ -1,22 +1,11 @@
 public class Variable {
-	public String name;
-	public int memoryIndex;
+	private String name;
+	private int memoryIndex;
+
 	// where data stored at the memory
-	public String data; // data is saved as string even if it's integer
+	private String data; // data is saved as string even if it's integer
 	// we can think about it
-	public boolean type; // true dw, false db
-
-	public String getName() {
-		return name;
-	}
-
-	public int getMemoryIndex() {
-		return memoryIndex;
-	}
-
-	public boolean isType() {
-		return type;
-	}
+	private boolean type; // true dw, false db
 
 	/**
 	 * @param name
@@ -27,16 +16,51 @@ public class Variable {
 	public Variable(String name, int memoryIndex, String data, boolean type) {
 		this.name = name;
 		this.memoryIndex = memoryIndex;
-		// data is saved as hexa
-		// data could be char. Then this line gives error. Needs to be fixed!!
-		// herþeye küöçük harfe çevirince eðer input büyükse variablenýn deðeri
-		// deðiþiyo.Ýstenmeyen bir þey! e.g: var1 dw 'W', var2 db 'H'.
-		if (data.contains("\'")) {
+		// TODO
+		// herÅŸeye kÃ¼Ã¶Ã§Ã¼k harfe Ã§evirince eÄŸer input bÃ¼yÃ¼kse variablenÄ±n deÄŸeri
+		// deÄŸiÅŸiyo.Ä°stenmeyen bir ÅŸey! e.g: var1 dw 'W', var2 db 'H'.
+		
+		if (data.contains("\'")) {// when var.data is 'x'
 			int a = data.charAt(data.indexOf("\'") + 1) + 1 - 1;
-			this.data = "" + a;
+			this.setData("" + a);
+		} else if (data.contains("\"")) {// when var.data is "x"
+			int a = data.charAt(data.indexOf("\"") + 1) + 1 - 1;
+			this.setData("" + a);
 		} else {
-			this.data = Hyp86.NumberToFourByteHexa(data);
+			this.setData(Hyp86.NumberToFourByteHexa(data));
 		}
+		this.type = type;
+	}
+
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getMemoryIndex() {
+		return memoryIndex;
+	}
+
+	public void setMemoryIndex(int memoryIndex) {
+		this.memoryIndex = memoryIndex;
+	}
+
+	public boolean getType() {
+		return type;
+	}
+
+	public void setType(boolean type) {
 		this.type = type;
 	}
 
