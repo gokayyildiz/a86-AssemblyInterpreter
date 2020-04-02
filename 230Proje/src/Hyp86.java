@@ -136,6 +136,150 @@ public class Hyp86 {
 		scanner.close();
 
 	}
+	
+	
+		public void mul(String first) {
+		//variable part can be deleted later
+
+		String source;
+		boolean isFirstVar = false;
+		Variable firstvar = null;
+		Variable temp;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			temp = itr.next();
+			if (first.contains(temp.name)) {
+				isFirstVar = true;
+				firstvar = temp;
+				break;
+			}
+		} // now we know first operand is whether variable ->(add w[var1],ax)
+		if (isFirstVar) {
+			if (first.charAt(0) == 'w' && firstvar.type) {
+				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
+				mul_2Byte(source);
+			} else if (first.charAt(0) == 'b' && !firstvar.type) {
+				source = contentsOfSecondOperandOfADDSUBOneByte(first);
+				mul_1Byte(source);
+			}
+		} else if (first.contains("[") && first.contains("]")) { // first is memory
+			if (first.charAt(0) == 'w') {
+				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
+				mul_2Byte(source);
+			} else if (first.charAt(0) == 'b') {
+				source = contentsOfSecondOperandOfADDSUBOneByte(first);
+				mul_1Byte(source);
+			}
+
+		} else if (isRegTwoByte(first)) {// 16 bit register
+			source = contentsOfSecondOperandOfADDSUBTwoByte(first);
+			mul_2Byte(source);
+		} else if (isRegOneByte(first)) {// 8 bit register
+			source = contentsOfSecondOperandOfADDSUBOneByte(first);
+			mul_1Byte(source);
+		} else { 
+			System.out.println("Undefined symbols are listed: " + first);
+			System.exit(0);
+		}
+
+		if(Integer.parseInt(""+ax[0],16) > 7) {
+			CF = true;
+			OF = true;
+		}else {
+			CF = false;
+			OF = false;
+		}
+
+
+	}
+
+	private void mul_1Byte(String source) {
+		int dest = Integer.parseInt("" + ax[2] + ax[3], 16);
+		dest = dest * Integer.parseInt(source,16);
+		String result = NumberToFourByteHexa(""+ dest);
+		for(int i = 0 ; i< 4 ; i++)
+			ax[i] = result.charAt(i);
+
+	}
+	private void mul_2Byte(String source) {
+		int dest = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
+		dest = dest * Integer.parseInt(source,16);
+		String result = Integer.toHexString(dest);
+		while(result.length()<8)
+			result = "0"+result;
+
+		for(int i = 0; i< 4; i++) {
+			ax[i]= result.charAt(i+4);
+			dx[i] = result.charAt(i);
+		}
+
+
+	}
+
+	public void div(String first) {
+		String source;
+		boolean isFirstVar = false;
+		Variable firstvar = null;
+		Variable temp;
+		Iterator<Variable> itr = variables.iterator();
+		while (itr.hasNext()) {
+			temp = itr.next();
+			if (first.contains(temp.name)) {
+				isFirstVar = true;
+				firstvar = temp;
+				break;
+			}
+		} // now we know first operand is whether variable ->(add w[var1],ax)
+		if (isFirstVar) {
+			if (first.charAt(0) == 'w' && firstvar.type) {
+				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
+				div_2Byte(source);
+			} else if (first.charAt(0) == 'b' && !firstvar.type) {
+				source = contentsOfSecondOperandOfADDSUBOneByte(first);
+				div_1Byte(source);
+			}
+		} else if (first.contains("[") && first.contains("]")) { // first is memory
+			if (first.charAt(0) == 'w') {
+				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
+				div_2Byte(source);
+			} else if (first.charAt(0) == 'b') {
+				source = contentsOfSecondOperandOfADDSUBOneByte(first);
+				div_1Byte(source);
+			}
+
+		} else if (isRegTwoByte(first)) {// 16 bit register
+			source = contentsOfSecondOperandOfADDSUBTwoByte(first);
+			div_2Byte(source);
+		} else if (isRegOneByte(first)) {// 8 bit register
+			source = contentsOfSecondOperandOfADDSUBOneByte(first);
+			div_1Byte(source);
+		} else { 
+			System.out.println("Undefined symbols are listed: " + first);
+			System.exit(0);
+		}
+	}
+	private void div_1Byte(String source) {
+		int dest = Integer.parseInt(""+ ax[0] + ax[1] + ax[2] + ax[3] ,16);
+		int src = Integer.parseInt(source,16);
+		String quot = NumberToFourByteHexa(""+dest /src);
+		String remainder = NumberToFourByteHexa(""+dest %src);
+		ax[0] = remainder.charAt(2);
+		ax[1] = remainder.charAt(3);
+		ax[2] = quot.charAt(2);
+		ax[3] = quot.charAt(3);
+
+	}
+	private void div_2Byte(String source) {
+		int dest = Integer.parseInt(""+ dx[0] + dx[1] + dx[2] + dx[3] + ax[0] + ax[1] + ax[2] + ax[3] ,16);
+		int src = Integer.parseInt(source,16);
+		String quot = NumberToFourByteHexa(""+dest /src);
+		String remainder = NumberToFourByteHexa(""+dest %src);
+		for(int i = 0 ; i < 4 ; i++) {
+			ax[i] = quot.charAt(i);
+			dx[i] = remainder.charAt(i);
+		}
+
+	}
 
 	/**
 	 * push allows pushing a register, memory address, variable, or number
