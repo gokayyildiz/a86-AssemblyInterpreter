@@ -21,11 +21,12 @@ public class Variable {
 		// değişiyo.İstenmeyen bir şey! e.g: var1 dw 'W', var2 db 'H'.
 		
 		if (data.contains("\'")) {// when var.data is 'x'
-			int a = data.charAt(data.indexOf("\'") + 1) + 1 - 1;
-			this.setData("" + a);
+			int a = data.charAt(data.indexOf("'") + 1) + 1 - 1;
+			
+			this.setData("" + Integer.toHexString(a));
 		} else if (data.contains("\"")) {// when var.data is "x"
 			int a = data.charAt(data.indexOf("\"") + 1) + 1 - 1;
-			this.setData("" + a);
+			this.setData("" + Integer.toHexString(a));
 		} else {
 			this.setData(Hyp86.NumberToFourByteHexa(data));
 		}
