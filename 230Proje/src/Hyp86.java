@@ -16,7 +16,8 @@ public class Hyp86 {
 	ArrayList<String> instructionList = new ArrayList<>();
 	ArrayList<Variable> variables = new ArrayList<>();
 	String[] memory = new String[64 * 1024];
-
+	String input;
+	int inputCursor = 0;
 	char[] di = new char[4];
 	char[] si = new char[4];
 	char[] bp = new char[4];
@@ -143,6 +144,13 @@ public class Hyp86 {
 		scanner.close();
 	}
 
+	/**
+	 * be careful when called sth like [offset var1] or [var1]
+	 * 
+	 * @param token
+	 * @return
+	 */
+
 	private String execute_helper_isVar(String token) {
 		Variable var = null;
 		Variable temp;
@@ -154,7 +162,10 @@ public class Hyp86 {
 				if (token.contains("offset")) {
 					return var.getMemoryIndex() + "d";
 				}
-				return "[" + var.getMemoryIndex() + "d]";
+				if (var.getType()) {
+					return "w[" + var.getMemoryIndex() + "d]";
+				}
+				return "b[" + var.getMemoryIndex() + "d]";
 			}
 		}
 		return null;
@@ -166,7 +177,8 @@ public class Hyp86 {
 		while (true) {
 			if (memory[MP].equals("int")) {
 				if (memory[MP + 1].equals("20h")) {
-					System.exit(0);
+					return;
+					//System.exit(0);
 				} else {
 					int21h();
 				}
@@ -399,60 +411,20 @@ public class Hyp86 {
 	public void push(String reg) {
 		int index = Integer.parseInt(SP, 16);
 
-		if (reg.equals("ax")) {
-			memory[index] = "" + ax[0] + ax[1] + ax[2] + ax[3];
-
-		} else if (reg.equals("bx")) {
-			memory[index] = "" + bx[0] + bx[1] + bx[2] + bx[3];
-
-		} else if (reg.equals("cx")) {
-			memory[index] = "" + cx[0] + cx[1] + cx[2] + cx[3];
-
-		} else if (reg.equals("dx")) {
-			memory[index] = "" + dx[0] + dx[1] + dx[2] + dx[3];
-
-		} else if (reg.equals("di")) {
-			memory[index] = "" + di[0] + di[1] + di[2] + di[3];
-
-		} else if (reg.equals("si")) {
-			memory[index] = "" + si[0] + si[1] + si[2] + si[3];
-
-		} else if (reg.equals("bp")) {
-			memory[index] = "" + bp[0] + bp[1] + bp[2] + bp[3];
-
-		} else if (isRegOneByte(reg)) {// @veyis wrote this else if
-			System.out.println("#ERROR 09: Constant Required at line - " + MP / 6);
+		if (isRegOneByte(reg)) {// @veyis wrote this else if
+			System.out.println("#ERROR 13: Error: Byte/Word Combination Not Allowed" + " at line: " + MP / 6);
 			System.exit(0);
-		} else {
-
-//TODO
-			// var parts are gonna be deleted
-			int a = 0;
-			for (int i = 0; i < variables.size(); i++) {
-				if (variables.get(i).getName().equals(reg) && variables.get(i).getType()) {
-					memory[index] = variables.get(i).getData();
-					break;
-				}
-				a++;
-			}
-			if (a == variables.size()) {
-				if (reg.indexOf('[') != -1) {
-					reg = reg.substring(1, reg.length() - 1);
-
-					if (instrustionAreaEnd < Integer.parseInt(NumberToFourByteHexa(reg), 16)) {
-						memory[index] = memory[Integer.parseInt(NumberToFourByteHexa(reg), 16)];
-					} else {
-						System.out.println("don't try to reach instruction area");
-						return;
-					}
-
-				} else {
-					memory[index] = NumberToFourByteHexa(reg);
-				}
-			}
-
 		}
-
+		if (reg.indexOf("[") != -1 && reg.indexOf("]") != -1) {
+			if (reg.charAt(0) == 'b') {
+				System.out.println("#ERROR 13: Error: Byte/Word Combination Not Allowed" + " at line: " + MP / 6);
+				System.exit(0);
+			} else if (reg.charAt(0) == '[') {
+				reg = "w" + reg;
+			}
+		}
+		mov("w[" + index + "]" ,reg);
+		
 		SP = NumberToFourByteHexa("" + (index - 2));
 	}
 
@@ -467,81 +439,26 @@ public class Hyp86 {
 		int index = Integer.parseInt(SP, 16) + 2;
 		if (index >= 1024 * 64) {
 			System.out.println("no element to pop");
-			return;
-		}
-		if (reg.equals("ax")) {
-			ax[0] = memory[index].charAt(0);
-			ax[1] = memory[index].charAt(1);
-			ax[2] = memory[index].charAt(2);
-			ax[3] = memory[index].charAt(3);
-
-		} else if (reg.equals("bx")) {
-			bx[0] = memory[index].charAt(0);
-			bx[1] = memory[index].charAt(1);
-			bx[2] = memory[index].charAt(2);
-			bx[3] = memory[index].charAt(3);
-
-		} else if (reg.equals("cx")) {
-			cx[0] = memory[index].charAt(0);
-			cx[1] = memory[index].charAt(1);
-			cx[2] = memory[index].charAt(2);
-			cx[3] = memory[index].charAt(3);
-
-		} else if (reg.equals("dx")) {
-			dx[0] = memory[index].charAt(0);
-			dx[1] = memory[index].charAt(1);
-			dx[2] = memory[index].charAt(2);
-			dx[3] = memory[index].charAt(3);
-
-		} else if (reg.equals("di")) {
-			di[0] = memory[index].charAt(0);
-			di[1] = memory[index].charAt(1);
-			di[2] = memory[index].charAt(2);
-			di[3] = memory[index].charAt(3);
-
-		} else if (reg.equals("si")) {
-			si[0] = memory[index].charAt(0);
-			si[1] = memory[index].charAt(1);
-			si[2] = memory[index].charAt(2);
-			si[3] = memory[index].charAt(3);
-
-		} else if (reg.equals("bp")) {
-			bp[0] = memory[index].charAt(0);
-			bp[1] = memory[index].charAt(1);
-			bp[2] = memory[index].charAt(2);
-			bp[3] = memory[index].charAt(3);
-
-		} else if (isRegOneByte(reg)) {// @veyis wrote this else if
-			System.out.println("#ERROR 09: Constant Required at line - " + MP / 6);
 			System.exit(0);
-		} else {
-			// TODO
-			// var parts needs t be deleted
-			int a = 0;
-			for (int i = 0; i < variables.size(); i++) {
-				if (variables.get(i).getName().equals(reg) && variables.get(i).getType()) {
-					variables.get(i).setData(memory[index]);
-					break;
-				}
-
-				a++;
-			}
-
-			if (a == variables.size() && reg.indexOf('[') != -1) {
-				reg = reg.substring(1, reg.length() - 1);
-				if (instrustionAreaEnd < Integer.parseInt(NumberToFourByteHexa(reg), 16)) {
-					memory[Integer.parseInt(NumberToFourByteHexa(reg), 16)] = memory[index];
-				} else {
-					System.out.println("don't try to reach instruction area" + "     at line: " + MP / 6);
-					return;
-				}
-
-			}
-
 		}
+		if (isRegOneByte(reg)) {// @veyis wrote this else if
+			System.out.println("#ERROR 13: Error: Byte/Word Combination Not Allowed" + " at line: " + MP / 6);
+			System.exit(0);
+		}
+		if (reg.indexOf("[") != -1 && reg.indexOf("]") != -1) {
+			if (reg.charAt(0) == 'b') {
+				System.out.println("#ERROR 13: Error: Byte/Word Combination Not Allowed" + " at line: " + MP / 6);
+				System.exit(0);
+			} else if (reg.charAt(0) == '[') {
+				reg = "w" + reg;
+			}
+		}
+
+		mov(reg, memory[index + 1] + memory[index] + "h");
 
 		SP = NumberToFourByteHexa("" + index);
 		memory[index] = null;
+		memory[index + 1] = null;
 
 	}
 
@@ -1025,11 +942,12 @@ public class Hyp86 {
 		@SuppressWarnings("resource")
 		Scanner conc = new Scanner(System.in);
 		if (ah.equals("01")) {
-			char ch = conc.next().charAt(0);
-			ascii = (int) ch;
+			input = conc.next();
+			ascii = (int) (input.charAt(inputCursor));
 			String hexa = NumberToFourByteHexa("" + ascii);
 			ax[2] = hexa.charAt(2);
 			ax[3] = hexa.charAt(3);
+			inputCursor++;
 		} else if (ah.equals("02")) {
 			String chs = "" + dx[2] + dx[3];
 			ascii = Integer.parseInt(chs, 16);
@@ -1059,17 +977,16 @@ public class Hyp86 {
 	}
 
 	private void cmp_mem_xx(String first, String second) { //
-		String source;
+		String source = "";
 
 		if (first.charAt(0) == 'b') {// first operand is kind of b[xx] so source must be one byte.
 			first = first.substring(2, first.length() - 1);// got rid of "b[" and "]"
 			source = contentsOfSecondOperandOfADDSUBOneByte(second);
-		} else {// assume there is w
-			if (first.charAt(0) == 'w') {// first operand is kind of w[xx] so source must be two byte.
-				first = first.substring(1); // got rid of "w"
-			}
+		} else if (first.charAt(0) == 'w') {// first operand is kind of w[xx] so source must be two byte.
+			first = first.substring(1); // got rid of "w"
+		} else {
 			first = first.substring(1, first.length() - 1);// got rid of "[" and "]"
-			source = contentsOfSecondOperandOfADDSUBTwoByte(second);
+			source = contentsOfSecondOperandOfADDSUBOneByte(second);
 		}
 
 		int memoryIndex = memoryIndexOfFirst(first);
@@ -1093,80 +1010,8 @@ public class Hyp86 {
 
 	private void CMP_TwoByteReg(String first, String second) {
 		int destValue = 0;
-		int srcValue = 0;
+		int srcValue = Integer.parseInt(contentsOfSecondOperandOfADDSUBTwoByte(second), 16);
 
-		if (second.contains("[") && second.contains("]")) {
-
-			if (second.charAt(0) == 'b') { // 1 byte
-				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
-				System.exit(0);
-
-			} else { // 2 byte
-				if (second.charAt(0) == 'w') {
-					second = second.substring(1); // got rid of 'w'
-				}
-
-				second = second.substring(1, second.length() - 1); // got rid of [ and ]
-				String num = "";
-				if (isRegOneByte(second) || isRegTwoByte(second)) {// register
-					if (second.equalsIgnoreCase("si")) {
-						for (int i = 0; i <= 3; i++) {
-							num += si[i];
-						}
-					} else if (second.equalsIgnoreCase("di")) {
-						for (int i = 0; i <= 3; i++) {
-							num += di[i];
-						}
-					} else if (second.equalsIgnoreCase("bp")) {
-						for (int i = 0; i <= 3; i++) {
-							num += bp[i];
-						}
-					} else if (second.equalsIgnoreCase("bx")) {
-						for (int i = 0; i <= 3; i++) {
-							num += bx[i];
-						}
-					} else {
-						System.out.println("#ERROR 39: Bad Index Register ");
-						System.exit(0);
-					}
-				} else {// number
-					num = NumberToFourByteHexa(second);
-				}
-
-				if (Integer.parseInt(num, 16) >= memory.length
-						|| Integer.parseInt(num, 16) < numberOfInstructions * 6) {
-					System.out.println("Address is not valid");
-					System.exit(0);
-
-				} else if (memory[Integer.parseInt(num, 16)] == null) {
-				} else {
-					srcValue = Integer.parseInt(memory[Integer.parseInt(num, 16)], 16);
-
-				}
-			}
-		} else if (isRegOneByte(second) || isRegTwoByte(second)) { // register
-
-			if (second.equalsIgnoreCase("ax")) {
-				srcValue = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
-			} else if (second.equalsIgnoreCase("bx")) {
-				srcValue = Integer.parseInt("" + bx[0] + bx[1] + bx[2] + bx[3], 16);
-			} else if (second.equalsIgnoreCase("cx")) {
-				srcValue = Integer.parseInt("" + cx[0] + cx[1] + cx[2] + cx[3], 16);
-			} else if (second.equalsIgnoreCase("dx")) {
-				srcValue = Integer.parseInt("" + dx[0] + dx[1] + dx[2] + dx[3], 16);
-			} else if (second.equalsIgnoreCase("si")) {
-				srcValue = Integer.parseInt("" + si[0] + si[1] + si[2] + si[3], 16);
-			} else if (second.equalsIgnoreCase("bp")) {
-				srcValue = Integer.parseInt("" + bp[0] + bp[1] + bp[2] + bp[3], 16);
-			} else if (second.equalsIgnoreCase("di")) {
-				srcValue = Integer.parseInt("" + di[0] + di[1] + di[2] + di[3], 16);
-			} else {// error
-				System.out.println("#ERROR 13: Error: Byte/Word Combination Not Allowed");
-				System.exit(0);
-			}
-		} else { // number or variable
-			srcValue = Integer.parseInt(NumberToFourByteHexa(second), 16); // number
-		}
 		if (first.equalsIgnoreCase("ax")) {
 			destValue = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
 		} else if (first.equalsIgnoreCase("bx")) {
@@ -1204,115 +1049,7 @@ public class Hyp86 {
 
 	private void CMP_OneByteReg(String first, String second) {
 		int destValue = 0;
-		int srcValue = 0;
-		boolean isVar = false;
-		Variable var = null;
-		Variable tempVar;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			tempVar = itr.next();
-			if (second.contains(tempVar.getName())) {
-				isVar = true;
-				var = tempVar;
-				break;
-			}
-		}
-		if (second.contains("offset")) {
-			srcValue = var.getMemoryIndex();
-
-		} else if (second.contains("[") && second.contains("]")) {// memory
-			if (second.charAt(0) == 'w') { // 2 byte
-				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
-				System.exit(0);
-			} else { // 1 byte
-				if (second.charAt(0) == 'b') {
-					second = second.substring(1); // got rid of "b"
-				}
-				second = second.substring(1, second.length() - 1); // got rid of "[" and "]"
-				String num = "";
-
-				if (isRegOneByte(second) || isRegTwoByte(second)) {// register
-					if (second.equalsIgnoreCase("si")) {
-						for (int i = 0; i <= 3; i++) {
-							num += si[i];
-						}
-					} else if (second.equalsIgnoreCase("di")) {
-						for (int i = 0; i <= 3; i++) {
-							num += di[i];
-						}
-					} else if (second.equalsIgnoreCase("bp")) {
-						for (int i = 0; i <= 3; i++) {
-							num += bp[i];
-						}
-					} else if (second.equalsIgnoreCase("bx")) {
-						for (int i = 0; i <= 3; i++) {
-							num += bx[i];
-						}
-					} else {
-						System.out.println("#ERROR 39: Bad Index Register ");
-						System.exit(0);
-					}
-				} else if (isVar) {// variable
-					if (var.getType()) {
-						System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
-						System.exit(0);
-					} else {
-						num = NumberToFourByteHexa(var.getData());
-
-					}
-				} else {// number
-					num = NumberToFourByteHexa(second);
-				}
-
-				if (memory[Integer.parseInt(num, 16)] == null) {
-
-				} else if (Integer.parseInt(num, 16) < numberOfInstructions * 6
-						|| Integer.parseInt(num, 16) >= 64 * 1024) {
-					System.out.println("Address is not valid");
-					System.exit(0);
-				} else {
-					String memoryLocaitonOfNum = memory[Integer.parseInt(num, 16)];
-					srcValue = Integer.parseInt(memoryLocaitonOfNum, 16);
-				}
-
-			}
-
-		} else if (isRegOneByte(second) || isRegTwoByte(second)) { // register
-			if (second.equalsIgnoreCase("ah")) {
-				srcValue = Integer.parseInt("" + ax[0] + ax[1], 16);
-			} else if (second.equalsIgnoreCase("bh")) {
-				srcValue = Integer.parseInt("" + bx[0] + bx[1], 16);
-			} else if (second.equalsIgnoreCase("ch")) {
-				srcValue = Integer.parseInt("" + cx[0] + cx[1], 16);
-			} else if (second.equalsIgnoreCase("dh")) {
-				srcValue = Integer.parseInt("" + dx[0] + dx[1], 16);
-			} else if (second.equalsIgnoreCase("al")) {
-				srcValue = Integer.parseInt("" + ax[2] + ax[3], 16);
-			} else if (second.equalsIgnoreCase("bl")) {
-				srcValue = Integer.parseInt("" + bx[2] + bx[3], 16);
-			} else if (second.equalsIgnoreCase("cl")) {
-				srcValue = Integer.parseInt("" + cx[2] + cx[3], 16);
-			} else if (second.equalsIgnoreCase("dl")) {
-				srcValue = Integer.parseInt("" + dx[2] + dx[3], 16);
-			} else {
-				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
-				System.exit(0);
-			}
-		} else { // number or variable
-			if (isVar) {
-				if (var.getType()) {
-					System.out.println("#ERROR 13: Byte/Word Combination Not Allowed");
-					System.exit(0);
-				}
-				srcValue = Integer.parseInt(NumberToFourByteHexa("0" + var.getData() + "h"), 16); // variable
-			} else {
-				srcValue = Integer.parseInt(NumberToFourByteHexa(second), 16); // number
-			}
-			if (Integer.parseInt(second, 16) > 255) {
-				System.out.println("#ERROR 30: Byte-Sized Constant Required");
-				System.exit(0);
-			}
-		}
+		int srcValue = Integer.parseInt(contentsOfSecondOperandOfADDSUBOneByte(second), 16);
 
 		// destValue
 		if (first.equalsIgnoreCase("ah")) {
@@ -1705,30 +1442,8 @@ public class Hyp86 {
 	}
 
 	public void mul(String first) {
-		// variable part can be deleted later
-
 		String source;
-		boolean isFirstVar = false;
-		Variable firstvar = null;
-		Variable temp;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			temp = itr.next();
-			if (first.contains(temp.getName())) {
-				isFirstVar = true;
-				firstvar = temp;
-				break;
-			}
-		} // now we know first operand is whether variable ->(add w[var1],ax)
-		if (isFirstVar) {
-			if (first.charAt(0) == 'w' && firstvar.getType()) {
-				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
-				mul_2Byte(source);
-			} else if (first.charAt(0) == 'b' && !firstvar.getType()) {
-				source = contentsOfSecondOperandOfADDSUBOneByte(first);
-				mul_1Byte(source);
-			}
-		} else if (first.contains("[") && first.contains("]")) { // first is memory
+		if (first.contains("[") && first.contains("]")) { // first is memory
 			if (first.charAt(0) == 'w') {
 				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
 				mul_2Byte(source);
@@ -1783,27 +1498,7 @@ public class Hyp86 {
 
 	public void div(String first) {
 		String source;
-		boolean isFirstVar = false;
-		Variable firstvar = null;
-		Variable temp;
-		Iterator<Variable> itr = variables.iterator();
-		while (itr.hasNext()) {
-			temp = itr.next();
-			if (first.contains(temp.getName())) {
-				isFirstVar = true;
-				firstvar = temp;
-				break;
-			}
-		} // now we know first operand is whether variable ->(add w[var1],ax)
-		if (isFirstVar) {
-			if (first.charAt(0) == 'w' && firstvar.getType()) {
-				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
-				div_2Byte(source);
-			} else if (first.charAt(0) == 'b' && !firstvar.getType()) {
-				source = contentsOfSecondOperandOfADDSUBOneByte(first);
-				div_1Byte(source);
-			}
-		} else if (first.contains("[") && first.contains("]")) { // first is memory
+		if (first.contains("[") && first.contains("]")) { // first is memory
 			if (first.charAt(0) == 'w') {
 				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
 				div_2Byte(source);
@@ -1851,7 +1546,7 @@ public class Hyp86 {
 	/**
 	 * Calls helper SUB methods according to the contents of @param first.
 	 * 
-	 * @param first:  first operand of SUB operation (minuend)
+	 * @param first: first operand of SUB operation (minuend)
 	 * @param second: second operand of SUB operation (subtrahend)
 	 */
 	public void sub(String first, String second) {
@@ -1877,7 +1572,7 @@ public class Hyp86 {
 	/**
 	 * Calls helper ADD methods according to the contents of @param first.
 	 * 
-	 * @param first:  first operand of ADD operation (augend)s
+	 * @param first: first operand of ADD operation (augend)s
 	 * @param second: second operand of ADD operation (addend)
 	 */
 
@@ -1901,7 +1596,7 @@ public class Hyp86 {
 	/**
 	 * Calls helper MOV methods according to the contents of @param first.
 	 * 
-	 * @param first:  first operand of MOV operation
+	 * @param first: first operand of MOV operation
 	 * @param second: second operand of MOV operation
 	 */
 
@@ -2132,7 +1827,7 @@ public class Hyp86 {
 	 * when the first operand of MOV operation is a two byte register, this helper
 	 * method is called. It handles several errors and moves source to destination.
 	 * 
-	 * @param first:  destination of MOV operation
+	 * @param first: destination of MOV operation
 	 * @param second: source of MOV operation
 	 */// ++
 	private String source_when_first_operand_is_twoByteReg(String second) {
@@ -2433,7 +2128,7 @@ public class Hyp86 {
 	 * calls helper methods to calculate source then adds it corresponding register
 	 * destination.
 	 * 
-	 * @param first:  first operand of ADD operation. It's a register for sure.
+	 * @param first: first operand of ADD operation. It's a register for sure.
 	 * @param second: second operand of ADD operation
 	 */
 	private void add_reg_unknown(String first, String second) {
@@ -2819,7 +2514,7 @@ public class Hyp86 {
 	 * calls helper methods to calculate source then subtracts it corresponding
 	 * register destination.
 	 * 
-	 * @param first:  first operand of SUB operation. It's a register for sure.
+	 * @param first: first operand of SUB operation. It's a register for sure.
 	 * @param second: second operand of SUB operation
 	 */
 
@@ -3211,10 +2906,9 @@ public class Hyp86 {
 	/**
 	 * this method is called when destination of SUB operation is a memory address.
 	 * 
-	 * @param first   : destination of SUB operation. It's a memory address for
-	 *                sure.
-	 * @param second: source of SUB operation.
-	 *///++
+	 * @param first : destination of SUB operation. It's a memory address for sure.
+	 * @param       second: source of SUB operation.
+	 */// ++
 	private void sub_mem_xx(String first, String second) {
 		boolean wordOrByte = false;// false if byte, true if word
 		String subtrahend = sourceOfADDorSUBOperation(first, second);
