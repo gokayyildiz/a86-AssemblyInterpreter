@@ -81,29 +81,28 @@ public class Hyp86 {
 				memory[indexCursor] = first;
 				line = line.trim();
 				line = line.substring(first.length());
-				if (line.indexOf(',') != -1) {
+				if (line.indexOf(',') != -1) {// when there is two operands
 
 					int temo = line.indexOf(',');
-					memory[indexCursor + 1] = line.substring(0, temo).trim().toLowerCase();
-					isChar1 = line.substring(temo + 1, line.length()).trim();
+					memory[indexCursor + 1] = line.substring(0, temo).trim().toLowerCase();// first operand
+					isChar1 = line.substring(temo + 1, line.length()).trim();// second operand
 
-					if (isChar1.contains("\'")) {// when var.data is 'x'
-						int a = isChar1.charAt(isChar1.indexOf("\'") + 1) + 1 - 1;
-						isChar1 = NumberToFourByteHexa("" + a);
-					} else if (isChar1.contains("\"")) {// when var.data is "x"
-						int a = isChar1.charAt(isChar1.indexOf("\"") + 1) + 1 - 1;
-						isChar1 = NumberToFourByteHexa("" + a);
-					}
-
-					memory[indexCursor + 2] = isChar1.toLowerCase();
-				} else {
-					isChar1 = line.trim();
 					if (isChar1.contains("'")) {// when var.data is 'x'
 						int a = isChar1.charAt(isChar1.indexOf("\'") + 1) + 1 - 1;
-						isChar1 = NumberToFourByteHexa("" + a);
+						isChar1 = NumberToFourByteHexa("" + a, false);
 					} else if (isChar1.contains("\"")) {// when var.data is "x"
 						int a = isChar1.charAt(isChar1.indexOf("\"") + 1) + 1 - 1;
-						isChar1 = NumberToFourByteHexa("" + a);
+						isChar1 = NumberToFourByteHexa("" + a, false);
+					}
+					memory[indexCursor + 2] = isChar1.toLowerCase();
+				} else {// when there is only one operand
+					isChar1 = line.trim();
+					if (isChar1.contains("'")) {// when var.data is 'x'
+						int a = isChar1.charAt(isChar1.indexOf("'") + 1) + 1 - 1;
+						isChar1 = NumberToFourByteHexa("" + a, false);
+					} else if (isChar1.contains("\"")) {// when var.data is "x"
+						int a = isChar1.charAt(isChar1.indexOf("\"") + 1) + 1 - 1;
+						isChar1 = NumberToFourByteHexa("" + a,false);
 					}
 
 					memory[indexCursor + 1] = isChar1;
@@ -127,6 +126,7 @@ public class Hyp86 {
 			} else {
 				System.out
 						.println("Undefined symbols are listed:" + first + " at line - " + (numberOfInstructions + 1));
+				System.exit(0);
 			}
 			token.close();
 		}
@@ -401,7 +401,7 @@ public class Hyp86 {
 		if (labels.containsKey(label)) {
 			MP = labels.get(label);
 		} else {
-			System.out.println("label does not exist");
+			System.out.println("label does not exist: "+ label);
 			System.exit(0);
 		}
 	}
@@ -415,13 +415,13 @@ public class Hyp86 {
 	public void push(String reg) {
 		int index = Integer.parseInt(SP, 16);
 
-		if (isRegOneByte(reg)) {// @veyis wrote this else if
-			System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + MP / 6);
+		if (isRegOneByte(reg)) {
+			System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + (MP / 6 + 1));
 			System.exit(0);
 		}
 		if (reg.indexOf("[") != -1 && reg.indexOf("]") != -1) {
 			if (reg.charAt(0) == 'b') {
-				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + MP / 6);
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + (MP / 6 + 1));
 				System.exit(0);
 			} else if (reg.charAt(0) == '[') {
 				reg = "w" + reg;
@@ -429,7 +429,7 @@ public class Hyp86 {
 		}
 		mov("w[" + index + "]", reg);
 
-		SP = NumberToFourByteHexa("" + (index - 2));
+		SP = NumberToFourByteHexa("" + (index - 2), false);
 	}
 
 	/**
@@ -442,25 +442,23 @@ public class Hyp86 {
 	public void pop(String reg) {
 		int index = Integer.parseInt(SP, 16) + 2;
 		if (index >= 1024 * 64) {
-			System.out.println("no element to pop");
+			System.out.println("no element to pop" + " at line: " + (MP / 6 + 1));
 			System.exit(0);
 		}
-		if (isRegOneByte(reg)) {// @veyis wrote this else if
-			System.out.println("#ERROR 13: Error: Byte/Word Combination Not Allowed" + " at line: " + MP / 6);
+		if (isRegOneByte(reg)) {
+			System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + (MP / 6 + 1));
 			System.exit(0);
 		}
 		if (reg.indexOf("[") != -1 && reg.indexOf("]") != -1) {
 			if (reg.charAt(0) == 'b') {
-				System.out.println("#ERROR 13: Error: Byte/Word Combination Not Allowed" + " at line: " + MP / 6);
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + (MP / 6 + 1));
 				System.exit(0);
 			} else if (reg.charAt(0) == '[') {
 				reg = "w" + reg;
 			}
 		}
-
+		SP = NumberToFourByteHexa("" + index, true);
 		mov(reg, memory[index + 1] + memory[index] + "h");
-
-		SP = NumberToFourByteHexa("" + index);
 		memory[index] = null;
 		memory[index + 1] = null;
 
@@ -920,7 +918,9 @@ public class Hyp86 {
 
 			if (a == variables.size() && xx.indexOf('[') != -1) {
 				xx = xx.substring(1, xx.length() - 1);
-				int indexful = Integer.parseInt(NumberToFourByteHexa(xx), 16);
+				// TODO
+				// true da olabilie emin değilim
+				int indexful = Integer.parseInt(NumberToFourByteHexa(xx, false), 16);
 				for (int i = 0; i < numero; i++) {
 					regg = memory[indexful];
 					otherMult = Integer.parseInt(regg, 16);
@@ -950,7 +950,7 @@ public class Hyp86 {
 				input = conc.next();
 			}
 			ascii = (int) (input.charAt(inputCursor));
-			String hexa = NumberToFourByteHexa("" + ascii);
+			String hexa = NumberToFourByteHexa("" + ascii, false);
 			ax[2] = hexa.charAt(2);
 			ax[3] = hexa.charAt(3);
 			inputCursor++;
@@ -976,7 +976,7 @@ public class Hyp86 {
 		} else if (isRegOneByte(first)) {// 8 bit register
 			CMP_OneByteReg(first, second);
 		} else { // reg veya memoryye yazmiyo hata ver
-			System.out.println("Undefined symbols are listed: " + first);
+			System.out.println("Undefined symbols are listed: " + first+ "  at line - "+ (MP / 6+1));
 			System.exit(0);
 		}
 
@@ -1033,7 +1033,7 @@ public class Hyp86 {
 		} else if (first.equalsIgnoreCase("di")) {
 			destValue = Integer.parseInt("" + di[0] + di[1] + di[2] + di[3], 16);
 		} else {// error
-			System.out.println("#ERROR 13: Error: Byte/Word Combination Not Allowed");
+			System.out.println("#ERROR 13:  Byte/Word Combination Not Allowed. At line - "+ (MP / 6+1));
 			System.exit(0);
 		}
 		if (Integer.toHexString(destValue).charAt(Integer.toHexString(destValue).length() - 1) < Integer
@@ -1193,7 +1193,7 @@ public class Hyp86 {
 				}
 			}
 		} else { // reg veya memoryye yazmiyo hata ver
-			System.out.println("Undefined symbols are listed: " + first + "  at line: " + MP / 6);
+			System.out.println("Undefined symbols are listed: " + first + "  at line: " + (MP / 6+1));
 			System.exit(0);
 		}
 
@@ -1205,7 +1205,7 @@ public class Hyp86 {
 		// it changes SF but how we should implemnt that?????
 		if (a == 0)
 			ZF = true;
-		return NumberToFourByteHexa("" + a);
+		return NumberToFourByteHexa("" + a, false);
 	}
 
 	public void or(String first, String second) {
@@ -1217,8 +1217,8 @@ public class Hyp86 {
 			if (first.charAt(0) == 'b') {
 				first = first.substring(1);// got rid of b
 				int memoryIndex = memoryIndexOfFirst(first);
-				//TODO
-				//substriing2 değişebilir
+				// TODO
+				// substriing2 değişebilir
 				memory[memoryIndex] = helperOr(memory[memoryIndex], source).substring(2);
 			} else if (first.charAt(0) == 'w') {
 				first = first.substring(1);// got rid of w
@@ -1312,7 +1312,7 @@ public class Hyp86 {
 				}
 			}
 		} else { // reg veya memoryye yazmiyo hata ver
-			System.out.println("Undefined symbols are listed: " + first + "           at line: " + MP / 6);
+			System.out.println("Undefined symbols are listed: " + first + "  at line: " + (MP / 6 + 1));
 			System.exit(0);
 		}
 
@@ -1324,7 +1324,7 @@ public class Hyp86 {
 		// it changes SF but how we should implemnt that?????
 		if (a == 0)
 			ZF = true;
-		return NumberToFourByteHexa("" + a);
+		return NumberToFourByteHexa("" + a, false);
 	}
 
 	public void not(String first) {
@@ -1436,7 +1436,7 @@ public class Hyp86 {
 				}
 			}
 		} else { // reg veya memoryye yazmiyo hata ver
-			System.out.println("Undefined symbols are listed: " + first + "          at line: " + MP / 6);
+			System.out.println("Undefined symbols are listed: " + first + " at line: " + (MP / 6 + 1));
 			System.exit(0);
 		}
 
@@ -1448,7 +1448,7 @@ public class Hyp86 {
 		// it changes SF but how we should implemnt that?????
 		if (a == 0)
 			ZF = true;
-		return NumberToFourByteHexa("" + a);
+		return NumberToFourByteHexa("" + a, false);
 	}
 
 	public void mul(String first) {
@@ -1469,7 +1469,7 @@ public class Hyp86 {
 			source = contentsOfSecondOperandOfADDSUBOneByte(first);
 			mul_1Byte(source);
 		} else {
-			System.out.println("Undefined symbols are listed: " + first + "              at line: " + MP / 6);
+			System.out.println("Undefined symbols are listed: " + first + "  at line: " + (MP / 6 + 1));
 			System.exit(0);
 		}
 
@@ -1485,8 +1485,8 @@ public class Hyp86 {
 
 	private void mul_1Byte(String source) {
 		int dest = Integer.parseInt("" + ax[2] + ax[3], 16);
-		dest = dest * Integer.parseInt(source, 16);
-		String result = NumberToFourByteHexa("" + dest);
+		dest *= Integer.parseInt(source, 16);
+		String result = Integer.toHexString(dest);
 		for (int i = 0; i < 4; i++)
 			ax[i] = result.charAt(i);
 
@@ -1494,7 +1494,7 @@ public class Hyp86 {
 
 	private void mul_2Byte(String source) {
 		int dest = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
-		dest = dest * Integer.parseInt(source, 16);
+		dest *= Integer.parseInt(source, 16);
 		String result = Integer.toHexString(dest);
 		while (result.length() < 8)
 			result = "0" + result;
@@ -1524,7 +1524,7 @@ public class Hyp86 {
 			source = contentsOfSecondOperandOfADDSUBOneByte(first);
 			div_1Byte(source);
 		} else {
-			System.out.println("Undefined symbols are listed: " + first + "             at line: " + MP / 6);
+			System.out.println("Undefined symbols are listed: " + first + " at line: " + (MP / 6 + 1));
 			System.exit(0);
 		}
 	}
@@ -1532,8 +1532,12 @@ public class Hyp86 {
 	private void div_1Byte(String source) {
 		int dest = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
 		int src = Integer.parseInt(source, 16);
-		String quot = NumberToFourByteHexa("" + dest / src);
-		String remainder = NumberToFourByteHexa("" + dest % src);
+		if (dest / src > 0xff) {
+			System.out.println("divide overflow at line - " + (MP / 6 + 1));
+			System.exit(0);
+		}
+		String quot = NumberToFourByteHexa("" + dest / src, false);
+		String remainder = NumberToFourByteHexa("" + dest % src, false);
 		ax[0] = remainder.charAt(2);
 		ax[1] = remainder.charAt(3);
 		ax[2] = quot.charAt(2);
@@ -1544,13 +1548,13 @@ public class Hyp86 {
 	private void div_2Byte(String source) {
 		int dest = Integer.parseInt("" + dx[0] + dx[1] + dx[2] + dx[3] + ax[0] + ax[1] + ax[2] + ax[3], 16);
 		int src = Integer.parseInt(source, 16);
-		
-		if(dest / src>0xffff) {
-			System.out.println("divide overflow at line - "+(MP/6+1));
+
+		if (dest / src > 0xffff) {
+			System.out.println("divide overflow at line - " + (MP / 6 + 1));
 			System.exit(0);
 		}
-		String quot = NumberToFourByteHexa("" + dest / src);
-		String remainder = NumberToFourByteHexa("" + dest % src);
+		String quot = NumberToFourByteHexa("" + dest / src, false);
+		String remainder = NumberToFourByteHexa("" + dest % src, false);
 		for (int i = 0; i < 4; i++) {
 			ax[i] = quot.charAt(i);
 			dx[i] = remainder.charAt(i);
@@ -1579,7 +1583,7 @@ public class Hyp86 {
 			// first is reg
 			sub_reg_unknown(first, second);
 		} else { // reg veya memoryye eklemiyo
-			System.out.println("Undefined symbols are listed: " + first + "          at line: " + MP / 6);
+			System.out.println("Undefined symbols are listed: " + first + "  at line: " + (MP / 6 + 1));
 			System.exit(0);
 		}
 	}
@@ -1603,7 +1607,7 @@ public class Hyp86 {
 			// first is reg
 			add_reg_unknown(first, second);
 		} else { // destination is neither reg nor memory
-			System.out.println("Undefined symbols are listed: " + first + "         at line: " + MP / 6);
+			System.out.println("Undefined symbols are listed: " + first + "  at line: " + (MP / 6 + 1));
 			System.exit(0);
 		}
 	}
@@ -1697,7 +1701,7 @@ public class Hyp86 {
 				}
 			}
 		} else { // reg veya memoryye yazmiyo hata ver
-			System.out.println("Undefined symbols are listed: " + first + "  at line: " + MP / 6);
+			System.out.println("Undefined symbols are listed: " + first + "  at line: " + (MP / 6 + 1));
 			System.exit(0);
 		}
 
@@ -1718,7 +1722,7 @@ public class Hyp86 {
 		} else if (first.charAt(0) == 'w') {// assume there is w
 			source = contentsOfSecondOperandOfADDSUBTwoByte(second);
 		} else {
-			System.out.println("There must be w or b in front of square brackets." + "   at line: " + MP / 6);
+			System.out.println("There must be w or b in front of square brackets." + "  at line: " + (MP / 6 + 1));
 			System.exit(0);
 		}
 		while (source.length() < 4) // to make sure source is a 4 length hexadecimal number.
@@ -1737,7 +1741,7 @@ public class Hyp86 {
 		char[] temp = new char[2];
 		if (second.contains("[") && second.contains("]")) {// memory
 			if (second.charAt(0) == 'w') { // 2 byte
-				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + "    at line: " + MP / 6);
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + "  at line: " + (MP / 6+1));
 				System.exit(0);
 			} else { // 1 byte
 				if (second.charAt(0) == 'b') {
@@ -1764,21 +1768,20 @@ public class Hyp86 {
 							num += bx[i];
 						}
 					} else {
-						System.out.println("#ERROR 39: Bad Index Register " + "      at line: " + MP / 6);
+						System.out.println("#ERROR 39: Bad Index Register " + " at line: " +(MP / 6+1));
 						System.exit(0);
 					}
 				} else {// number
-					num = NumberToFourByteHexa(second);
+					num = NumberToFourByteHexa(second, true);
 				}
 				// now, num is the address in 4length hexa
 				temp[0] = '0';
 				temp[1] = '0';
-				if (memory[Integer.parseInt(num, 16)] == null) {
-
-				} else if (Integer.parseInt(num, 16) < numberOfInstructions * 6
-						|| Integer.parseInt(num, 16) >= 64 * 1024) {
-					System.out.println("Address is not valid" + "  at line: " + MP / 6);
+				if (Integer.parseInt(num, 16) < numberOfInstructions * 6 || Integer.parseInt(num, 16) >= 64 * 1024) {
+					System.out.println("Address is not valid" + "  at line: " +(MP / 6+1));
 					System.exit(0);
+				} else if (memory[Integer.parseInt(num, 16)] == null) {
+
 				} else {
 					num = memory[Integer.parseInt(num, 16)].substring(2);// now, num is the content of that address
 					for (int i = 0; i <= 1; i++) {
@@ -1820,13 +1823,13 @@ public class Hyp86 {
 					temp[i] = dx[i];
 				}
 			} else {
-				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + "  at line: " + MP / 6);
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + "  at line: " + (MP / 6+1));
 				System.exit(0);
 			}
 		} else { // number
-			second = NumberToFourByteHexa(second); // number
+			second = NumberToFourByteHexa(second, false); // number
 			if (Integer.parseInt(second, 16) > 255) {
-				System.out.println("#ERROR 30: Byte-Sized Constant Required" + "  at line: " + MP / 6);
+				System.out.println("#ERROR 30: Byte-Sized Constant Required" + "  at line: " + (MP / 6+1));
 				System.exit(0);
 			}
 			for (int i = 0; i <= 1; i++) {
@@ -1852,7 +1855,7 @@ public class Hyp86 {
 		if (second.contains("[") && second.contains("]")) {
 
 			if (second.charAt(0) == 'b') { // 1 byte
-				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + MP / 6);
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + (MP / 6 + 1));
 				System.exit(0);
 
 			} else { // 2 byte
@@ -1880,17 +1883,17 @@ public class Hyp86 {
 							num += bx[i];
 						}
 					} else {
-						System.out.println("#ERROR 39: Bad Index Register " + " at line: " + MP / 6);
+						System.out.println("#ERROR 39: Bad Index Register " + " at line: " + (MP / 6 + 1));
 						System.exit(0);
 					}
 				} else {// number
-					num = NumberToFourByteHexa(second);
+					num = NumberToFourByteHexa(second, true);
 
 				}
 				// got the address
 				if (Integer.parseInt(num, 16) >= memory.length
 						|| Integer.parseInt(num, 16) < numberOfInstructions * 6) {
-					System.out.println("Address is not valid" + " at line: " + MP / 6);
+					System.out.println("Address is not valid" + " at line: " + (MP / 6 + 1));
 					System.exit(0);
 
 				} else if (memory[Integer.parseInt(num, 16)] == null) {
@@ -1935,11 +1938,11 @@ public class Hyp86 {
 					temp[i] = di[i];
 				}
 			} else {// error
-				System.out.println("#ERROR 13: Error: Byte/Word Combination Not Allowed" + " at line: " + MP / 6);
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + (MP / 6 + 1));
 				System.exit(0);
 			}
 		} else { // number
-			second = NumberToFourByteHexa(second);
+			second = NumberToFourByteHexa(second, false);
 			for (int i = 0; i <= 3; i++) {
 				temp[i] = second.charAt(i);
 			}
@@ -1958,7 +1961,7 @@ public class Hyp86 {
 	private String addsub_mem1B_xx(String second) {
 		String addend = "";
 		if (isRegTwoByte(second)) {
-			System.out.println("#ERROR 13: Byte/Word Combination Not Allowed " + " at line: " + MP / 6);
+			System.out.println("#ERROR 13: Byte/Word Combination Not Allowed " + " at line: " + (MP / 6 + 1));
 			System.exit(0);
 		} else if (isRegOneByte(second)) {
 			if (second.equals("al")) {
@@ -1979,11 +1982,11 @@ public class Hyp86 {
 				addend += "" + dx[0] + "" + dx[1];
 			}
 		} else { // numbers must be 8 bits which means less than 256
-			if (Integer.parseInt(NumberToFourByteHexa(second), 16) > 255) {
-				System.out.println("#ERROR 30: Byte-Sized Constant Required" + " at line: " + MP / 6);
+			if (Integer.parseInt(NumberToFourByteHexa(second, false), 16) > 255) {
+				System.out.println("#ERROR 30: Byte-Sized Constant Required" + " at line: " + (MP / 6 + 1));
 				System.exit(0);
 			} else {
-				addend += NumberToFourByteHexa(second).substring(2);
+				addend += NumberToFourByteHexa(second, false).substring(2);
 			}
 		}
 		return addend;
@@ -2000,7 +2003,7 @@ public class Hyp86 {
 		String addend = "";
 
 		if (isRegOneByte(second)) {
-			System.out.println("#ERROR 13: Byte/Word Combination Not Allowed " + " at line: " + MP / 6);
+			System.out.println("#ERROR 13: Byte/Word Combination Not Allowed " + " at line: " + (MP / 6 + 1));
 			System.exit(0);
 		} else if (isRegTwoByte(second)) {
 			if (second.equals("ax")) {
@@ -2019,7 +2022,7 @@ public class Hyp86 {
 				addend += "" + di[0] + "" + di[1] + di[2] + "" + di[3];
 			}
 		} else { // number
-			addend += NumberToFourByteHexa(second);
+			addend += NumberToFourByteHexa(second, false);
 		}
 		return addend;
 	}
@@ -2045,7 +2048,7 @@ public class Hyp86 {
 			memoryIndex = memoryIndexOfFirst(first);
 		}
 		if (memoryIndex < numberOfInstructions * 6 || memoryIndex >= 64 * 1024) {
-			System.out.println("Bad Memory Address at line - " + MP / 6);
+			System.out.println("Bad Memory Address at line - " + (MP / 6 + 1));
 			System.exit(0);
 		}
 		// TODO
@@ -2076,8 +2079,9 @@ public class Hyp86 {
 					sum -= Integer.parseInt("10000", 16);
 					CF = true;
 				}
-				memory[memoryIndex + 1] = NumberToFourByteHexa(sum + "").substring(0, 2);
-				memory[memoryIndex] = NumberToFourByteHexa(sum + "").substring(2);
+				String data = NumberToFourByteHexa(sum + "", false);
+				memory[memoryIndex + 1] = data.substring(0, 2);
+				memory[memoryIndex] = data.substring(2);
 			} else {// augend is empty(which means 0), result is addend
 				memory[memoryIndex + 1] = addend.substring(0, 2);
 				memory[memoryIndex] = addend.substring(2);
@@ -2105,7 +2109,7 @@ public class Hyp86 {
 					sum -= Integer.parseInt("100", 16);
 					CF = true;
 				}
-				memory[memoryIndex] = NumberToFourByteHexa(sum + "").substring(2);
+				memory[memoryIndex] = NumberToFourByteHexa(sum + "", false).substring(2);
 			} else {// augend is empty(which means 0), result is addend
 				memory[memoryIndex] = addend;
 			}
@@ -2125,7 +2129,7 @@ public class Hyp86 {
 	private String sourceOfADDorSUBOperation(String first, String second) {
 		String toBeReturned = "";
 		if (second.contains("[")) {
-			System.out.println("#ERROR 50: Reg,Mem Required  " + " at line: " + MP / 6);
+			System.out.println("#ERROR 50: Reg,Mem Required  " + " at line: " +  (MP / 6+1));
 			System.exit(0);
 		} else {
 			if (first.charAt(0) == 'b') {// constant must be byte sized and regs too
@@ -2133,7 +2137,7 @@ public class Hyp86 {
 			} else if (first.charAt(0) == 'w') { // regs must be two byte sized
 				toBeReturned = addsub_mem2B_xx(second);
 			} else {
-				System.out.println("there must be 'b' or 'w' in front of square brackets" + " at line: " + MP / 6);
+				System.out.println("there must be 'b' or 'w' in front of square brackets" + " at line: " +  (MP / 6+1));
 				System.exit(0);
 			}
 		}
@@ -2153,7 +2157,7 @@ public class Hyp86 {
 			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int sum = Integer.parseInt((ax[0] + "" + ax[1] + "" + ax[2] + "" + ax[3]), 16)
 					+ Integer.parseInt(addend, 16);
-			String sumStringForm = NumberToFourByteHexa("" + sum);
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 
 			// for AF
 			while (addend.length() < 4) {
@@ -2169,7 +2173,7 @@ public class Hyp86 {
 				if (sum > Integer.parseInt("ffff", 16)) {
 					CF = true;
 					sum -= Integer.parseInt("10000", 16);
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 			}
 			ax[0] = sumStringForm.charAt(0);
@@ -2180,7 +2184,7 @@ public class Hyp86 {
 			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int sum = Integer.parseInt((bx[0] + "" + bx[1] + "" + bx[2] + "" + bx[3]), 16)
 					+ Integer.parseInt(addend, 16);
-			String sumStringForm = NumberToFourByteHexa("" + sum);
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 
 			// for AF
 			while (addend.length() < 4) {
@@ -2198,7 +2202,7 @@ public class Hyp86 {
 
 					CF = true;
 					sum -= Integer.parseInt("10000", 16);
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 			}
 			bx[0] = sumStringForm.charAt(0);
@@ -2209,7 +2213,7 @@ public class Hyp86 {
 			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int sum = Integer.parseInt((cx[0] + "" + cx[1] + "" + cx[2] + "" + cx[3]), 16)
 					+ Integer.parseInt(addend, 16);
-			String sumStringForm = NumberToFourByteHexa("" + sum);
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 			// for AF
 			while (addend.length() < 4) {
 				addend = "0" + addend;
@@ -2225,7 +2229,7 @@ public class Hyp86 {
 				if (sum > Integer.parseInt("ffff", 16)) {
 					CF = true;
 					sum -= Integer.parseInt("10000", 16);
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 
 			}
@@ -2237,7 +2241,7 @@ public class Hyp86 {
 			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int sum = Integer.parseInt((dx[0] + "" + dx[1] + "" + dx[2] + "" + dx[3]), 16)
 					+ Integer.parseInt(addend, 16);
-			String sumStringForm = NumberToFourByteHexa("" + sum);
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 			// for AF
 			while (addend.length() < 4) {
 				addend = "0" + addend;
@@ -2253,7 +2257,7 @@ public class Hyp86 {
 				if (sum > Integer.parseInt("ffff", 16)) {
 					CF = true;
 					sum -= Integer.parseInt("10000", 16);
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 
 			}
@@ -2264,7 +2268,7 @@ public class Hyp86 {
 		} else if (first.equalsIgnoreCase("al")) {
 			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
 			int sum = Integer.parseInt(("" + ax[2] + "" + ax[3]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum);// sum is now hexa
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 			while (addend.length() < 2) {
 				addend = "0" + addend;
 			}
@@ -2278,7 +2282,7 @@ public class Hyp86 {
 				if (sum > Integer.parseInt("ff", 16)) {
 					CF = true;
 					sum -= 256;
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 			}
 			ax[2] = sumStringForm.charAt(sumStringForm.length() - 2);
@@ -2286,7 +2290,7 @@ public class Hyp86 {
 		} else if (first.equalsIgnoreCase("ah")) {
 			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
 			int sum = Integer.parseInt(("" + ax[0] + "" + ax[1]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum);// sum is now hexa
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 			while (addend.length() < 2) {
 				addend = "0" + addend;
 			}
@@ -2300,7 +2304,7 @@ public class Hyp86 {
 				if (sum > Integer.parseInt("ff", 16)) {
 					CF = true;
 					sum -= 256;
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 			}
 			ax[0] = sumStringForm.charAt(sumStringForm.length() - 2);
@@ -2308,7 +2312,7 @@ public class Hyp86 {
 		} else if (first.equalsIgnoreCase("bl")) {
 			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
 			int sum = Integer.parseInt(("" + bx[2] + "" + bx[3]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum);// sum is now hexa
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 			while (addend.length() < 2) {
 				addend = "0" + addend;
 			}
@@ -2322,7 +2326,7 @@ public class Hyp86 {
 				if (sum > Integer.parseInt("ff", 16)) {
 					CF = true;
 					sum -= 256;
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 			}
 			bx[2] = sumStringForm.charAt(sumStringForm.length() - 2);
@@ -2330,7 +2334,7 @@ public class Hyp86 {
 		} else if (first.equalsIgnoreCase("bh")) {
 			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
 			int sum = Integer.parseInt(("" + bx[0] + "" + bx[1]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum);// sum is now hexa
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 			while (addend.length() < 2) {
 				addend = "0" + addend;
 			}
@@ -2344,7 +2348,7 @@ public class Hyp86 {
 				if (sum > Integer.parseInt("ff", 16)) {
 					CF = true;
 					sum -= 256;
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 			}
 			bx[0] = sumStringForm.charAt(sumStringForm.length() - 2);
@@ -2352,7 +2356,7 @@ public class Hyp86 {
 		} else if (first.equalsIgnoreCase("cl")) {
 			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
 			int sum = Integer.parseInt(("" + cx[2] + "" + cx[3]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum);// sum is now hexa
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 			while (addend.length() < 2) {
 				addend = "0" + addend;
 			}
@@ -2366,7 +2370,7 @@ public class Hyp86 {
 				if (sum > Integer.parseInt("ff", 16)) {
 					CF = true;
 					sum -= 256;
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 			}
 			cx[2] = sumStringForm.charAt(sumStringForm.length() - 2);
@@ -2375,7 +2379,7 @@ public class Hyp86 {
 			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
 
 			int sum = Integer.parseInt(("" + cx[0] + "" + cx[1]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum);// sum is now hexa
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 			while (addend.length() < 2) {
 				addend = "0" + addend;
 			}
@@ -2389,7 +2393,7 @@ public class Hyp86 {
 				if (sum > Integer.parseInt("ff", 16)) {
 					CF = true;
 					sum -= 256;
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 			}
 			cx[0] = sumStringForm.charAt(sumStringForm.length() - 2);
@@ -2398,7 +2402,7 @@ public class Hyp86 {
 			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
 
 			int sum = Integer.parseInt(("" + dx[2] + "" + dx[3]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum);// sum is now hexa
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 			while (addend.length() < 2) {
 				addend = "0" + addend;
 			}
@@ -2412,7 +2416,7 @@ public class Hyp86 {
 				if (sum > Integer.parseInt("ff", 16)) {
 					CF = true;
 					sum -= 256;
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 			}
 			dx[2] = sumStringForm.charAt(sumStringForm.length() - 2);
@@ -2420,7 +2424,7 @@ public class Hyp86 {
 		} else if (first.equalsIgnoreCase("dh")) {
 			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
 			int sum = Integer.parseInt(("" + dx[0] + "" + dx[1]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum);// sum is now hexa
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 			while (addend.length() < 2) {
 				addend = "0" + addend;
 			}
@@ -2435,7 +2439,7 @@ public class Hyp86 {
 
 					CF = true;
 					sum -= 256;
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 			}
 			dx[0] = sumStringForm.charAt(sumStringForm.length() - 2);
@@ -2444,7 +2448,7 @@ public class Hyp86 {
 			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int sum = Integer.parseInt((di[0] + "" + di[1] + "" + di[2] + "" + di[3]), 16)
 					+ Integer.parseInt(addend, 16);
-			String sumStringForm = NumberToFourByteHexa("" + sum);
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 			while (addend.length() < 4) {
 				addend = "0" + addend;
 			}
@@ -2459,7 +2463,7 @@ public class Hyp86 {
 				if (sum > Integer.parseInt("ffff", 16)) {
 					CF = true;
 					sum -= Integer.parseInt("10000", 16);
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 
 			}
@@ -2471,7 +2475,7 @@ public class Hyp86 {
 			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int sum = Integer.parseInt((si[0] + "" + si[1] + "" + si[2] + "" + si[3]), 16)
 					+ Integer.parseInt(addend, 16);
-			String sumStringForm = NumberToFourByteHexa("" + sum);
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 			while (addend.length() < 4) {
 				addend = "0" + addend;
 			}
@@ -2486,7 +2490,7 @@ public class Hyp86 {
 				if (sum > Integer.parseInt("ffff", 16)) {
 					CF = true;
 					sum -= Integer.parseInt("10000", 16);
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 			}
 			si[0] = sumStringForm.charAt(0);
@@ -2498,7 +2502,7 @@ public class Hyp86 {
 			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int sum = Integer.parseInt((bp[0] + "" + bp[1] + "" + bp[2] + "" + bp[3]), 16)
 					+ Integer.parseInt(addend, 16);
-			String sumStringForm = NumberToFourByteHexa("" + sum);
+			String sumStringForm = NumberToFourByteHexa("" + sum,false);
 
 			// for AF
 			while (addend.length() < 4) {
@@ -2515,7 +2519,7 @@ public class Hyp86 {
 				if (sum > Integer.parseInt("ffff", 16)) {
 					CF = true;
 					sum -= Integer.parseInt("10000", 16);
-					sumStringForm = NumberToFourByteHexa("" + sum);
+					sumStringForm = NumberToFourByteHexa("" + sum,false);
 				}
 
 			}
@@ -2539,7 +2543,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int difference = Integer.parseInt((ax[0] + "" + ax[1] + "" + ax[2] + "" + ax[3]), 16)
 					- Integer.parseInt(subtrahend, 16);
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 
 			while (subtrahend.length() < 4) {
 				subtrahend = "0" + subtrahend;
@@ -2555,7 +2559,7 @@ public class Hyp86 {
 					SF = true;
 					CF = true;
 					difference += Integer.parseInt("10000", 16);
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			ax[0] = differenceStringForm.charAt(0);
@@ -2566,7 +2570,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int difference = Integer.parseInt((bx[0] + "" + bx[1] + "" + bx[2] + "" + bx[3]), 16)
 					- Integer.parseInt(subtrahend, 16);
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 
 			while (subtrahend.length() < 4) {
 				subtrahend = "0" + subtrahend;
@@ -2582,7 +2586,7 @@ public class Hyp86 {
 					SF = true;
 					CF = true;
 					difference += Integer.parseInt("10000", 16);
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			bx[0] = differenceStringForm.charAt(0);
@@ -2593,7 +2597,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int difference = Integer.parseInt((cx[0] + "" + cx[1] + "" + cx[2] + "" + cx[3]), 16)
 					- Integer.parseInt(subtrahend, 16);
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 
 			while (subtrahend.length() < 4) {
 				subtrahend = "0" + subtrahend;
@@ -2609,7 +2613,7 @@ public class Hyp86 {
 					SF = true;
 					CF = true;
 					difference += Integer.parseInt("10000", 16);
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			cx[0] = differenceStringForm.charAt(0);
@@ -2620,7 +2624,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int difference = Integer.parseInt((dx[0] + "" + dx[1] + "" + dx[2] + "" + dx[3]), 16)
 					- Integer.parseInt(subtrahend, 16);
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 
 			while (subtrahend.length() < 4) {
 				subtrahend = "0" + subtrahend;
@@ -2636,7 +2640,7 @@ public class Hyp86 {
 					SF = true;
 					CF = true;
 					difference += Integer.parseInt("10000", 16);
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			dx[0] = differenceStringForm.charAt(0);
@@ -2647,7 +2651,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int difference = Integer.parseInt((bp[0] + "" + bp[1] + "" + bp[2] + "" + bp[3]), 16)
 					- Integer.parseInt(subtrahend, 16);
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 
 			while (subtrahend.length() < 4) {
 				subtrahend = "0" + subtrahend;
@@ -2663,7 +2667,7 @@ public class Hyp86 {
 					SF = true;
 					CF = true;
 					difference += Integer.parseInt("10000", 16);
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			bp[0] = differenceStringForm.charAt(0);
@@ -2674,7 +2678,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int difference = Integer.parseInt((di[0] + "" + di[1] + "" + di[2] + "" + di[3]), 16)
 					- Integer.parseInt(subtrahend, 16);
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 
 			while (subtrahend.length() < 4) {
 				subtrahend = "0" + subtrahend;
@@ -2690,7 +2694,7 @@ public class Hyp86 {
 					SF = true;
 					CF = true;
 					difference += Integer.parseInt("10000", 16);
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			di[0] = differenceStringForm.charAt(0);
@@ -2701,7 +2705,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int difference = Integer.parseInt((si[0] + "" + si[1] + "" + si[2] + "" + si[3]), 16)
 					- Integer.parseInt(subtrahend, 16);
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 
 			while (subtrahend.length() < 4) {
 				subtrahend = "0" + subtrahend;
@@ -2717,7 +2721,7 @@ public class Hyp86 {
 					SF = true;
 					CF = true;
 					difference += Integer.parseInt("10000", 16);
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			si[0] = differenceStringForm.charAt(0);
@@ -2728,7 +2732,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
 			int difference = Integer.parseInt(("" + ax[2] + "" + ax[3]), 16) - Integer.parseInt(subtrahend, 16);// decimal
 																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 			while (subtrahend.length() < 2) {
 				subtrahend = "0" + subtrahend;
 			}
@@ -2743,7 +2747,7 @@ public class Hyp86 {
 				if (difference < 0) {
 					CF = true;
 					difference += 256;
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			ax[2] = differenceStringForm.charAt(differenceStringForm.length() - 2);
@@ -2752,7 +2756,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
 			int difference = Integer.parseInt(("" + ax[0] + "" + ax[1]), 16) - Integer.parseInt(subtrahend, 16);// decimal
 																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 			while (subtrahend.length() < 2) {
 				subtrahend = "0" + subtrahend;
 			}
@@ -2767,7 +2771,7 @@ public class Hyp86 {
 				if (difference < 0) {
 					CF = true;
 					difference += 256;
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			ax[0] = differenceStringForm.charAt(differenceStringForm.length() - 2);
@@ -2776,7 +2780,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
 			int difference = Integer.parseInt(("" + bx[2] + "" + bx[3]), 16) - Integer.parseInt(subtrahend, 16);// decimal
 																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 			while (subtrahend.length() < 2) {
 				subtrahend = "0" + subtrahend;
 			}
@@ -2791,7 +2795,7 @@ public class Hyp86 {
 				if (difference < 0) {
 					CF = true;
 					difference += 256;
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			bx[2] = differenceStringForm.charAt(differenceStringForm.length() - 2);
@@ -2800,7 +2804,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
 			int difference = Integer.parseInt(("" + bx[0] + "" + bx[1]), 16) - Integer.parseInt(subtrahend, 16);// decimal
 																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 			while (subtrahend.length() < 2) {
 				subtrahend = "0" + subtrahend;
 			}
@@ -2815,7 +2819,7 @@ public class Hyp86 {
 				if (difference < 0) {
 					CF = true;
 					difference += 256;
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			bx[0] = differenceStringForm.charAt(differenceStringForm.length() - 2);
@@ -2824,7 +2828,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
 			int difference = Integer.parseInt(("" + cx[2] + "" + cx[3]), 16) - Integer.parseInt(subtrahend, 16);// decimal
 																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 			while (subtrahend.length() < 2) {
 				subtrahend = "0" + subtrahend;
 			}
@@ -2839,7 +2843,7 @@ public class Hyp86 {
 				if (difference < 0) {
 					CF = true;
 					difference += 256;
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			cx[2] = differenceStringForm.charAt(differenceStringForm.length() - 2);
@@ -2848,7 +2852,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
 			int difference = Integer.parseInt(("" + cx[0] + "" + cx[1]), 16) - Integer.parseInt(subtrahend, 16);// decimal
 																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 			while (subtrahend.length() < 2) {
 				subtrahend = "0" + subtrahend;
 			}
@@ -2863,7 +2867,7 @@ public class Hyp86 {
 				if (difference < 0) {
 					CF = true;
 					difference += 256;
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			cx[0] = differenceStringForm.charAt(differenceStringForm.length() - 2);
@@ -2872,7 +2876,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
 			int difference = Integer.parseInt(("" + dx[2] + "" + dx[3]), 16) - Integer.parseInt(subtrahend, 16);// decimal
 																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 			while (subtrahend.length() < 2) {
 				subtrahend = "0" + subtrahend;
 			}
@@ -2887,7 +2891,7 @@ public class Hyp86 {
 				if (difference < 0) {
 					CF = true;
 					difference += 256;
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			dx[2] = differenceStringForm.charAt(differenceStringForm.length() - 2);
@@ -2896,7 +2900,7 @@ public class Hyp86 {
 			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
 			int difference = Integer.parseInt(("" + dx[0] + "" + dx[1]), 16) - Integer.parseInt(subtrahend, 16);// decimal
 																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference);
+			String differenceStringForm = NumberToFourByteHexa("" + difference,false);
 			while (subtrahend.length() < 2) {
 				subtrahend = "0" + subtrahend;
 			}
@@ -2911,7 +2915,7 @@ public class Hyp86 {
 				if (difference < 0) {
 					CF = true;
 					difference += 256;
-					differenceStringForm = NumberToFourByteHexa("" + difference);
+					differenceStringForm = NumberToFourByteHexa("" + difference,false);
 				}
 			}
 			dx[0] = differenceStringForm.charAt(differenceStringForm.length() - 2);
@@ -2941,7 +2945,7 @@ public class Hyp86 {
 		}
 		int difference = 0;
 		if (memoryIndex < numberOfInstructions * 6 || memoryIndex >= 64 * 1024) {
-			System.out.println("Bad Memory Address at line - " + MP / 6);
+			System.out.println("Bad Memory Address at line - " + (MP / 6 + 1));
 			System.exit(0);
 		}
 		if (wordOrByte) {// for inputs like w[xx]
@@ -2973,7 +2977,7 @@ public class Hyp86 {
 				SF = true;
 				AF = true;
 			}
-			String diff = NumberToFourByteHexa(difference + "");
+			String diff = NumberToFourByteHexa(difference + "", false);
 			memory[memoryIndex] = diff.substring(2);
 			memory[memoryIndex + 1] = diff.substring(0, 2);
 		} else {// for inputs like b[xx]
@@ -3001,7 +3005,7 @@ public class Hyp86 {
 				SF = true;
 				AF = true;
 			}
-			memory[memoryIndex] = NumberToFourByteHexa("" + difference).substring(2);
+			memory[memoryIndex] = NumberToFourByteHexa("" + difference, false).substring(2);
 		}
 	}
 
@@ -3024,10 +3028,10 @@ public class Hyp86 {
 		} else if (input.equalsIgnoreCase("di")) {
 			memoryIndex = Integer.parseInt("" + di[0] + di[1] + di[2] + di[3], 16);
 		} else if (isRegOneByte(input) || isRegTwoByte(input)) {
-			System.out.println("#ERROR 39: Bad Index Register" + " at line: " + MP / 6);
+			System.out.println("#ERROR 39: Bad Index Register" + " at line: " + (MP / 6 + 1));
 			System.exit(0);
 		} else {
-			memoryIndex = Integer.parseInt(NumberToFourByteHexa(input), 16);
+			memoryIndex = Integer.parseInt(NumberToFourByteHexa(input, true), 16);
 		}
 		return memoryIndex;
 	}
@@ -3038,12 +3042,13 @@ public class Hyp86 {
 	 * @param input as any type of representation
 	 * @return returns 4-digit-hexadecimal number as a String
 	 */
-	public static String NumberToFourByteHexa(String s) {
+	public static String NumberToFourByteHexa(String s, boolean isMemoryIndex) {
+
 		if (s.charAt(0) == 'a' || s.charAt(0) == 'b' || s.charAt(0) == 'c' || s.charAt(0) == 'd' || s.charAt(0) == 'e'
-				|| s.charAt(0) == 'f') {
-			System.out.println("Undefined symbol:" + s + "  at line: " + MP / 6);
+				|| s.charAt(0) == 'f') {// hexa numbers cant start with a letter
+			System.out.println("Undefined symbol:" + s + "  at line: " + (MP / 6 + 1));
 			System.exit(0);
-		} else if (s.charAt(0) == '0') {// hexa
+		} else if (s.charAt(0) == '0') {// those which starts with 0 are hexa definitely
 			if (s.charAt(s.length() - 1) == 'h') {
 				s = s.substring(0, s.length() - 1);
 			}
@@ -3052,13 +3057,14 @@ public class Hyp86 {
 			s = s.substring(0, s.length() - 1);
 			s = Integer.toHexString(Integer.valueOf(s));
 		} else if (s.charAt(s.length() - 1) == 'h') {// hexa
-
 			s = s.substring(0, s.length() - 1);
 		} else if (!(s.contains("a") || s.contains("b") || s.contains("c") || s.contains("d") || s.contains("e")
 				|| s.contains("f"))) {// number
 			s = Integer.toHexString(Integer.valueOf(s));
 		}
-
+		if (isMemoryIndex && s.length() > 4) {
+			System.out.println("ERROR: Address is not valid. At line - " + (MP / 6 + 1));
+		}
 		if (s.length() > 4) {
 			return s.substring(s.length() - 4, s.length());
 		} else {
@@ -3118,7 +3124,7 @@ public class Hyp86 {
 		if (second.contains("[") && second.contains("]")) {
 
 			if (second.charAt(0) == 'b') { // 1 byte
-				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + MP / 6);
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + (MP / 6+1));
 				System.exit(0);
 
 			} else { // 2 byte
@@ -3146,18 +3152,18 @@ public class Hyp86 {
 							addend += bx[i];
 						}
 					} else {
-						System.out.println("#ERROR 39: Bad Index Register " + " at line: " + MP / 6);
+						System.out.println("#ERROR 39: Bad Index Register " + " at line: " + (MP / 6+1));
 						System.exit(0);
 					}
 				} else {// number
-					addend += NumberToFourByteHexa(second);
+					addend += NumberToFourByteHexa(second, true);
 				}
 
 			}
 			// addend is a four length hexadecimal number which contains memory address
 			if (Integer.parseInt(addend, 16) >= memory.length
 					|| Integer.parseInt(addend, 16) < numberOfInstructions * 6) {
-				System.out.println("Address is not valid" + " at line: " + MP / 6);
+				System.out.println("Address is not valid" + " at line: " + (MP / 6+1));
 				System.exit(0);
 
 			} else if (memory[Integer.parseInt(addend, 16)] == null) {
@@ -3196,11 +3202,11 @@ public class Hyp86 {
 					addend += di[3 - i];
 				}
 			} else {// error
-				System.out.println("#ERROR 13: Error: Byte/Word Combination Not Allowed" + " at line: " + MP / 6);
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + (MP / 6+1));
 				System.exit(0);
 			}
 		} else { // number or variable
-			second = NumberToFourByteHexa(second); // number
+			second = NumberToFourByteHexa(second, false); // number
 			addend += second;
 		}
 		return addend;
@@ -3222,7 +3228,7 @@ public class Hyp86 {
 		if (second.contains("[") && second.contains("]")) {// if source is a memory address
 
 			if (second.charAt(0) == 'w') { // 2 byte
-				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + MP / 6);
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + (MP / 6+1));
 				System.exit(0);
 
 			} else { // 1 byte
@@ -3250,17 +3256,17 @@ public class Hyp86 {
 							addend += bx[i];
 						}
 					} else {// no other register is allowed within square brackets
-						System.out.println("#ERROR 39: Bad Index Register " + " at line: " + MP / 6);
+						System.out.println("#ERROR 39: Bad Index Register " + " at line: " + (MP / 6+1));
 						System.exit(0);
 					}
 				} else {// number
-					addend = NumberToFourByteHexa(second); // number within square brackets
+					addend = NumberToFourByteHexa(second, true); // number within square brackets
 				}
 			}
 			// now addend is a four length hexadecimal number which contains memory address
 			if (Integer.parseInt(addend, 16) >= memory.length
 					|| Integer.parseInt(addend, 16) < numberOfInstructions * 6) {// to check address is valid
-				System.out.println("Address is not valid" + " at line: " + MP / 6);
+				System.out.println("Address is not valid" + " at line: " +(MP / 6+1));
 				System.exit(0);
 
 			} else if (memory[Integer.parseInt(addend, 16)] == null) {// if that memory address was not initialized
@@ -3289,14 +3295,14 @@ public class Hyp86 {
 			} else if (second.equalsIgnoreCase("dh")) {
 				addend += "" + dx[0] + "" + dx[1];
 			} else {// error
-				System.out.println("#ERROR 13: Error: Byte/Word Combination Not Allowed" + " at line: " + MP / 6);
+				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + (MP / 6+1));
 				System.exit(0);
 			}
 			return addend;
 		} else { // source is number
-			second = NumberToFourByteHexa(second);
+			second = NumberToFourByteHexa(second, false);
 			if (Integer.parseInt(second, 16) > 255) {// since destination is one byte
-				System.out.println("#ERROR 30: Byte-Sized Constant Required" + " at line: " + MP / 6);
+				System.out.println("#ERROR 30: Byte-Sized Constant Required" + " at line: " + (MP / 6+1));
 				System.exit(0);
 			}
 			return second;
