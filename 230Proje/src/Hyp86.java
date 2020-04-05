@@ -3,10 +3,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Scanner;
 //TODO
-//memory içindeki sayıyı çeviren bi metod lazım
-//MP/6 lar MP/6 +1 olcak
+// MP/6 +1 lere fonskiyon yazılcak
 //SP 2. operand olabilir mov add gibilerde onu da implemete edellim
-//variable önünde w olduğu veya b olduğu sürece typeı hiç önemli değil.
 
 public class Hyp86 {
 
@@ -60,10 +58,6 @@ public class Hyp86 {
 
 		}
 		fillInstructions();
-		// TODO
-		// bunu yapmıycaktık
-		// fileAsString = fileAsString.toLowerCase();
-
 		Scanner scanner = new Scanner(fileAsString);
 		String line;
 		Scanner token;
@@ -88,23 +82,22 @@ public class Hyp86 {
 					isChar1 = line.substring(temo + 1, line.length()).trim();// second operand
 
 					if (isChar1.contains("'")) {// when var.data is 'x'
-						int a = isChar1.charAt(isChar1.indexOf("\'") + 1) + 1 - 1;
-						isChar1 = NumberToFourByteHexa("" + a, false);
+						int a = isChar1.charAt(isChar1.indexOf("'") + 1) + 1 - 1;
+						isChar1 = NumberToFourByteHexa("" + a, false).substring(2) + "h";
 					} else if (isChar1.contains("\"")) {// when var.data is "x"
 						int a = isChar1.charAt(isChar1.indexOf("\"") + 1) + 1 - 1;
-						isChar1 = NumberToFourByteHexa("" + a, false);
+						isChar1 = NumberToFourByteHexa("" + a, false).substring(2) + "h";
 					}
 					memory[indexCursor + 2] = isChar1.toLowerCase();
 				} else {// when there is only one operand
 					isChar1 = line.trim();
 					if (isChar1.contains("'")) {// when var.data is 'x'
 						int a = isChar1.charAt(isChar1.indexOf("'") + 1) + 1 - 1;
-						isChar1 = NumberToFourByteHexa("" + a, false);
+						isChar1 = NumberToFourByteHexa("" + a, false).substring(2) + "h";
 					} else if (isChar1.contains("\"")) {// when var.data is "x"
 						int a = isChar1.charAt(isChar1.indexOf("\"") + 1) + 1 - 1;
-						isChar1 = NumberToFourByteHexa("" + a, false);
+						isChar1 = NumberToFourByteHexa("" + a, false).substring(2) + "h";
 					}
-
 					memory[indexCursor + 1] = isChar1;
 				}
 				if (first.equals("int") && token.next().equals("20h")) {
@@ -194,7 +187,6 @@ public class Hyp86 {
 				if (second == null) {
 					second = memory[MP + 2];
 				}
-
 				mov(first, second);
 
 			} else if (memory[MP].equals("add")) {
@@ -284,7 +276,7 @@ public class Hyp86 {
 					second = memory[MP + 2];
 				}
 
-				shr(first, second,false);
+				shr(first, second, false);
 			} else if (memory[MP].equals("rcl")) {
 				first = execute_helper_isVar(memory[MP + 1]);
 				second = execute_helper_isVar(memory[MP + 2]);
@@ -297,6 +289,7 @@ public class Hyp86 {
 
 				shl(first, second, true);
 			} else if (memory[MP].equals("nop")) {
+
 			} else if (memory[MP].equals("rcr")) {
 				first = execute_helper_isVar(memory[MP + 1]);
 				second = execute_helper_isVar(memory[MP + 2]);
@@ -307,7 +300,7 @@ public class Hyp86 {
 					second = memory[MP + 2];
 				}
 
-				 shr(first , second,true);
+				shr(first, second, true);
 			} else if (memory[MP].equals("mul")) {
 				first = execute_helper_isVar(memory[MP + 1]);
 				if (first == null) {
@@ -342,7 +335,7 @@ public class Hyp86 {
 					first = memory[MP + 1];
 				}
 
-				// not(first);
+				not(first);
 			} else if (memory[MP].equals("inc")) {
 				first = execute_helper_isVar(memory[MP + 1]);
 				if (first == null) {
@@ -475,11 +468,11 @@ public class Hyp86 {
 		int numero;
 		if (number.equalsIgnoreCase("cl")) {
 			numero = Integer.parseInt("" + cx[2] + cx[3], 16);
-		} else {
+		} else {// immediate number
 			numero = Integer.parseInt(NumberToFourByteHexa(number, false), 16);
 		}
 		if (numero > 31) {
-			System.out.println("not a good number" + "at line: " + (MP / 6 + 1));
+			System.out.println("#ERROR 29: Bad Rotate/Shift Operand" + "at line: " + (MP / 6 + 1));
 			System.exit(40);
 		}
 
@@ -492,29 +485,29 @@ public class Hyp86 {
 				for (int i = 0; i < numero; i++) {
 					regg = memory[index + 1] + memory[index];
 					otherMult = Integer.parseInt(regg, 16);
+					if (isRotate && CF)
+						mov("w[" + index + "]", "" + (otherMult * 2 + 1) + "d");
+					else
+						mov("w[" + index + "]", "" + (otherMult * 2) + "d");
 					if (Integer.parseInt("" + regg.charAt(0), 16) <= 7)
 						CF = false;
 					else
 						CF = true;
 
-					if (isRotate && CF)
-						mov("w[" + index + "]", "" + (otherMult * 2 + 1) + "d");
-					else
-						mov("w[" + index + "]", "" + (otherMult * 2) + "d");
 				}
 			} else {
 				for (int i = 0; i < numero; i++) {
 					regg = memory[index];
 					otherMult = Integer.parseInt(regg, 16);
-					if (Integer.parseInt("" + regg.charAt(0), 16) <= 7)
-						CF = false;
-					else
-						CF = true;
-
 					if (isRotate && CF)
 						mov("b[" + index + "]", "" + (otherMult * 2 + 1) + "d");
 					else
 						mov("b[" + index + "]", "" + (otherMult * 2) + "d");
+
+					if (Integer.parseInt("" + regg.charAt(0), 16) <= 7)
+						CF = false;
+					else
+						CF = true;
 
 				}
 			}
@@ -524,15 +517,15 @@ public class Hyp86 {
 			for (int i = 0; i < numero; i++) {
 				regg = source_when_first_operand_is_twoByteReg(first);
 				otherMult = Integer.parseInt(regg, 16);
-				if (Integer.parseInt("" + regg.charAt(0), 16) <= 7)
-					CF = false;
-				else
-					CF = true;
-
 				if (isRotate && CF)
 					mov(first, "" + (otherMult * 2 + 1) + "d");
 				else
 					mov(first, "" + (otherMult * 2) + "d");
+
+				if (Integer.parseInt("" + regg.charAt(0), 16) <= 7)
+					CF = false;
+				else
+					CF = true;
 
 			}
 
@@ -541,15 +534,25 @@ public class Hyp86 {
 			for (int i = 0; i < numero; i++) {
 				regg = source_when_first_operand_is_oneByteReg(first);
 				otherMult = Integer.parseInt(regg, 16);
+
+				if (isRotate && CF) {
+					if (otherMult * 2 + 1 > 255) {
+						mov(first, "" + (otherMult * 2 + 1 - 256) + "d");
+					} else {
+						mov(first, "" + (otherMult * 2 + 1) + "d");
+					}
+
+				} else {
+					if (otherMult * 2 > 255) {
+						mov(first, "" + (otherMult * 2 - 256) + "d");
+					} else {
+						mov(first, "" + (otherMult * 2) + "d");
+					}
+				}
 				if (Integer.parseInt("" + regg.charAt(0), 16) <= 7)
 					CF = false;
 				else
 					CF = true;
-
-				if (isRotate && CF)
-					mov(first, "" + (otherMult * 2 + 1) + "d");
-				else
-					mov(first, "" + (otherMult * 2) + "d");
 			}
 
 		} else { // not a reg or memory
@@ -567,7 +570,7 @@ public class Hyp86 {
 			numero = Integer.parseInt(NumberToFourByteHexa(number, false), 16);
 		}
 		if (numero > 31) {
-			System.out.println("not a good number" + "at line: " + (MP / 6 + 1));
+			System.out.println("#ERROR 29: Bad Rotate/Shift Operand" + "at line: " + (MP / 6 + 1));
 			System.exit(40);
 		}
 
@@ -579,28 +582,31 @@ public class Hyp86 {
 				for (int i = 0; i < numero; i++) {
 					regg = memory[index + 1] + memory[index];
 					otherMult = Integer.parseInt(regg, 16);
+					if (isRotate && CF)
+						// TODO 32768 may not be true
+						mov("w[" + index + "]", "" + (otherMult / 2 + 32768) + "d");
+					else
+						mov("w[" + index + "]", "" + (otherMult / 2) + "d");
+
 					if (Integer.parseInt("" + regg.charAt(3), 16) % 2 == 0)
 						CF = false;
 					else
 						CF = true;
-					if (isRotate && CF) // TODO 32768 may not be true
-						mov("w[" + index + "]", "" + (otherMult / 2 + 32768) + "d");
-					else
-						mov("w[" + index + "]", "" + (otherMult / 2) + "d");
 
 				}
 			} else {
 				for (int i = 0; i < numero; i++) {
 					regg = memory[index];
 					otherMult = Integer.parseInt(regg, 16);
-					if (Integer.parseInt("" + regg.charAt(1), 16) % 2 == 0)
-						CF = false;
-					else
-						CF = true;
 					if (isRotate && CF)// TODO
 						mov("b[" + index + "]", "" + (otherMult / 2 + 128) + "d");
 					else
 						mov("b[" + index + "]", "" + (otherMult / 2) + "d");
+					if (Integer.parseInt("" + regg.charAt(1), 16) % 2 == 0)
+						CF = false;
+					else
+						CF = true;
+
 				}
 			}
 
@@ -609,14 +615,15 @@ public class Hyp86 {
 			for (int i = 0; i < numero; i++) {
 				regg = source_when_first_operand_is_twoByteReg(first);
 				otherMult = Integer.parseInt(regg, 16);
-				if (Integer.parseInt("" + regg.charAt(3), 16) % 2 == 0)
-					CF = false;
-				else
-					CF = true;
 				if (isRotate && CF)
 					mov(first, "" + (otherMult / 2 + 32768) + "d");
 				else
 					mov(first, "" + (otherMult / 2) + "d");
+				if (Integer.parseInt("" + regg.charAt(3), 16) % 2 == 0)
+					CF = false;
+				else
+					CF = true;
+
 			}
 
 		} else if (isRegOneByte(first)) {// 8 bit register
@@ -624,14 +631,15 @@ public class Hyp86 {
 			for (int i = 0; i < numero; i++) {
 				regg = source_when_first_operand_is_oneByteReg(first);
 				otherMult = Integer.parseInt(regg, 16);
-				if (Integer.parseInt("" + regg.charAt(1), 16) % 2 == 0)
-					CF = false;
-				else
-					CF = true;
 				if (isRotate && CF)
 					mov(first, "" + (otherMult / 2 + 128) + "d");
 				else
 					mov(first, "" + (otherMult / 2) + "d");
+				if (Integer.parseInt("" + regg.charAt(1), 16) % 2 == 0)
+					CF = false;
+				else
+					CF = true;
+
 			}
 
 		} else { // not a reg or memory
@@ -687,7 +695,7 @@ public class Hyp86 {
 
 	}
 
-	private void cmp_mem_xx(String first, String second) {
+	private void cmp_mem_xx(String first, String second) { //
 		String source = "";
 
 		if (first.charAt(0) == 'b') {// first operand is kind of b[xx] so source must be one byte.
@@ -867,17 +875,17 @@ public class Hyp86 {
 					ax[i] = data.charAt(i + 2);
 				}
 			} else if (first.equalsIgnoreCase("bl")) {
-				String data = helperXor("" + ax[2] + ax[3], source);
+				String data = helperXor("" + bx[2] + bx[3], source);
 				for (int i = 0; i <= 1; i++) {
-					cx[i + 2] = data.charAt(i + 2);
+					bx[i + 2] = data.charAt(i + 2);
 				}
 			} else if (first.equalsIgnoreCase("bh")) {
 				String data = helperXor("" + bx[0] + bx[1], source);
 				for (int i = 0; i <= 1; i++) {
-					dx[i] = data.charAt(i + 2);
+					bx[i] = data.charAt(i + 2);
 				}
 			} else if (first.equalsIgnoreCase("cl")) {
-				String data = helperXor("" + ax[2] + ax[3], source);
+				String data = helperXor("" + cx[2] + cx[3], source);
 				for (int i = 0; i <= 1; i++) {
 					cx[i + 2] = data.charAt(i + 2);
 				}
@@ -906,8 +914,6 @@ public class Hyp86 {
 
 	private String helperXor(String first, String second) {
 		int a = Integer.parseInt(first, 16) ^ Integer.parseInt(second, 16);
-		// TODO
-		// it changes SF but how we should implemnt that?????
 		if (a == 0)
 			ZF = true;
 		return NumberToFourByteHexa("" + a, false);
@@ -917,13 +923,12 @@ public class Hyp86 {
 		CF = false;
 		OF = false;
 
-		if (first.contains("[") && first.contains("]")) { // first is memory
+		if (first.contains("[") && first.contains("]")) {
+			// first is memory
 			String source = source_when_first_operand_is_memory(first, second);
 			if (first.charAt(0) == 'b') {
 				first = first.substring(1);// got rid of b
 				int memoryIndex = memoryIndexOfFirst(first);
-				// TODO
-				// substriing2 değişebilir
 				memory[memoryIndex] = helperOr(memory[memoryIndex], source).substring(2);
 			} else if (first.charAt(0) == 'w') {
 				first = first.substring(1);// got rid of w
@@ -986,7 +991,7 @@ public class Hyp86 {
 					ax[i] = data.charAt(i + 2);
 				}
 			} else if (first.equalsIgnoreCase("bl")) {
-				String data = helperOr("" + ax[2] + ax[3], source);
+				String data = helperOr("" + bx[2] + bx[3], source);
 				for (int i = 0; i <= 1; i++) {
 					cx[i + 2] = data.charAt(i + 2);
 				}
@@ -996,7 +1001,7 @@ public class Hyp86 {
 					dx[i] = data.charAt(i + 2);
 				}
 			} else if (first.equalsIgnoreCase("cl")) {
-				String data = helperOr("" + ax[2] + ax[3], source);
+				String data = helperOr("" + cx[2] + cx[3], source);
 				for (int i = 0; i <= 1; i++) {
 					cx[i + 2] = data.charAt(i + 2);
 				}
@@ -1025,17 +1030,148 @@ public class Hyp86 {
 
 	private String helperOr(String first, String second) {
 		int a = Integer.parseInt(first, 16) | Integer.parseInt(second, 16);
-		// TODO
-		// it changes SF but how we should implemnt that?????
 		if (a == 0)
 			ZF = true;
 		return NumberToFourByteHexa("" + a, false);
 	}
 
-	public void not(String first) {
-		// 1reg
-		// 2reg
-		// mem
+	public void not(String operand) {
+		// TODO
+		// operand char veya variable olduğunda "ERROR 21: Bad Single Operand" hatası
+		// vermesi lazım normalde ama biz variable'ı memory adresi olarak verdiğimiz
+		// için hatayı
+		// tespit edemicez üstüne bir de varın değerini değiştiricez
+		if (operand.contains("[") && operand.contains("]")) {
+			if (operand.charAt(0) == 'w') {
+				int memoryIndex = memoryIndexOfFirst(operand.substring(1).trim());
+				String data = Integer
+						.toHexString(0xffff - Integer.parseInt(memory[memoryIndex + 1] + memory[memoryIndex] + "", 16));
+				while (data.length() < 4)
+					data = "0" + data;
+				memory[memoryIndex] = data.substring(2);
+				memory[memoryIndex + 1] = data.substring(0, 2);
+			} else if (operand.charAt(0) == 'b') {
+				int memoryIndex = memoryIndexOfFirst(operand.substring(1).trim());
+				String data = Integer.toHexString(0xff - Integer.parseInt(memory[memoryIndex] + "", 16));
+				while (data.length() < 2)
+					data = "0" + data;
+				memory[memoryIndex] = data;
+			} else {
+				System.out.println("There must be 'w' or 'b' in front of square brackets.");
+				System.exit(0);
+			}
+		} else if (isRegOneByte(operand)) {
+			if (operand.equalsIgnoreCase("ah")) {
+				String data = Integer.toHexString(0xff - Integer.parseInt("" + ax[0] + ax[1], 16));
+				while (data.length() < 2)
+					data = "0" + data;
+				ax[0] = data.charAt(0);
+				ax[1] = data.charAt(1);
+			} else if (operand.equalsIgnoreCase("bh")) {
+				String data = Integer.toHexString(0xff - Integer.parseInt("" + bx[0] + bx[1], 16));
+				while (data.length() < 2)
+					data = "0" + data;
+				bx[0] = data.charAt(0);
+				bx[1] = data.charAt(1);
+			} else if (operand.equalsIgnoreCase("ch")) {
+				String data = Integer.toHexString(0xff - Integer.parseInt("" + cx[0] + cx[1], 16));
+				while (data.length() < 2)
+					data = "0" + data;
+				cx[0] = data.charAt(0);
+				cx[1] = data.charAt(1);
+			} else if (operand.equalsIgnoreCase("dh")) {
+				String data = Integer.toHexString(0xff - Integer.parseInt("" + dx[0] + dx[1], 16));
+				while (data.length() < 2)
+					data = "0" + data;
+				dx[0] = data.charAt(0);
+				dx[1] = data.charAt(1);
+			} else if (operand.equalsIgnoreCase("al")) {
+				String data = Integer.toHexString(0xff - Integer.parseInt("" + ax[2] + ax[3], 16));
+				while (data.length() < 2)
+					data = "0" + data;
+				ax[2] = data.charAt(2);
+				ax[3] = data.charAt(3);
+			} else if (operand.equalsIgnoreCase("bl")) {
+				String data = Integer.toHexString(0xff - Integer.parseInt("" + bx[2] + bx[3], 16));
+				while (data.length() < 2)
+					data = "0" + data;
+				bx[2] = data.charAt(2);
+				bx[3] = data.charAt(3);
+			} else if (operand.equalsIgnoreCase("cl")) {
+				String data = Integer.toHexString(0xff - Integer.parseInt("" + cx[2] + cx[3], 16));
+				while (data.length() < 2)
+					data = "0" + data;
+				cx[2] = data.charAt(2);
+				cx[3] = data.charAt(3);
+			} else if (operand.equalsIgnoreCase("dl")) {
+				String data = Integer.toHexString(0xff - Integer.parseInt("" + dx[2] + dx[3], 16));
+				while (data.length() < 2)
+					data = "0" + data;
+				dx[2] = data.charAt(2);
+				dx[3] = data.charAt(3);
+			}
+		} else if (isRegTwoByte(operand)) {
+			if (operand.equalsIgnoreCase("ax")) {
+				String data = Integer.toHexString(0xffff - Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16));
+				while (data.length() < 4)
+					data = "0" + data;
+				ax[0] = data.charAt(0);
+				ax[1] = data.charAt(1);
+				ax[2] = data.charAt(2);
+				ax[3] = data.charAt(3);
+			} else if (operand.equalsIgnoreCase("bx")) {
+				String data = Integer.toHexString(0xffff - Integer.parseInt("" + bx[0] + bx[1] + bx[2] + bx[3], 16));
+				while (data.length() < 4)
+					data = "0" + data;
+				bx[0] = data.charAt(0);
+				bx[1] = data.charAt(1);
+				bx[2] = data.charAt(2);
+				bx[3] = data.charAt(3);
+			} else if (operand.equalsIgnoreCase("cx")) {
+				String data = Integer.toHexString(0xffff - Integer.parseInt("" + cx[0] + cx[1] + cx[2] + cx[3], 16));
+				while (data.length() < 4)
+					data = "0" + data;
+				cx[0] = data.charAt(0);
+				cx[1] = data.charAt(1);
+				cx[2] = data.charAt(2);
+				cx[3] = data.charAt(3);
+			} else if (operand.equalsIgnoreCase("dx")) {
+				String data = Integer.toHexString(0xffff - Integer.parseInt("" + dx[0] + dx[1] + dx[2] + dx[3], 16));
+				while (data.length() < 4)
+					data = "0" + data;
+				dx[0] = data.charAt(0);
+				dx[1] = data.charAt(1);
+				dx[2] = data.charAt(2);
+				dx[3] = data.charAt(3);
+			} else if (operand.equalsIgnoreCase("bp")) {
+				String data = Integer.toHexString(0xffff - Integer.parseInt("" + bp[0] + bp[1] + bp[2] + bp[3], 16));
+				while (data.length() < 4)
+					data = "0" + data;
+				bp[0] = data.charAt(0);
+				bp[1] = data.charAt(1);
+				bp[2] = data.charAt(2);
+				bp[3] = data.charAt(3);
+			} else if (operand.equalsIgnoreCase("si")) {
+				String data = Integer.toHexString(0xffff - Integer.parseInt("" + si[0] + si[1] + si[2] + si[3], 16));
+				while (data.length() < 4)
+					data = "0" + data;
+				si[0] = data.charAt(0);
+				si[1] = data.charAt(1);
+				si[2] = data.charAt(2);
+				si[3] = data.charAt(3);
+			} else if (operand.equalsIgnoreCase("di")) {
+				String data = Integer.toHexString(0xffff - Integer.parseInt("" + di[0] + di[1] + di[2] + di[3], 16));
+				while (data.length() < 4)
+					data = "0" + data;
+				di[0] = data.charAt(0);
+				di[1] = data.charAt(1);
+				di[2] = data.charAt(2);
+				di[3] = data.charAt(3);
+			}
+		} else {
+			System.out.println("ERROR 21: Bad Single Operand. at line - ");
+			System.exit(0);
+		}
 	}
 
 	public void and(String first, String second) {
@@ -1110,7 +1246,7 @@ public class Hyp86 {
 					ax[i] = data.charAt(i + 2);
 				}
 			} else if (first.equalsIgnoreCase("bl")) {
-				String data = helperAnd("" + ax[2] + ax[3], source);
+				String data = helperAnd("" + bx[2] + bx[3], source);
 				for (int i = 0; i <= 1; i++) {
 					cx[i + 2] = data.charAt(i + 2);
 				}
@@ -1120,7 +1256,7 @@ public class Hyp86 {
 					dx[i] = data.charAt(i + 2);
 				}
 			} else if (first.equalsIgnoreCase("cl")) {
-				String data = helperAnd("" + ax[2] + ax[3], source);
+				String data = helperAnd("" + cx[2] + cx[3], source);
 				for (int i = 0; i <= 1; i++) {
 					cx[i + 2] = data.charAt(i + 2);
 				}
@@ -1149,8 +1285,6 @@ public class Hyp86 {
 
 	private String helperAnd(String first, String second) {
 		int a = Integer.parseInt(first, 16) & Integer.parseInt(second, 16);
-		// TODO
-		// it changes SF but how we should implemnt that?????
 		if (a == 0)
 			ZF = true;
 		return NumberToFourByteHexa("" + a, false);
@@ -1192,6 +1326,8 @@ public class Hyp86 {
 		int dest = Integer.parseInt("" + ax[2] + ax[3], 16);
 		dest *= Integer.parseInt(source, 16);
 		String result = Integer.toHexString(dest);
+		while (result.length() < 4)
+			result = "0" + result;
 		for (int i = 0; i < 4; i++)
 			ax[i] = result.charAt(i);
 
@@ -1270,12 +1406,11 @@ public class Hyp86 {
 	/**
 	 * Calls helper SUB methods according to the contents of @param first.
 	 * 
-	 * @param first: first operand of SUB operation (minuend)
+	 * @param first:  first operand of SUB operation (minuend)
 	 * @param second: second operand of SUB operation (subtrahend)
 	 */
 	public void sub(String first, String second) {
-		// TODO
-		// how should we set flags??
+
 		CF = false;
 		SF = false;
 		AF = false;
@@ -1296,7 +1431,7 @@ public class Hyp86 {
 	/**
 	 * Calls helper ADD methods according to the contents of @param first.
 	 * 
-	 * @param first: first operand of ADD operation (augend)s
+	 * @param first:  first operand of ADD operation (augend)s
 	 * @param second: second operand of ADD operation (addend)
 	 */
 
@@ -1320,7 +1455,7 @@ public class Hyp86 {
 	/**
 	 * Calls helper MOV methods according to the contents of @param first.
 	 * 
-	 * @param first: first operand of MOV operation
+	 * @param first:  first operand of MOV operation
 	 * @param second: second operand of MOV operation
 	 */
 
@@ -1452,7 +1587,8 @@ public class Hyp86 {
 				if (second.charAt(0) == 'b') {
 					second = second.substring(1); // got rid of "b"
 				}
-				second = second.substring(1, second.length() - 1); // got rid of "[" and "]"
+				second = second.substring(second.indexOf('[') + 1, second.length() - 1).trim(); // got rid of "[" and
+																								// "]"
 				String num = "";
 
 				if (isRegOneByte(second) || isRegTwoByte(second)) {// register
@@ -1488,7 +1624,7 @@ public class Hyp86 {
 				} else if (memory[Integer.parseInt(num, 16)] == null) {
 
 				} else {
-					num = memory[Integer.parseInt(num, 16)].substring(2);// now, num is the content of that address
+					num = memory[Integer.parseInt(num, 16)];// now, num is the content of that address
 					for (int i = 0; i <= 1; i++) {
 						temp[i] = num.charAt(i);
 					}
@@ -1550,7 +1686,7 @@ public class Hyp86 {
 	 * when the first operand of MOV operation is a two byte register, this helper
 	 * method is called. It handles several errors and moves source to destination.
 	 * 
-	 * @param first: destination of MOV operation
+	 * @param first:  destination of MOV operation
 	 * @param second: source of MOV operation
 	 */// ++
 	private String source_when_first_operand_is_twoByteReg(String second) {
@@ -1568,7 +1704,7 @@ public class Hyp86 {
 					second = second.substring(1); // got rid of 'w'
 				}
 
-				second = second.substring(1, second.length() - 1); // got rid of [ and ]
+				second = second.substring(second.indexOf('[') + 1, second.length() - 1).trim(); // got rid of [ and ]
 				String num = "";
 				if (isRegOneByte(second) || isRegTwoByte(second)) {// register
 					if (second.equalsIgnoreCase("si")) {
@@ -1756,9 +1892,6 @@ public class Hyp86 {
 			System.out.println("Bad Memory Address at line - " + (MP / 6 + 1));
 			System.exit(0);
 		}
-		// TODO
-		// sum_mem_xx e bak orakdini yap burdada!!!
-		// memory +1 ile yer değiştirme işlemleri
 		// augend + addend = sum
 		if (wordOrByte) {// for inputs like w[xx]
 			if (memory[memoryIndex] != null || memory[memoryIndex + 1] != null) {
@@ -1854,7 +1987,7 @@ public class Hyp86 {
 	 * calls helper methods to calculate source then adds it corresponding register
 	 * destination.
 	 * 
-	 * @param first: first operand of ADD operation. It's a register for sure.
+	 * @param first:  first operand of ADD operation. It's a register for sure.
 	 * @param second: second operand of ADD operation
 	 */
 	private void add_reg_unknown(String first, String second) {
@@ -2240,7 +2373,7 @@ public class Hyp86 {
 	 * calls helper methods to calculate source then subtracts it corresponding
 	 * register destination.
 	 * 
-	 * @param first: first operand of SUB operation. It's a register for sure.
+	 * @param first:  first operand of SUB operation. It's a register for sure.
 	 * @param second: second operand of SUB operation
 	 */
 
@@ -2632,8 +2765,9 @@ public class Hyp86 {
 	/**
 	 * this method is called when destination of SUB operation is a memory address.
 	 * 
-	 * @param first : destination of SUB operation. It's a memory address for sure.
-	 * @param       second: source of SUB operation.
+	 * @param first   : destination of SUB operation. It's a memory address for
+	 *                sure.
+	 * @param second: source of SUB operation.
 	 */// ++
 	private void sub_mem_xx(String first, String second) {
 		boolean wordOrByte = false;// false if byte, true if word
@@ -2722,8 +2856,7 @@ public class Hyp86 {
 	 */
 	private int memoryIndexOfFirst(String input) {
 		if (input.contains("[") && input.contains("]"))
-			input = input.substring(input.indexOf('[') + 1, input.length() - 1);// got rid of "[","]"//TODO CAN TRIM at
-																				// there
+			input = input.substring(input.indexOf('[') + 1, input.length() - 1).trim();// got rid of "x[","]"
 		int memoryIndex = 0;// memory index of first operand
 		if (input.equalsIgnoreCase("bx")) {
 			memoryIndex = Integer.parseInt("" + bx[0] + bx[1] + bx[2] + bx[3], 16);
@@ -2809,6 +2942,7 @@ public class Hyp86 {
 		instructionList.add("jb");
 		instructionList.add("jbe");
 		instructionList.add("jnae");
+		instructionList.add("jna");
 		instructionList.add("jnb");
 		instructionList.add("jnbe");
 		instructionList.add("jnc");
@@ -2838,7 +2972,7 @@ public class Hyp86 {
 					second = second.substring(1); // got rid of 'w'
 				}
 
-				second = second.substring(1, second.length() - 1); // got rid of [ and ]
+				second = second.substring(second.indexOf('[') + 1, second.length() - 1).trim(); // got rid of [ and ]
 
 				if (isRegOneByte(second) || isRegTwoByte(second)) {// register
 					if (second.equalsIgnoreCase("si")) {
@@ -2942,7 +3076,7 @@ public class Hyp86 {
 					second = second.substring(1); // got rid of 'b'
 				}
 
-				second = second.substring(1, second.length() - 1); // got rid of [ and ]
+				second = second.substring(second.indexOf('[') + 1, second.length() - 1).trim(); // got rid of [ and ]
 
 				if (isRegOneByte(second) || isRegTwoByte(second)) {// second is register within square brackets
 					if (second.equalsIgnoreCase("si")) {
