@@ -105,7 +105,7 @@ public class Hyp86 {
 				}
 				indexCursor += 6;
 			} else if (line.indexOf(":") != -1) {// means label
-				line = line.trim().substring(0, line.length() - 1);
+				line = line.trim().substring(0, line.indexOf(":"));
 				labels.put(line, indexCursor);
 				continue;
 			} else if (line.indexOf("dw") != -1 || line.indexOf("db") != -1) {// variable definition
@@ -174,6 +174,7 @@ public class Hyp86 {
 			if (memory[MP].equals("int")) {
 				if (memory[MP + 1].equals("20h")) {
 					return;
+					//TODO  bu niye kalktı??
 					// System.exit(0);
 				} else {
 					int21h();
@@ -671,6 +672,8 @@ public class Hyp86 {
 			String chs = "" + dx[2] + dx[3];
 			ascii = Integer.parseInt(chs, 16);
 			System.out.print((char) ascii);
+			ax[2] = dx[2];
+			ax[3] = dx[3];
 		}
 	}
 
@@ -1292,6 +1295,13 @@ public class Hyp86 {
 
 	public void mul(String first) {
 		String source;
+		if (Integer.parseInt("" + ax[0], 16) > 7) {
+			CF = true;
+			OF = true;
+		} else {
+			CF = false;
+			OF = false;
+		}
 		if (first.contains("[") && first.contains("]")) { // first is memory
 			if (first.charAt(0) == 'w') {
 				source = contentsOfSecondOperandOfADDSUBTwoByte(first);
@@ -1310,14 +1320,6 @@ public class Hyp86 {
 		} else {
 			System.out.println("Undefined symbols are listed: " + first + "  at line: " + (MP / 6 + 1));
 			System.exit(0);
-		}
-
-		if (Integer.parseInt("" + ax[0], 16) > 7) {
-			CF = true;
-			OF = true;
-		} else {
-			CF = false;
-			OF = false;
 		}
 
 	}
@@ -1460,8 +1462,9 @@ public class Hyp86 {
 	 */
 
 	public void mov(String first, String second) {
+		String source = "";
 		if (first.contains("[") && first.contains("]")) { // first is memory
-			String source = source_when_first_operand_is_memory(first, second);
+			source = source_when_first_operand_is_memory(first, second);
 			if (first.charAt(0) == 'w') {
 				first = first.substring(1);// got rid of w
 				int memoryIndex = memoryIndexOfFirst(first);
@@ -1472,9 +1475,8 @@ public class Hyp86 {
 				int memoryIndex = memoryIndexOfFirst(first);
 				memory[memoryIndex] = source.substring(2);
 			}
-
 		} else if (isRegTwoByte(first)) {// 16 bit register
-			String source = source_when_first_operand_is_twoByteReg(second);
+			source = source_when_first_operand_is_twoByteReg(second);
 
 			if (first.equalsIgnoreCase("ax")) {
 				for (int i = 0; i <= 3; i++) {
@@ -1506,7 +1508,7 @@ public class Hyp86 {
 				}
 			}
 		} else if (isRegOneByte(first)) {// 8 bit register
-			String source = source_when_first_operand_is_oneByteReg(second);
+			source = source_when_first_operand_is_oneByteReg(second);
 			if (first.equalsIgnoreCase("al")) {
 				for (int i = 0; i <= 1; i++) {
 					ax[i + 2] = source.charAt(i);
@@ -1591,7 +1593,7 @@ public class Hyp86 {
 																								// "]"
 				String num = "";
 
-				if (isRegOneByte(second) || isRegTwoByte(second)) {// register
+				if (isRegOneByte(second) || isRegTwoByte(second) || second.equalsIgnoreCase("sp")) {// register
 					if (second.equalsIgnoreCase("si")) {
 						for (int i = 0; i <= 3; i++) {
 							num += si[i];
@@ -1630,7 +1632,7 @@ public class Hyp86 {
 					}
 				}
 			}
-		} else if (isRegOneByte(second) || isRegTwoByte(second)) { // register
+		} else if (isRegOneByte(second) || isRegTwoByte(second) || second.equalsIgnoreCase("sp")) { // register
 			if (second.equalsIgnoreCase("al")) {
 				for (int i = 1; i >= 0; i--) {
 					temp[i] = ax[i + 2];
@@ -1706,7 +1708,7 @@ public class Hyp86 {
 
 				second = second.substring(second.indexOf('[') + 1, second.length() - 1).trim(); // got rid of [ and ]
 				String num = "";
-				if (isRegOneByte(second) || isRegTwoByte(second)) {// register
+				if (isRegOneByte(second) || isRegTwoByte(second) || second.equalsIgnoreCase("sp")) {// register
 					if (second.equalsIgnoreCase("si")) {
 						for (int i = 0; i <= 3; i++) {
 							num += si[i];
@@ -1782,6 +1784,9 @@ public class Hyp86 {
 				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + (MP / 6 + 1));
 				System.exit(0);
 			}
+		} else if (second.equalsIgnoreCase("sp")) {
+			for (int i = 3; i >= 0; i--)
+				temp[i] = SP.charAt(i);
 		} else { // number
 			second = NumberToFourByteHexa(second, false);
 			for (int i = 0; i <= 3; i++) {
@@ -1801,7 +1806,7 @@ public class Hyp86 {
 	 */// ++
 	private String addsub_mem1B_xx(String second) {
 		String addend = "";
-		if (isRegTwoByte(second)) {
+		if (isRegTwoByte(second) || second.equalsIgnoreCase("sp")) {
 			System.out.println("#ERROR 13: Byte/Word Combination Not Allowed " + " at line: " + (MP / 6 + 1));
 			System.exit(0);
 		} else if (isRegOneByte(second)) {
@@ -1862,7 +1867,10 @@ public class Hyp86 {
 			} else if (second.equals("di")) {
 				addend += "" + di[0] + "" + di[1] + di[2] + "" + di[3];
 			}
+		} else if (second.equalsIgnoreCase("sp")) {
+			addend = SP;
 		} else { // number
+
 			addend += NumberToFourByteHexa(second, false);
 		}
 		return addend;
@@ -2866,6 +2874,8 @@ public class Hyp86 {
 			memoryIndex = Integer.parseInt("" + si[0] + si[1] + si[2] + si[3], 16);
 		} else if (input.equalsIgnoreCase("di")) {
 			memoryIndex = Integer.parseInt("" + di[0] + di[1] + di[2] + di[3], 16);
+		} else if (input.equalsIgnoreCase("sp")) {
+			memoryIndex = Integer.parseInt(SP, 16);
 		} else if (isRegOneByte(input) || isRegTwoByte(input)) {
 			System.out.println("#ERROR 39: Bad Index Register" + " at line: " + (MP / 6 + 1));
 			System.exit(0);
@@ -2922,6 +2932,15 @@ public class Hyp86 {
 		instructionList.add("div");
 		instructionList.add("xor");
 		instructionList.add("or");
+		/*
+		 * TODO
+		 * 
+		 */
+		instructionList.add("inc");
+		instructionList.add("dec");
+		/*
+		 * 
+		 */
 		instructionList.add("and");
 		instructionList.add("not");
 		instructionList.add("rcl");
@@ -2974,7 +2993,7 @@ public class Hyp86 {
 
 				second = second.substring(second.indexOf('[') + 1, second.length() - 1).trim(); // got rid of [ and ]
 
-				if (isRegOneByte(second) || isRegTwoByte(second)) {// register
+				if (isRegOneByte(second) || isRegTwoByte(second) || second.equalsIgnoreCase("sp")) {// register
 					if (second.equalsIgnoreCase("si")) {
 						for (int i = 0; i <= 3; i++) {
 							addend += si[i];
@@ -3012,7 +3031,8 @@ public class Hyp86 {
 				addend = memory[Integer.parseInt(addend, 16) + 1] + memory[Integer.parseInt(addend, 16)];
 			} // addend is now the content of that address
 
-		} else if (isRegOneByte(second) || isRegTwoByte(second)) { // addend is register
+		} else if (isRegOneByte(second) || isRegTwoByte(second) || second.equalsIgnoreCase("sp")) { // addend is
+																									// register
 			if (second.equalsIgnoreCase("ax")) {
 				for (int i = 3; i >= 0; i--) {
 					addend += ax[3 - i];
@@ -3040,6 +3060,10 @@ public class Hyp86 {
 			} else if (second.equalsIgnoreCase("di")) {
 				for (int i = 3; i >= 0; i--) {
 					addend += di[3 - i];
+				}
+			} else if (second.equalsIgnoreCase("sp")) {
+				for (int i = 3; i >= 0; i--) {
+					addend += SP.charAt(i);
 				}
 			} else {// error
 				System.out.println("#ERROR 13: Byte/Word Combination Not Allowed" + " at line: " + (MP / 6 + 1));
@@ -3078,7 +3102,9 @@ public class Hyp86 {
 
 				second = second.substring(second.indexOf('[') + 1, second.length() - 1).trim(); // got rid of [ and ]
 
-				if (isRegOneByte(second) || isRegTwoByte(second)) {// second is register within square brackets
+				if (isRegOneByte(second) || isRegTwoByte(second) || second.equalsIgnoreCase("sp")) {// second is
+																									// register within
+																									// square brackets
 					if (second.equalsIgnoreCase("si")) {
 						for (int i = 0; i <= 3; i++) {
 							addend += si[i];
@@ -3117,7 +3143,8 @@ public class Hyp86 {
 			}
 			// addend is now the content of that address
 			return addend.substring(addend.length() - 2, addend.length());// took last byte
-		} else if (isRegOneByte(second) || isRegTwoByte(second)) { // addend is any register
+		} else if (isRegOneByte(second) || isRegTwoByte(second) || second.equalsIgnoreCase("sp")) { // addend is any
+																									// register
 			if (second.equalsIgnoreCase("al")) {
 				addend += "" + ax[2] + "" + ax[3];
 			} else if (second.equalsIgnoreCase("ah")) {
