@@ -1785,7 +1785,7 @@ public class Hyp86 {
 				System.exit(0);
 			}
 		} else if (second.equalsIgnoreCase("sp")) {
-			for (int i = 3; i >= 0; i--)
+			for (int i = 0; i <= 3; i++)
 				temp[i] = SP.charAt(i);
 		} else { // number
 			second = NumberToFourByteHexa(second, false);
@@ -3062,7 +3062,7 @@ public class Hyp86 {
 					addend += di[3 - i];
 				}
 			} else if (second.equalsIgnoreCase("sp")) {
-				for (int i = 3; i >= 0; i--) {
+				for (int i = 0; i <= 3; i++) {
 					addend += SP.charAt(i);
 				}
 			} else {// error
