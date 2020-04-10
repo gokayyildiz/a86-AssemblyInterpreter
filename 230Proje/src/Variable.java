@@ -1,7 +1,6 @@
 public class Variable {
 	private String name;
 	private int memoryIndex;
-
 	// where data stored at the memory
 	private String data; // data is saved as string even if it's integer
 	// we can think about it
@@ -16,21 +15,24 @@ public class Variable {
 	public Variable(String name, int memoryIndex, String data, boolean type) {
 		this.name = name;
 		this.memoryIndex = memoryIndex;
+		this.type = type;
 		// TODO
 		// herşeye küöçük harfe çevirince eğer input büyükse variablenın değeri
 		// değişiyo.İstenmeyen bir şey! e.g: var1 dw 'W', var2 db 'H'.
 		
-		if (data.contains("\'")) {// when var.data is 'x'
+		if (data.contains("'")) {// when var.data is 'x'
 			int a = data.charAt(data.indexOf("'") + 1) + 1 - 1;
-			
 			this.setData("" + Integer.toHexString(a));
 		} else if (data.contains("\"")) {// when var.data is "x"
 			int a = data.charAt(data.indexOf("\"") + 1) + 1 - 1;
 			this.setData("" + Integer.toHexString(a));
 		} else {
-			this.setData(Hyp86.NumberToFourByteHexa(data));
+			if(type) {
+				this.setData(Hyp86.NumberToFourByteHexa(data,false));
+			}else {
+				this.setData(Hyp86.NumberToFourByteHexa(data,false).substring(2));
+			}
 		}
-		this.type = type;
 	}
 
 	public String getData() {
