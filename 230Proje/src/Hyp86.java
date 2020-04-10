@@ -1370,7 +1370,7 @@ public class Hyp86 {
 			}
 			mov(first, "0" + sumStringForm.substring(2));
 		} else if (isRegTwoByte(first)) {
-			String augend = contentsOfOneByteRegister(first);
+			String augend = contentsOfTwoByteRegister(first);
 			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
 			int sum = Integer.parseInt(augend, 16) + Integer.parseInt(addend, 16);
 			String sumStringForm = NumberToFourByteHexa("" + sum, false);
