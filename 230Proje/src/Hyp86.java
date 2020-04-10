@@ -177,9 +177,7 @@ public class Hyp86 {
 		while (true) {
 			if (memory[MP].equals("int")) {
 				if (memory[MP + 1].equals("20h")) {
-					return;
-					// TODO bu niye kalktı??
-					// System.exit(0);
+					System.exit(0);
 				} else {
 					int21h();
 				}
@@ -193,7 +191,6 @@ public class Hyp86 {
 					second = memory[MP + 2];
 				}
 				mov(first, second);
-
 			} else if (memory[MP].equals("add")) {
 				first = execute_helper_isVar(memory[MP + 1]);
 				second = execute_helper_isVar(memory[MP + 2]);
@@ -203,7 +200,6 @@ public class Hyp86 {
 				if (second == null) {
 					second = memory[MP + 2];
 				}
-
 				add(first, second);
 			} else if (memory[MP].equals("sub")) {
 				first = execute_helper_isVar(memory[MP + 1]);
@@ -1359,7 +1355,8 @@ public class Hyp86 {
 			while (addend.length() < 2) {
 				addend = "0" + addend;
 			}
-			if (Integer.parseInt("" + augend.charAt(augend.length()-1), 16) + Integer.parseInt("" + addend.charAt(addend.length() - 1), 16) > 15) {
+			if (Integer.parseInt("" + augend.charAt(augend.length() - 1), 16)
+					+ Integer.parseInt("" + addend.charAt(addend.length() - 1), 16) > 15) {
 				AF = true;
 			}
 			if (sum == 0) {
@@ -1372,7 +1369,7 @@ public class Hyp86 {
 					sumStringForm = NumberToFourByteHexa("" + sum, false);
 				}
 			}
-			mov(first,"0"+sumStringForm.substring(2));
+			mov(first, "0" + sumStringForm.substring(2));
 		} else if (isRegTwoByte(first)) {
 			String augend = contentsOfOneByteRegister(first);
 			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
@@ -1396,7 +1393,7 @@ public class Hyp86 {
 					sumStringForm = NumberToFourByteHexa("" + sum, false);
 				}
 			}
-			mov(first,"0"+sumStringForm);
+			mov(first, "0" + sumStringForm);
 		} else { // destination is neither reg nor memory
 			// System.out.println("Undefined symbols are listed: " + first + " at line: " +
 			// (MP / 6 + 1));
