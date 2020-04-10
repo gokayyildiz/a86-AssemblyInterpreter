@@ -1109,10 +1109,10 @@ public class Hyp86 {
 		return NumberToFourByteHexa(a + "d", false);
 	}
 
-	// TODO
 	/**
-	 * 
-	 * @param first
+	 * Multiplication operation, works on AX register
+	 * chooses one of the multiplier based on the given sources byte-size
+	 * @param first : source of MUL operation
 	 */
 	public void mul(String first) {
 		CF = false;
@@ -1149,10 +1149,10 @@ public class Hyp86 {
 
 	}
 
-	// TODO
 	/**
-	 * 
-	 * @param source
+	 * if a 1-byte source is called, other multiplier is al
+	 * and result is hold in ax
+	 * @param source : source of MUL operation
 	 */
 	private void mul_1Byte(String source) {
 		int dest = Integer.parseInt("" + ax[2] + ax[3], 16);
@@ -1164,11 +1164,10 @@ public class Hyp86 {
 			ax[i] = result.charAt(i);
 
 	}
-
-	// TODO
 	/**
-	 * 
-	 * @param source
+	 * if a 2-byte source is called other multiplier is ax
+	 * and result is hold in dx:ax
+	 * @param source : source of MUL operation
 	 */
 	private void mul_2Byte(String source) {
 		int dest = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
@@ -1184,10 +1183,10 @@ public class Hyp86 {
 
 	}
 
-	// TODO
 	/**
-	 * 
-	 * @param first
+	 * Division operation, works on AX register
+	 * chooses the dividend based on the given sources byte-size
+	 * @param first: source of DIV operation
 	 */
 	public void div(String first) {
 		String source;
@@ -1214,10 +1213,10 @@ public class Hyp86 {
 		}
 	}
 
-	// TODO
 	/**
-	 * 
-	 * @param source
+	 * if a 1-byte source is called, other dividend is ax
+	 * and quotient is hold in al, remainder is hold in ah
+	 * @param source : source of DIV operation
 	 */
 	private void div_1Byte(String source) {
 		int dest = Integer.parseInt("" + ax[0] + ax[1] + ax[2] + ax[3], 16);
@@ -1236,10 +1235,10 @@ public class Hyp86 {
 
 	}
 
-	// TODO
 	/**
-	 * 
-	 * @param source
+	 * if a 2-byte source is called, other dividend is dx:ax
+	 * and quotient is hold in ax, remainder is hold in dx
+	 * @param source : source of DIV operation
 	 */
 	private void div_2Byte(String source) {
 		int dest = Integer.parseInt("" + dx[0] + dx[1] + dx[2] + dx[3] + ax[0] + ax[1] + ax[2] + ax[3], 16);
