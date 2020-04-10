@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Scanner;
+
 public class Hyp86 {
 
 	/*
@@ -213,7 +214,6 @@ public class Hyp86 {
 				if (second == null) {
 					second = memory[MP + 2];
 				}
-
 				sub(first, second);
 			} else if (memory[MP].equals("cmp")) {
 				first = execute_helper_isVar(memory[MP + 1]);
@@ -224,7 +224,6 @@ public class Hyp86 {
 				if (second == null) {
 					second = memory[MP + 2];
 				}
-
 				cmp(first, second);
 			} else if (memory[MP].equals("and")) {
 				first = execute_helper_isVar(memory[MP + 1]);
@@ -235,7 +234,6 @@ public class Hyp86 {
 				if (second == null) {
 					second = memory[MP + 2];
 				}
-
 				and(first, second);
 			} else if (memory[MP].equals("or")) {
 				first = execute_helper_isVar(memory[MP + 1]);
@@ -246,7 +244,6 @@ public class Hyp86 {
 				if (second == null) {
 					second = memory[MP + 2];
 				}
-
 				or(first, second);
 			} else if (memory[MP].equals("xor")) {
 				first = execute_helper_isVar(memory[MP + 1]);
@@ -257,7 +254,6 @@ public class Hyp86 {
 				if (second == null) {
 					second = memory[MP + 2];
 				}
-
 				xor(first, second);
 			} else if (memory[MP].equals("shl")) {
 				first = execute_helper_isVar(memory[MP + 1]);
@@ -922,87 +918,13 @@ public class Hyp86 {
 			String source = source_when_first_operand_is_twoByteReg(second);
 			SP = helperXor(SP, source);
 		} else if (isRegTwoByte(first)) {// 16 bit register
-
+			String dest = contentsOfTwoByteRegister(first);
 			String source = source_when_first_operand_is_twoByteReg(second);
-			if (first.equalsIgnoreCase("ax")) {
-				String data = helperXor("" + ax[0] + ax[1] + ax[2] + ax[3], source);
-				for (int i = 0; i <= 3; i++) {
-					ax[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("bx")) {
-				String data = helperXor("" + bx[0] + bx[1] + bx[2] + bx[3], source);
-				for (int i = 0; i <= 3; i++) {
-					bx[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("cx")) {
-				String data = helperXor("" + cx[0] + cx[1] + cx[2] + cx[3], source);
-				for (int i = 0; i <= 3; i++) {
-					cx[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("dx")) {
-				String data = helperXor("" + dx[0] + dx[1] + dx[2] + dx[3], source);
-				for (int i = 0; i <= 3; i++) {
-					dx[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("di")) {
-				String data = helperXor("" + di[0] + di[1] + di[2] + di[3], source);
-				for (int i = 0; i <= 3; i++) {
-					di[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("si")) {
-				String data = helperXor("" + si[0] + si[1] + si[2] + si[3], source);
-				for (int i = 0; i <= 3; i++) {
-					si[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("bp")) {
-				String data = helperXor("" + bp[0] + bp[1] + bp[2] + bp[3], source);
-				for (int i = 0; i <= 3; i++) {
-					bp[i] = data.charAt(i);
-				}
-			}
+			mov(first, "0" + helperXor(dest, source));
 		} else if (isRegOneByte(first)) {// 8 bit register
 			String source = source_when_first_operand_is_oneByteReg(second);
-			if (first.equalsIgnoreCase("al")) {
-				String data = helperXor("" + ax[2] + ax[3], source);
-				for (int i = 0; i <= 1; i++) {
-					ax[i + 2] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("ah")) {
-				String data = helperXor("" + ax[0] + ax[1], source);
-				for (int i = 0; i <= 1; i++) {
-					ax[i] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("bl")) {
-				String data = helperXor("" + bx[2] + bx[3], source);
-				for (int i = 0; i <= 1; i++) {
-					bx[i + 2] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("bh")) {
-				String data = helperXor("" + bx[0] + bx[1], source);
-				for (int i = 0; i <= 1; i++) {
-					bx[i] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("cl")) {
-				String data = helperXor("" + cx[2] + cx[3], source);
-				for (int i = 0; i <= 1; i++) {
-					cx[i + 2] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("ch")) {
-				String data = helperXor("" + cx[0] + cx[1], source);
-				for (int i = 0; i <= 1; i++) {
-					cx[i] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("dl")) {
-				String data = helperXor("" + dx[2] + dx[3], source);
-				for (int i = 0; i <= 1; i++) {
-					dx[i + 2] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("dh")) {
-				String data = helperXor("" + dx[0] + dx[1], source);
-				for (int i = 0; i <= 1; i++) {
-					dx[i] = data.charAt(i);
-				}
-			}
+			String dest = contentsOfOneByteRegister(first);
+			mov(first, "0" + helperXor(dest, source).substring(2));
 		} else {
 			// System.out.println("Undefined symbols are listed: " + first + " at line: " +
 			// (MP / 6 + 1));
@@ -1024,7 +946,7 @@ public class Hyp86 {
 		int a = Integer.parseInt(first, 16) ^ Integer.parseInt(second, 16);
 		if (a == 0)
 			ZF = true;
-		return NumberToFourByteHexa("" + a, false);
+		return NumberToFourByteHexa(a + "d", false);
 	}
 
 	/**
@@ -1058,88 +980,14 @@ public class Hyp86 {
 			String source = source_when_first_operand_is_twoByteReg(second);
 			SP = helperOr(SP, source);
 		} else if (isRegTwoByte(first)) {// 16 bit register
-
 			String source = source_when_first_operand_is_twoByteReg(second);
-			if (first.equalsIgnoreCase("ax")) {
-				String data = helperOr("" + ax[0] + ax[1] + ax[2] + ax[3], source);
-				for (int i = 0; i <= 3; i++) {
-					ax[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("bx")) {
-				String data = helperOr("" + bx[0] + bx[1] + bx[2] + bx[3], source);
-				for (int i = 0; i <= 3; i++) {
-					bx[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("cx")) {
-				String data = helperOr("" + cx[0] + cx[1] + cx[2] + cx[3], source);
-				for (int i = 0; i <= 3; i++) {
-					cx[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("dx")) {
-				String data = helperOr("" + dx[0] + dx[1] + dx[2] + dx[3], source);
-				for (int i = 0; i <= 3; i++) {
-					dx[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("di")) {
-				String data = helperOr("" + di[0] + di[1] + di[2] + di[3], source);
-				for (int i = 0; i <= 3; i++) {
-					di[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("si")) {
-				String data = helperOr("" + si[0] + si[1] + si[2] + si[3], source);
-				for (int i = 0; i <= 3; i++) {
-					si[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("bp")) {
-				String data = helperOr("" + bp[0] + bp[1] + bp[2] + bp[3], source);
-				for (int i = 0; i <= 3; i++) {
-					bp[i] = data.charAt(i);
-				}
-			}
+			String dest = contentsOfTwoByteRegister(first);
+			mov(first, "0" + helperOr(dest, source));
 		} else if (isRegOneByte(first)) {// 8 bit register
 			String source = source_when_first_operand_is_oneByteReg(second);
-			if (first.equalsIgnoreCase("al")) {
-				String data = helperOr("" + ax[2] + ax[3], source);
-				for (int i = 0; i <= 1; i++) {
-					ax[i + 2] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("ah")) {
-				String data = helperOr("" + ax[0] + ax[1], source);
-				for (int i = 0; i <= 1; i++) {
-					ax[i] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("bl")) {
-				String data = helperOr("" + bx[2] + bx[3], source);
-				for (int i = 0; i <= 1; i++) {
-					cx[i + 2] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("bh")) {
-				String data = helperOr("" + bx[0] + bx[1], source);
-				for (int i = 0; i <= 1; i++) {
-					dx[i] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("cl")) {
-				String data = helperOr("" + cx[2] + cx[3], source);
-				for (int i = 0; i <= 1; i++) {
-					cx[i + 2] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("ch")) {
-				String data = helperOr("" + cx[0] + cx[1], source);
-				for (int i = 0; i <= 1; i++) {
-					cx[i] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("dl")) {
-				String data = helperOr("" + dx[2] + dx[3], source);
-				for (int i = 0; i <= 1; i++) {
-					dx[i + 2] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("dh")) {
-				String data = helperOr("" + dx[0] + dx[1], source);
-				for (int i = 0; i <= 1; i++) {
-					dx[i] = data.charAt(i + 2);
-				}
-			}
-		} else { // reg veya memoryye yazmiyo hata ver
+			String dest = contentsOfOneByteRegister(first);
+			mov(first, "0" + helperOr(dest, source).substring(2));
+		} else {
 			// System.out.println("Undefined symbols are listed: " + first + " at line: " +
 			// (MP / 6 + 1));
 			System.out.println("error");
@@ -1160,7 +1008,7 @@ public class Hyp86 {
 		int a = Integer.parseInt(first, 16) | Integer.parseInt(second, 16);
 		if (a == 0)
 			ZF = true;
-		return NumberToFourByteHexa("" + a, false);
+		return NumberToFourByteHexa(a + "d", false);
 	}
 
 	/**
@@ -1192,10 +1040,10 @@ public class Hyp86 {
 			}
 		} else if (isRegOneByte(operand)) {
 			String data = source_when_first_operand_is_oneByteReg(operand);
-			mov(operand, "0"+Integer.toHexString(0xff - Integer.parseInt(data, 16)));
+			mov(operand, "0" + Integer.toHexString(0xff - Integer.parseInt(data, 16)));
 		} else if (isRegTwoByte(operand)) {
 			String data = source_when_first_operand_is_twoByteReg(operand);
-			mov(operand,"0"+ Integer.toHexString(0xffff - Integer.parseInt(data, 16)));
+			mov(operand, "0" + Integer.toHexString(0xffff - Integer.parseInt(data, 16)));
 		} else {
 			// System.out.println("ERROR 21: Bad Single Operand. at line - ");
 			System.out.println("error");
@@ -1233,88 +1081,14 @@ public class Hyp86 {
 			String source = source_when_first_operand_is_twoByteReg(second);
 			SP = helperAnd(SP, source);
 		} else if (isRegTwoByte(first)) {// 16 bit register
-
+			String dest = contentsOfTwoByteRegister(first);
 			String source = source_when_first_operand_is_twoByteReg(second);
-			if (first.equalsIgnoreCase("ax")) {
-				String data = helperAnd("" + ax[0] + ax[1] + ax[2] + ax[3], source);
-				for (int i = 0; i <= 3; i++) {
-					ax[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("bx")) {
-				String data = helperAnd("" + bx[0] + bx[1] + bx[2] + bx[3], source);
+			mov(first, "0" + helperAnd(dest, source));
 
-				for (int i = 0; i <= 3; i++) {
-					bx[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("cx")) {
-				String data = helperAnd("" + cx[0] + cx[1] + cx[2] + cx[3], source);
-				for (int i = 0; i <= 3; i++) {
-					cx[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("dx")) {
-				String data = helperAnd("" + dx[0] + dx[1] + dx[2] + dx[3], source);
-				for (int i = 0; i <= 3; i++) {
-					dx[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("di")) {
-				String data = helperAnd("" + di[0] + di[1] + di[2] + di[3], source);
-				for (int i = 0; i <= 3; i++) {
-					di[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("si")) {
-				String data = helperAnd("" + si[0] + si[1] + si[2] + si[3], source);
-				for (int i = 0; i <= 3; i++) {
-					si[i] = data.charAt(i);
-				}
-			} else if (first.equalsIgnoreCase("bp")) {
-				String data = helperAnd("" + bp[0] + bp[1] + bp[2] + bp[3], source);
-				for (int i = 0; i <= 3; i++) {
-					bp[i] = data.charAt(i);
-				}
-			}
 		} else if (isRegOneByte(first)) {// 8 bit register
 			String source = source_when_first_operand_is_oneByteReg(second);
-			if (first.equalsIgnoreCase("al")) {
-				String data = helperAnd("" + ax[2] + ax[3], source);
-				for (int i = 0; i <= 1; i++) {
-					ax[i + 2] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("ah")) {
-				String data = helperAnd("" + ax[0] + ax[1], source);
-				for (int i = 0; i <= 1; i++) {
-					ax[i] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("bl")) {
-				String data = helperAnd("" + bx[2] + bx[3], source);
-				for (int i = 0; i <= 1; i++) {
-					cx[i + 2] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("bh")) {
-				String data = helperAnd("" + bx[0] + bx[1], source);
-				for (int i = 0; i <= 1; i++) {
-					dx[i] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("cl")) {
-				String data = helperAnd("" + cx[2] + cx[3], source);
-				for (int i = 0; i <= 1; i++) {
-					cx[i + 2] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("ch")) {
-				String data = helperAnd("" + cx[0] + cx[1], source);
-				for (int i = 0; i <= 1; i++) {
-					cx[i] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("dl")) {
-				String data = helperAnd("" + dx[2] + dx[3], source);
-				for (int i = 0; i <= 1; i++) {
-					dx[i + 2] = data.charAt(i + 2);
-				}
-			} else if (first.equalsIgnoreCase("dh")) {
-				String data = helperAnd("" + dx[0] + dx[1], source);
-				for (int i = 0; i <= 1; i++) {
-					dx[i] = data.charAt(i);
-				}
-			}
+			String dest = contentsOfOneByteRegister(first);
+			mov(first, "0" + helperAnd(dest, source).substring(2));
 		} else {
 			// System.out.println("Undefined symbols are listed: " + first + " at line: " +
 			// (MP / 6 + 1));
@@ -1336,7 +1110,7 @@ public class Hyp86 {
 		int a = Integer.parseInt(first, 16) & Integer.parseInt(second, 16);
 		if (a == 0)
 			ZF = true;
-		return NumberToFourByteHexa("" + a, false);
+		return NumberToFourByteHexa(a + "d", false);
 	}
 
 	// TODO
@@ -1496,18 +1270,64 @@ public class Hyp86 {
 	 * @param second: second operand of SUB operation (subtrahend)
 	 */
 	public void sub(String first, String second) {
-
 		CF = false;
 		SF = false;
 		AF = false;
 		OF = false;
 		ZF = false;
-
 		if (first.contains("[") && first.contains("]")) { // first is memory
 			sub_mem_xx(first, second);
-		} else if (isRegOneByte(first) || isRegTwoByte(first)) {
-			// first is reg
-			sub_reg_unknown(first, second);
+		} else if (isRegOneByte(first)) {
+			String minuend = contentsOfOneByteRegister(first);
+			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
+			int difference = Integer.parseInt(minuend, 16) - Integer.parseInt(subtrahend, 16);// decimal diff
+			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
+			while (subtrahend.length() < 2) {
+				subtrahend = "0" + subtrahend;
+			}
+			if (Integer.parseInt("" + minuend.charAt(minuend.length() - 1), 16)
+					- Integer.parseInt("" + subtrahend.charAt(subtrahend.length() - 1), 16) < 0) {
+				AF = true;
+			}
+			if (difference == 0) {
+				ZF = true;
+				differenceStringForm = "00";
+			} else {
+				if (difference < 0) {
+					CF = true;
+					SF = true;
+					difference += 0x100;
+					differenceStringForm = NumberToFourByteHexa("" + difference, false);
+				}
+			}
+			ax[2] = differenceStringForm.charAt(differenceStringForm.length() - 2);
+			ax[3] = differenceStringForm.charAt(differenceStringForm.length() - 1);
+			mov(first, "0" + differenceStringForm.substring(2));
+		} else if (isRegTwoByte(first)) {
+			String minuend = contentsOfTwoByteRegister(first);
+			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
+			int difference = Integer.parseInt(minuend, 16) - Integer.parseInt(subtrahend, 16);
+			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
+
+			while (subtrahend.length() < 4) {
+				subtrahend = "0" + subtrahend;
+			}
+			if (Integer.parseInt("" + minuend.charAt(minuend.length() - 1), 16)
+					- Integer.parseInt("" + subtrahend.charAt(3), 16) < 0) {
+				AF = true;
+			}
+			if (difference == 0) {
+				ZF = true;
+				differenceStringForm = "0000";
+			} else {
+				if (difference < 0) {
+					SF = true;
+					CF = true;
+					difference += 0x10000;
+					differenceStringForm = NumberToFourByteHexa("" + difference, false);
+				}
+			}
+			mov(first, "0" + differenceStringForm);
 		} else {
 			// System.out.println("Undefined symbols are listed: " + first + " at line: " +
 			// (MP / 6 + 1));
@@ -1531,9 +1351,52 @@ public class Hyp86 {
 		ZF = false;
 		if (first.contains("[") && first.contains("]")) { // first is memory
 			add_mem_xx(first, second);
-		} else if (isRegOneByte(first) || isRegTwoByte(first)) {
-			// first is reg
-			add_reg_unknown(first, second);
+		} else if (isRegOneByte(first)) {
+			String augend = contentsOfOneByteRegister(first);
+			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
+			int sum = Integer.parseInt(augend, 16) + Integer.parseInt(addend, 16);// decimal sum
+			String sumStringForm = NumberToFourByteHexa("" + sum, false);
+			while (addend.length() < 2) {
+				addend = "0" + addend;
+			}
+			if (Integer.parseInt("" + augend.charAt(augend.length()-1), 16) + Integer.parseInt("" + addend.charAt(addend.length() - 1), 16) > 15) {
+				AF = true;
+			}
+			if (sum == 0) {
+				ZF = true;
+				sumStringForm = "00";
+			} else {
+				if (sum > 0xff) {
+					CF = true;
+					sum -= 256;
+					sumStringForm = NumberToFourByteHexa("" + sum, false);
+				}
+			}
+			mov(first,"0"+sumStringForm.substring(2));
+		} else if (isRegTwoByte(first)) {
+			String augend = contentsOfOneByteRegister(first);
+			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
+			int sum = Integer.parseInt(augend, 16) + Integer.parseInt(addend, 16);
+			String sumStringForm = NumberToFourByteHexa("" + sum, false);
+
+			// for AF
+			while (addend.length() < 4) {
+				addend = "0" + addend;
+			}
+			if (Integer.parseInt("" + augend.charAt(3), 16) + Integer.parseInt("" + addend.charAt(3), 16) > 15) {
+				AF = true;
+			}
+			if (sum == 0) {
+				ZF = true;
+				sumStringForm = "0000";
+			} else {
+				if (sum > 0xffff) {
+					CF = true;
+					sum -= 0x10000;
+					sumStringForm = NumberToFourByteHexa("" + sum, false);
+				}
+			}
+			mov(first,"0"+sumStringForm);
 		} else { // destination is neither reg nor memory
 			// System.out.println("Undefined symbols are listed: " + first + " at line: " +
 			// (MP / 6 + 1));
@@ -2109,788 +1972,6 @@ public class Hyp86 {
 	}
 
 	/**
-	 * calls helper methods to calculate source then adds it corresponding register
-	 * destination.
-	 * 
-	 * @param first:  first operand of ADD operation. It's a register for sure.
-	 * @param second: second operand of ADD operation
-	 */
-	private void add_reg_unknown(String first, String second) {
-
-		if (first.equalsIgnoreCase("ax")) {
-			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
-			int sum = Integer.parseInt((ax[0] + "" + ax[1] + "" + ax[2] + "" + ax[3]), 16)
-					+ Integer.parseInt(addend, 16);
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-
-			// for AF
-			while (addend.length() < 4) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + ax[3], 16) + Integer.parseInt("" + addend.charAt(3), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "0000";
-			} else {
-				if (sum > 0xffff) {
-					CF = true;
-					sum -= 0x10000;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			ax[0] = sumStringForm.charAt(0);
-			ax[1] = sumStringForm.charAt(1);
-			ax[2] = sumStringForm.charAt(2);
-			ax[3] = sumStringForm.charAt(3);
-		} else if (first.equalsIgnoreCase("bx")) {
-			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
-			int sum = Integer.parseInt((bx[0] + "" + bx[1] + "" + bx[2] + "" + bx[3]), 16)
-					+ Integer.parseInt(addend, 16);
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-
-			// for AF
-			while (addend.length() < 4) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + bx[3], 16) + Integer.parseInt("" + addend.charAt(3), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "0000";
-
-			} else {
-				if (sum > 0xffff) {
-					CF = true;
-					sum -= 0x10000;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			bx[0] = sumStringForm.charAt(0);
-			bx[1] = sumStringForm.charAt(1);
-			bx[2] = sumStringForm.charAt(2);
-			bx[3] = sumStringForm.charAt(3);
-		} else if (first.equalsIgnoreCase("cx")) {
-			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
-			int sum = Integer.parseInt((cx[0] + "" + cx[1] + "" + cx[2] + "" + cx[3]), 16)
-					+ Integer.parseInt(addend, 16);
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-			// for AF
-			while (addend.length() < 4) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + cx[3], 16) + Integer.parseInt("" + addend.charAt(3), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "0000";
-
-			} else {
-				if (sum > 0xffff) {
-					CF = true;
-					sum -= 0x10000;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			cx[0] = sumStringForm.charAt(0);
-			cx[1] = sumStringForm.charAt(1);
-			cx[2] = sumStringForm.charAt(2);
-			cx[3] = sumStringForm.charAt(3);
-		} else if (first.equalsIgnoreCase("dx")) {
-			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
-			int sum = Integer.parseInt((dx[0] + "" + dx[1] + "" + dx[2] + "" + dx[3]), 16)
-					+ Integer.parseInt(addend, 16);
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-			// for AF
-			while (addend.length() < 4) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + dx[3], 16) + Integer.parseInt("" + addend.charAt(3), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "0000";
-
-			} else {
-				if (sum > 0xffff) {
-					CF = true;
-					sum -= 0x10000;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			dx[0] = sumStringForm.charAt(0);
-			dx[1] = sumStringForm.charAt(1);
-			dx[2] = sumStringForm.charAt(2);
-			dx[3] = sumStringForm.charAt(3);
-		} else if (first.equalsIgnoreCase("al")) {
-			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
-			int sum = Integer.parseInt(("" + ax[2] + "" + ax[3]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-			while (addend.length() < 2) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + ax[3], 16) + Integer.parseInt("" + addend.charAt(addend.length() - 1), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "00";
-			} else {
-				if (sum > Integer.parseInt("ff", 16)) {
-					CF = true;
-					sum -= 256;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			ax[2] = sumStringForm.charAt(sumStringForm.length() - 2);
-			ax[3] = sumStringForm.charAt(sumStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("ah")) {
-			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
-			int sum = Integer.parseInt(("" + ax[0] + "" + ax[1]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-			while (addend.length() < 2) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + ax[1], 16) + Integer.parseInt("" + addend.charAt(addend.length() - 1), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "00";
-			} else {
-				if (sum > 0xff) {
-					CF = true;
-					sum -= 0x100;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			ax[0] = sumStringForm.charAt(sumStringForm.length() - 2);
-			ax[1] = sumStringForm.charAt(sumStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("bl")) {
-			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
-			int sum = Integer.parseInt(("" + bx[2] + "" + bx[3]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-			while (addend.length() < 2) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + bx[3], 16) + Integer.parseInt("" + addend.charAt(addend.length() - 1), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "00";
-			} else {
-				if (sum > 0xff) {
-					CF = true;
-					sum -= 0x100;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			bx[2] = sumStringForm.charAt(sumStringForm.length() - 2);
-			bx[3] = sumStringForm.charAt(sumStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("bh")) {
-			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
-			int sum = Integer.parseInt(("" + bx[0] + "" + bx[1]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-			while (addend.length() < 2) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + bx[1], 16) + Integer.parseInt("" + addend.charAt(addend.length() - 1), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "00";
-			} else {
-				if (sum > 0xff) {
-					CF = true;
-					sum -= 0x100;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			bx[0] = sumStringForm.charAt(sumStringForm.length() - 2);
-			bx[1] = sumStringForm.charAt(sumStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("cl")) {
-			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
-			int sum = Integer.parseInt(("" + cx[2] + "" + cx[3]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-			while (addend.length() < 2) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + cx[3], 16) + Integer.parseInt("" + addend.charAt(addend.length() - 1), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "00";
-			} else {
-				if (sum > 0xff) {
-					CF = true;
-					sum -= 0x100;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			cx[2] = sumStringForm.charAt(sumStringForm.length() - 2);
-			cx[3] = sumStringForm.charAt(sumStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("ch")) {
-			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
-
-			int sum = Integer.parseInt(("" + cx[0] + "" + cx[1]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-			while (addend.length() < 2) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + cx[1], 16) + Integer.parseInt("" + addend.charAt(addend.length() - 1), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "00";
-			} else {
-				if (sum > 0xff) {
-					CF = true;
-					sum -= 0x100;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			cx[0] = sumStringForm.charAt(sumStringForm.length() - 2);
-			cx[1] = sumStringForm.charAt(sumStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("dl")) {
-			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
-
-			int sum = Integer.parseInt(("" + dx[2] + "" + dx[3]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-			while (addend.length() < 2) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + dx[3], 16) + Integer.parseInt("" + addend.charAt(addend.length() - 1), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "00";
-			} else {
-				if (sum > 0xff) {
-					CF = true;
-					sum -= 0x100;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			dx[2] = sumStringForm.charAt(sumStringForm.length() - 2);
-			dx[3] = sumStringForm.charAt(sumStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("dh")) {
-			String addend = contentsOfSecondOperandOfADDSUBOneByte(second);
-			int sum = Integer.parseInt(("" + dx[0] + "" + dx[1]), 16) + Integer.parseInt(addend, 16);// decimal sum
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-			while (addend.length() < 2) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + dx[1], 16) + Integer.parseInt("" + addend.charAt(addend.length() - 1), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "00";
-			} else {
-				if (sum > 0xff) {
-					CF = true;
-					sum -= 0x100;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			dx[0] = sumStringForm.charAt(sumStringForm.length() - 2);
-			dx[1] = sumStringForm.charAt(sumStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("di")) {
-			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
-			int sum = Integer.parseInt((di[0] + "" + di[1] + "" + di[2] + "" + di[3]), 16)
-					+ Integer.parseInt(addend, 16);
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-			while (addend.length() < 4) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + di[3], 16) + Integer.parseInt("" + addend.charAt(3), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "0000";
-
-			} else {
-				if (sum > 0xffff) {
-					CF = true;
-					sum -= 0x10000;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			di[0] = sumStringForm.charAt(0);
-			di[1] = sumStringForm.charAt(1);
-			di[2] = sumStringForm.charAt(2);
-			di[3] = sumStringForm.charAt(3);
-		} else if (first.equalsIgnoreCase("si")) {
-			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
-			int sum = Integer.parseInt((si[0] + "" + si[1] + "" + si[2] + "" + si[3]), 16)
-					+ Integer.parseInt(addend, 16);
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-			while (addend.length() < 4) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + si[3], 16) + Integer.parseInt("" + addend.charAt(3), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "0000";
-
-			} else {
-				if (sum > 0xffff) {
-					CF = true;
-					sum -= 0x10000;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			si[0] = sumStringForm.charAt(0);
-			si[1] = sumStringForm.charAt(1);
-			si[2] = sumStringForm.charAt(2);
-			si[3] = sumStringForm.charAt(3);
-
-		} else if (first.equalsIgnoreCase("bp")) {
-			String addend = contentsOfSecondOperandOfADDSUBTwoByte(second);
-			int sum = Integer.parseInt((bp[0] + "" + bp[1] + "" + bp[2] + "" + bp[3]), 16)
-					+ Integer.parseInt(addend, 16);
-			String sumStringForm = NumberToFourByteHexa("" + sum, false);
-
-			// for AF
-			while (addend.length() < 4) {
-				addend = "0" + addend;
-			}
-			if (Integer.parseInt("" + bp[3], 16) + Integer.parseInt("" + addend.charAt(3), 16) > 15) {
-				AF = true;
-			}
-			if (sum == 0) {
-				ZF = true;
-				sumStringForm = "0000";
-
-			} else {
-				if (sum > 0xffff) {
-					CF = true;
-					sum -= 0x10000;
-					sumStringForm = NumberToFourByteHexa("" + sum, false);
-				}
-			}
-			bp[0] = sumStringForm.charAt(0);
-			bp[1] = sumStringForm.charAt(1);
-			bp[2] = sumStringForm.charAt(2);
-			bp[3] = sumStringForm.charAt(3);
-		}
-	}
-
-	/**
-	 * calls helper methods to calculate source then subtracts it corresponding
-	 * register destination.
-	 * 
-	 * @param first:  first operand of SUB operation. It's a register for sure.
-	 * @param second: second operand of SUB operation
-	 */
-
-	private void sub_reg_unknown(String first, String second) {
-		if (first.equalsIgnoreCase("ax")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
-			int difference = Integer.parseInt((ax[0] + "" + ax[1] + "" + ax[2] + "" + ax[3]), 16)
-					- Integer.parseInt(subtrahend, 16);
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-
-			while (subtrahend.length() < 4) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + ax[3], 16) - Integer.parseInt("" + subtrahend.charAt(3), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "0000";
-			} else {
-				if (difference < 0) {
-					SF = true;
-					CF = true;
-					difference += 0x10000;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			ax[0] = differenceStringForm.charAt(0);
-			ax[1] = differenceStringForm.charAt(1);
-			ax[2] = differenceStringForm.charAt(2);
-			ax[3] = differenceStringForm.charAt(3);
-		} else if (first.equalsIgnoreCase("bx")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
-			int difference = Integer.parseInt((bx[0] + "" + bx[1] + "" + bx[2] + "" + bx[3]), 16)
-					- Integer.parseInt(subtrahend, 16);
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-
-			while (subtrahend.length() < 4) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + bx[3], 16) - Integer.parseInt("" + subtrahend.charAt(3), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "0000";
-			} else {
-				if (difference < 0) {
-					SF = true;
-					CF = true;
-					difference += 0x10000;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			bx[0] = differenceStringForm.charAt(0);
-			bx[1] = differenceStringForm.charAt(1);
-			bx[2] = differenceStringForm.charAt(2);
-			bx[3] = differenceStringForm.charAt(3);
-		} else if (first.equalsIgnoreCase("cx")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
-			int difference = Integer.parseInt((cx[0] + "" + cx[1] + "" + cx[2] + "" + cx[3]), 16)
-					- Integer.parseInt(subtrahend, 16);
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-
-			while (subtrahend.length() < 4) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + cx[3], 16) - Integer.parseInt("" + subtrahend.charAt(3), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "0000";
-			} else {
-				if (difference < 0) {
-					SF = true;
-					CF = true;
-					difference += 0x10000;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			cx[0] = differenceStringForm.charAt(0);
-			cx[1] = differenceStringForm.charAt(1);
-			cx[2] = differenceStringForm.charAt(2);
-			cx[3] = differenceStringForm.charAt(3);
-		} else if (first.equalsIgnoreCase("dx")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
-			int difference = Integer.parseInt((dx[0] + "" + dx[1] + "" + dx[2] + "" + dx[3]), 16)
-					- Integer.parseInt(subtrahend, 16);
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-
-			while (subtrahend.length() < 4) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + dx[3], 16) - Integer.parseInt("" + subtrahend.charAt(3), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "0000";
-			} else {
-				if (difference < 0) {
-					SF = true;
-					CF = true;
-					difference += 0x10000;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			dx[0] = differenceStringForm.charAt(0);
-			dx[1] = differenceStringForm.charAt(1);
-			dx[2] = differenceStringForm.charAt(2);
-			dx[3] = differenceStringForm.charAt(3);
-		} else if (first.equalsIgnoreCase("bp")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
-			int difference = Integer.parseInt((bp[0] + "" + bp[1] + "" + bp[2] + "" + bp[3]), 16)
-					- Integer.parseInt(subtrahend, 16);
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-
-			while (subtrahend.length() < 4) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + bp[3], 16) - Integer.parseInt("" + subtrahend.charAt(3), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "0000";
-			} else {
-				if (difference < 0) {
-					SF = true;
-					CF = true;
-					difference += 0x10000;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			bp[0] = differenceStringForm.charAt(0);
-			bp[1] = differenceStringForm.charAt(1);
-			bp[2] = differenceStringForm.charAt(2);
-			bp[3] = differenceStringForm.charAt(3);
-		} else if (first.equalsIgnoreCase("di")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
-			int difference = Integer.parseInt((di[0] + "" + di[1] + "" + di[2] + "" + di[3]), 16)
-					- Integer.parseInt(subtrahend, 16);
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-
-			while (subtrahend.length() < 4) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + di[3], 16) - Integer.parseInt("" + subtrahend.charAt(3), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "0000";
-			} else {
-				if (difference < 0) {
-					SF = true;
-					CF = true;
-					difference += 0x10000;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			di[0] = differenceStringForm.charAt(0);
-			di[1] = differenceStringForm.charAt(1);
-			di[2] = differenceStringForm.charAt(2);
-			di[3] = differenceStringForm.charAt(3);
-		} else if (first.equalsIgnoreCase("si")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBTwoByte(second);
-			int difference = Integer.parseInt((si[0] + "" + si[1] + "" + si[2] + "" + si[3]), 16)
-					- Integer.parseInt(subtrahend, 16);
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-
-			while (subtrahend.length() < 4) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + si[3], 16) - Integer.parseInt("" + subtrahend.charAt(3), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "0000";
-			} else {
-				if (difference < 0) {
-					SF = true;
-					CF = true;
-					difference += 0x10000;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			si[0] = differenceStringForm.charAt(0);
-			si[1] = differenceStringForm.charAt(1);
-			si[2] = differenceStringForm.charAt(2);
-			si[3] = differenceStringForm.charAt(3);
-		} else if (first.equalsIgnoreCase("al")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
-			int difference = Integer.parseInt(("" + ax[2] + "" + ax[3]), 16) - Integer.parseInt(subtrahend, 16);// decimal
-																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-			while (subtrahend.length() < 2) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + ax[3], 16)
-					- Integer.parseInt("" + subtrahend.charAt(subtrahend.length() - 1), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "00";
-			} else {
-				if (difference < 0) {
-					CF = true;
-					SF = true;
-					difference += 0x100;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			ax[2] = differenceStringForm.charAt(differenceStringForm.length() - 2);
-			ax[3] = differenceStringForm.charAt(differenceStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("ah")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
-			int difference = Integer.parseInt(("" + ax[0] + "" + ax[1]), 16) - Integer.parseInt(subtrahend, 16);// decimal
-																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-			while (subtrahend.length() < 2) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + ax[1], 16)
-					- Integer.parseInt("" + subtrahend.charAt(subtrahend.length() - 1), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "00";
-			} else {
-				if (difference < 0) {
-					CF = true;
-					SF = true;
-
-					difference += 0x100;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			ax[0] = differenceStringForm.charAt(differenceStringForm.length() - 2);
-			ax[1] = differenceStringForm.charAt(differenceStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("bl")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
-			int difference = Integer.parseInt(("" + bx[2] + "" + bx[3]), 16) - Integer.parseInt(subtrahend, 16);// decimal
-																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-			while (subtrahend.length() < 2) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + bx[3], 16)
-					- Integer.parseInt("" + subtrahend.charAt(subtrahend.length() - 1), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "00";
-			} else {
-				if (difference < 0) {
-					CF = true;
-					SF = true;
-					difference += 0x100;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			bx[2] = differenceStringForm.charAt(differenceStringForm.length() - 2);
-			bx[3] = differenceStringForm.charAt(differenceStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("bh")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
-			int difference = Integer.parseInt(("" + bx[0] + "" + bx[1]), 16) - Integer.parseInt(subtrahend, 16);// decimal
-																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-			while (subtrahend.length() < 2) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + bx[1], 16)
-					- Integer.parseInt("" + subtrahend.charAt(subtrahend.length() - 1), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "00";
-			} else {
-				if (difference < 0) {
-					CF = true;
-					SF = true;
-					difference += 0x100;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			bx[0] = differenceStringForm.charAt(differenceStringForm.length() - 2);
-			bx[1] = differenceStringForm.charAt(differenceStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("cl")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
-			int difference = Integer.parseInt(("" + cx[2] + "" + cx[3]), 16) - Integer.parseInt(subtrahend, 16);// decimal
-																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-			while (subtrahend.length() < 2) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + cx[3], 16)
-					- Integer.parseInt("" + subtrahend.charAt(subtrahend.length() - 1), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "00";
-			} else {
-				if (difference < 0) {
-					CF = true;
-					SF = true;
-					difference += 0x100;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			cx[2] = differenceStringForm.charAt(differenceStringForm.length() - 2);
-			cx[3] = differenceStringForm.charAt(differenceStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("ch")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
-			int difference = Integer.parseInt(("" + cx[0] + "" + cx[1]), 16) - Integer.parseInt(subtrahend, 16);// decimal
-																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-			while (subtrahend.length() < 2) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + cx[1], 16)
-					- Integer.parseInt("" + subtrahend.charAt(subtrahend.length() - 1), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "00";
-			} else {
-				if (difference < 0) {
-					CF = true;
-					SF = true;
-					difference += 0x100;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			cx[0] = differenceStringForm.charAt(differenceStringForm.length() - 2);
-			cx[1] = differenceStringForm.charAt(differenceStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("dl")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
-			int difference = Integer.parseInt(("" + dx[2] + "" + dx[3]), 16) - Integer.parseInt(subtrahend, 16);// decimal
-																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-			while (subtrahend.length() < 2) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + dx[3], 16)
-					- Integer.parseInt("" + subtrahend.charAt(subtrahend.length() - 1), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "00";
-			} else {
-				if (difference < 0) {
-					CF = true;
-					SF = true;
-					difference += 0x100;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			dx[2] = differenceStringForm.charAt(differenceStringForm.length() - 2);
-			dx[3] = differenceStringForm.charAt(differenceStringForm.length() - 1);
-		} else if (first.equalsIgnoreCase("dh")) {
-			String subtrahend = contentsOfSecondOperandOfADDSUBOneByte(second);
-			int difference = Integer.parseInt(("" + dx[0] + "" + dx[1]), 16) - Integer.parseInt(subtrahend, 16);// decimal
-																												// sum
-			String differenceStringForm = NumberToFourByteHexa("" + difference, false);
-			while (subtrahend.length() < 2) {
-				subtrahend = "0" + subtrahend;
-			}
-			if (Integer.parseInt("" + dx[1], 16)
-					- Integer.parseInt("" + subtrahend.charAt(subtrahend.length() - 1), 16) < 0) {
-				AF = true;
-			}
-			if (difference == 0) {
-				ZF = true;
-				differenceStringForm = "00";
-			} else {
-				if (difference < 0) {
-					CF = true;
-					SF = true;
-					difference += 0x100;
-					differenceStringForm = NumberToFourByteHexa("" + difference, false);
-				}
-			}
-			dx[0] = differenceStringForm.charAt(differenceStringForm.length() - 2);
-			dx[1] = differenceStringForm.charAt(differenceStringForm.length() - 1);
-		}
-	}
-
-	/**
 	 * this method is called when destination of SUB operation is a memory address.
 	 * 
 	 * @param first   : destination of SUB operation. It's a memory address for
@@ -3328,6 +2409,61 @@ public class Hyp86 {
 		return regg.equalsIgnoreCase("ah") || regg.equalsIgnoreCase("al") || regg.equalsIgnoreCase("bl")
 				|| regg.equalsIgnoreCase("bh") || regg.equalsIgnoreCase("ch") || regg.equalsIgnoreCase("cl")
 				|| regg.equalsIgnoreCase("dl") || regg.equalsIgnoreCase("dh");
+	}
+
+	private String contentsOfOneByteRegister(String first) {
+		String data;
+		if (first.equalsIgnoreCase("al")) {
+			data = "" + ax[2] + ax[3];
+
+		} else if (first.equalsIgnoreCase("ah")) {
+			data = "" + ax[0] + ax[1];
+
+		} else if (first.equalsIgnoreCase("bl")) {
+			data = "" + bx[2] + bx[3];
+
+		} else if (first.equalsIgnoreCase("bh")) {
+			data = "" + bx[0] + bx[1];
+
+		} else if (first.equalsIgnoreCase("cl")) {
+			data = "" + cx[2] + cx[3];
+
+		} else if (first.equalsIgnoreCase("ch")) {
+			data = "" + cx[0] + cx[1];
+
+		} else if (first.equalsIgnoreCase("dl")) {
+			data = "" + dx[2] + dx[3];
+
+		} else {
+			data = "" + dx[0] + dx[1];
+		}
+		return data;
+	}
+
+	private String contentsOfTwoByteRegister(String first) {
+		String data;
+		if (first.equalsIgnoreCase("ax")) {
+			data = "" + ax[0] + ax[1] + ax[2] + ax[3];
+
+		} else if (first.equalsIgnoreCase("bx")) {
+			data = "" + bx[0] + bx[1] + bx[2] + bx[3];
+
+		} else if (first.equalsIgnoreCase("cx")) {
+			data = "" + cx[0] + cx[1] + cx[2] + cx[3];
+
+		} else if (first.equalsIgnoreCase("dx")) {
+			data = "" + dx[0] + dx[1] + dx[2] + dx[3];
+
+		} else if (first.equalsIgnoreCase("di")) {
+			data = "" + di[0] + di[1] + di[2] + di[3];
+
+		} else if (first.equalsIgnoreCase("si")) {
+			data = "" + si[0] + si[1] + si[2] + si[3];
+
+		} else {
+			data = "" + bp[0] + bp[1] + bp[2] + bp[3];
+		}
+		return data;
 	}
 
 }
