@@ -1295,8 +1295,6 @@ public class Hyp86 {
 					differenceStringForm = NumberToFourByteHexa("" + difference, false);
 				}
 			}
-			ax[2] = differenceStringForm.charAt(differenceStringForm.length() - 2);
-			ax[3] = differenceStringForm.charAt(differenceStringForm.length() - 1);
 			mov(first, "0" + differenceStringForm.substring(2));
 		} else if (isRegTwoByte(first)) {
 			String minuend = contentsOfTwoByteRegister(first);
