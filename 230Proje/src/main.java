@@ -11,7 +11,7 @@ public class main {
 	public static void main(String[] args) throws IOException {
 
 		String fileAsString;// can be the parameter of the Hyp86 object !!
-		fileAsString = parser();// whole code as a string
+		fileAsString = parser(args[0]);// whole code as a string
 		Hyp86 assembly = new Hyp86(fileAsString);
 		assembly.execute();
 		
@@ -25,9 +25,9 @@ public class main {
 	 *                 associated with the "key" label
 	 * @return the whole assembly code as a String
 	 */
-	private static String parser() throws FileNotFoundException, IOException {
+	private static String parser(String xx) throws FileNotFoundException, IOException {
 		String fileAsString;
-		BufferedReader br = new BufferedReader(new FileReader("src/file.txt"));
+		BufferedReader br = new BufferedReader(new FileReader(xx));
 		StringBuilder sb = new StringBuilder();
 		String line = br.readLine();
 		while (line != null) {
