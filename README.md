@@ -1,4 +1,6 @@
 # repository
+
+![Image of Memory](https://github.com/gokay7201/a86-AssemblyInterpreter/arch.jpeg)
 !!! shr veya shl de sanırım operand variable olduğunda mov([varindex],*2) diye çağrıyosun yapma direk mov(w var,*2)yaz!!!!
 
 
