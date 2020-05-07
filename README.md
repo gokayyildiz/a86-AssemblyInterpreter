@@ -1,6 +1,7 @@
 # repository
 
 ![Image of Memory](/arch.jpeg)
+Format: ![Alt Text](url)
 !!! shr veya shl de sanırım operand variable olduğunda mov([varindex],*2) diye çağrıyosun yapma direk mov(w var,*2)yaz!!!!
 
 
