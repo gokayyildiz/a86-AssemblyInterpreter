@@ -1,14 +1,19 @@
-# repository
+# a86-AssemblyInterpreter
 
+An	interpreter	for	an	assembly	language	of	a		hypothetical	8086 like	CPU	called	HYP86.
+Some assumptions	about	HYP86:
+1. It	has	64KB	of	memory.
+2. Each	instruction	has	a	fixed	length	of	6	bytes.
+3. It	supports	immediate,	register,	register	indirect,	memory	addressing		and	stack	addressing	modes.
+4. It	has	64K	memory.	Instructions	start	at	address	0.	Stack	starts	at	high	address	(FFFF) and grows towards low	address. SP	points	to	free	word	location	on	top	of	stack.
+5. It	has	16-bit	registers	AX,BX,	CX,	DX,	DI,	SP,	SI,	BP.
+6. It	has	8-bit	registers	AH,	AL,	BH,	BL,	CH,	CL,	DH,	DL.
+7. It	has	the	following	flags:	ZF	zero	flag,	CF	carry	flag,	AF	auxillary	flag,	SF	sign	flag	,	OF	overflow	flag.
+8. Assume	all	registers	with	the	exception	of	SP	and	flags	are	initialized	to	zero		at	the	beginning.	SP	initially	contains	FFFE.
+9. The	following	instructions	are	available:	MOV,	ADD,	SUB,	MUL,	DIV,	XOR,	OR,	AND,	NOT,	RCL,	RCR,	SHL,	SHR,	PUSH,	POP,	NOP,	CMP,	JZ,	JNZ,	JE,	JNE,	JA,	JAE,	JB,	JBE,	JNAE,	JNB,	JNBE,	JNC,	JC,		PUSH,	POP,	INT	20h	(exit	to	dos),	INT	21h	(read/write	character).
+10. Interpreter	does not	allow	reading	or	writing	to instruction	area starting	from	0,	up		to	and	including		INT	20	(which	is	required	to	be	the	last	instruction	at	the	end	of	instruction	area).
+11. Labels	can	be	used	in	the	assembly	language.	
+12. Directives		dw	and	db	can	be	used	to	define	words	and	bytes.	A	variable-name	can	be	put	in	front	of	dw	and	db.	When	using	variable	names		offset	variable-name	accesses	the	address,	just	the	variable-name	accesses	the	value.
+
+The figure represents how we build memory from scratch, fill the instructions and variable data.
 ![Image of Memory](/arch.jpeg)
-Format: ![Alt Text](url)
-!!! shr veya shl de sanırım operand variable olduğunda mov([varindex],*2) diye çağrıyosun yapma direk mov(w var,*2)yaz!!!!
-
-
-çok copy paste oldu movda gözden kaçan yerler olmuş olabilir.Debugda döneriz bidaha.
-
-error oldupunda hata satırını 6 ya bölüp vericez de variable define ederkende hata olabiliyo 
-(bkz: #ERROR 16: Definition Conflicts With Forward Reference) bunda hata satırnı vermek biraz karışıyo
-işte bu hatanın olmaması için "mov al, var1 b", "mov si,w var2" gibi olması lazım satırın 
-ki bu durumda da mov fonskiyonun inputu değişiyo
-hocaya sormak lazım. eğer 2 satır yukardaki gibi input varsa ben movları değiştirrim skkıntı yok.
