@@ -1,5 +1,11 @@
 # a86-AssemblyInterpreter
 
+To compile and run:
+ * git clone https://github.com/gokay7201/a86-AssemblyInterpreter
+ * cd a86-AssemblyInterpreter/230Proje/src
+ * javac *.java
+ * java main [input]
+
 An	interpreter	for	an	assembly	language	of	a		hypothetical	8086 like	CPU	called	HYP86.
 Some assumptions	about	HYP86:
 1. It	has	64KB	of	memory.
